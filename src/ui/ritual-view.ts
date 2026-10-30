@@ -1,5 +1,6 @@
 import type { Alternative } from "../worker/protocol.js";
 import type {
+  ConsentRequest,
   MediumNote,
   Question,
   RitualEnd,
@@ -65,6 +66,22 @@ function formatBytes(bytes: number): string {
   return `${(bytes / 1_000_000).toFixed(1)} MB`;
 }
 
+/** The size the visitor consents to: "1.9 GB", or "480 MB" for smaller downloads. */
+export function formatDownloadSize(bytes: number): string {
+  return bytes >= 1_000_000_000
+    ? `${(bytes / 1_000_000_000).toFixed(1)} GB`
+    : `${String(Math.round(bytes / 1_000_000))} MB`;
+}
+
+/** AC-006.2: what the visitor reads before Gemma 4 is downloaded. */
+export function consentMessage(request: ConsentRequest): string {
+  const size =
+    request.bytes === null
+      ? "Its download size has not been verified yet."
+      : `It is a download of about ${formatDownloadSize(request.bytes)}.`;
+  return `${request.modelName} is not stored on this device yet. ${size} It stays in your browser for later visits, and nothing you write leaves your device.`;
+}
+
 function renderNote(note: MediumNote, ancestorName: string | undefined): HTMLElement {
   const block = document.createElement("section");
   block.className = "medium-note";
@@ -83,6 +100,7 @@ function renderNote(note: MediumNote, ancestorName: string | undefined): HTMLEle
 
 interface VoiceElements {
   readonly item: HTMLLIElement;
+  readonly label: HTMLElement;
   readonly textEl: HTMLElement;
   /** The text node plain tokens are appended to (the tail of `textEl`). */
   text: Text;
@@ -239,6 +257,7 @@ export function createRitualView(doc: Document): RitualView {
       list.append(item);
       const voice: VoiceElements = {
         item,
+        label,
         textEl: text,
         text: textNode,
         status,
@@ -262,6 +281,53 @@ export function createRitualView(doc: Document): RitualView {
         if (unit !== null) setRoving(voice, unit);
       });
       place(info)?.classList.add("speaking");
+    },
+
+    stepStatus(stepId: string, message: string): void {
+      const voice = voices.get(stepId);
+      if (voice !== undefined) voice.status.textContent = message;
+    },
+
+    askConsent(stepId: string, request: ConsentRequest, signal: AbortSignal): Promise<boolean> {
+      const voice = voices.get(stepId);
+      if (voice === undefined) return Promise.resolve(true);
+      return new Promise<boolean>((resolve, reject) => {
+        const message = consentMessage(request);
+        const box = make(doc, "div", "consent");
+        box.setAttribute("role", "group");
+        const text = make(doc, "p", "consent-text", message);
+        text.id = `${stepId}-consent-text`;
+        box.setAttribute("aria-labelledby", text.id);
+        const accept = make(doc, "button", "consent-accept", "Download and continue");
+        accept.type = "button";
+        const decline = make(doc, "button", "consent-decline secondary", "Not now");
+        decline.type = "button";
+        box.append(text, accept, decline);
+        voice.item.append(box);
+        announce(`${request.modelName} asks to download. ${message}`);
+        const close = (action: () => void): void => {
+          signal.removeEventListener("abort", onAbort);
+          box.remove();
+          action();
+        };
+        const onAbort = (): void => {
+          close(() => {
+            reject(new DOMException("The ritual was stopped.", "AbortError"));
+          });
+        };
+        accept.addEventListener("click", () => {
+          close(() => {
+            resolve(true);
+          });
+        });
+        decline.addEventListener("click", () => {
+          close(() => {
+            resolve(false);
+          });
+        });
+        signal.addEventListener("abort", onAbort, { once: true });
+        accept.focus();
+      });
     },
 
     stepProgress(stepId: string, loaded: number, total: number): void {
@@ -316,16 +382,36 @@ export function createRitualView(doc: Document): RitualView {
           );
           break;
         }
-        case "recorded":
-          voice.textEl.textContent = outcome.text;
+        case "recorded": {
+          // A step that was meant to speak live (Gemma 4 declined) is now a recording.
+          voice.label.textContent = MODE_LABELS.recorded;
           voice.status.textContent = outcome.credit;
-          announce(`${name}, recorded: ${outcome.text}`);
+          if (outcome.notes === undefined) {
+            voice.textEl.textContent = outcome.text;
+            announce(`${name}, recorded: ${outcome.text}`);
+            break;
+          }
+          // The recorded medium's words, one block per ancestor, labelled as recorded.
+          voice.textEl.textContent = "";
+          const notes = outcome.notes;
+          voice.item.append(...notes.map((note) => renderNote(note, names.get(note.ancestorId))));
+          announce(
+            `${name}, recorded: ${notes
+              .map(
+                (n) =>
+                  `${names.get(n.ancestorId) ?? n.ancestorId}. ${n.meaning} ${n.calaverita.join(" ")}`,
+              )
+              .join(" ")}`,
+            questionLang,
+          );
           break;
+        }
         case "not-invited":
           {
             // The medium has no altar place (ancestorId null); it gets its own wording.
             const message =
-              info.ancestorId === null ? MEDIUM_NOT_INVITED_MESSAGE : NOT_INVITED_MESSAGE;
+              outcome.message ??
+              (info.ancestorId === null ? MEDIUM_NOT_INVITED_MESSAGE : NOT_INVITED_MESSAGE);
             voice.status.textContent = message;
             announce(`${name}. ${message}`);
           }

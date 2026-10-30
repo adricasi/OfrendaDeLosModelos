@@ -714,3 +714,20 @@ textarea:focus-visible {
 .voice[data-state="gathering"] {
   border-left-color: var(--text-muted);
 }
+
+/* The question before Gemma 4 is downloaded (AC-006.2). */
+.consent {
+  margin: var(--space-2) 0;
+  padding: var(--space-2) var(--space-3);
+  background: var(--night-soft);
+  border-left: 4px solid var(--marigold);
+  border-radius: var(--radius);
+}
+
+.consent-text {
+  margin: 0 0 var(--space-2);
+}
+
+.consent button {
+  margin-right: var(--space-2);
+}

@@ -22,7 +22,7 @@ export interface FakeWorkerOptions {
   readonly loadDelayMs?: number;
   /** Overrides the deterministic words of a model; the prompt is what the UI sent. */
   readonly wordsFor?: (modelId: string, prompt: string) => readonly string[];
-  /** Model ids that are stored on the device already: a `probe` of them answers cached. */
+  /** Model ids stored on the device already: a `probe` of them answers cached. Absent: all are. */
   readonly cachedModels?: readonly string[];
   /**
    * What the medium's prompt gets back: a valid JSON reply, a broken one, or a broken first reply
@@ -184,7 +184,8 @@ export function createFakeWorker(options: FakeWorkerOptions = {}): ModelWorkerPo
           emit({
             type: "probed",
             modelId: message.modelId,
-            cached: options.cachedModels?.includes(message.modelId) === true,
+            cached:
+              options.cachedModels === undefined || options.cachedModels.includes(message.modelId),
           });
           break;
         case "cancel":
