@@ -64,3 +64,29 @@ The latest entry is shown to Claude at the start of every session.
 - Next: founder runs the pulls and `npm run record-voices`, verifies tags, commits the JSON
   (closes T-005 "Done when"); UI replay (AC-005.1-AC-005.4) is T-003.
 - Review fixes (2026-10-30): redirect refused and timeouts in the client; loopback bypass tests; one timestamp per run and unchanged entries reused; per-ancestor failure isolation with non-zero exit; stale ids dropped and checked; --allow-unverified required for unverified tags; T-005 marked [~].
+
+## 2026-10-30 — T-004: GPT-2 speaks, with ghost words (partial: real-model check pending)
+- Done: real inference worker (`src/worker/`: module worker, message host with `load`,
+  `cancel-load`, `generate`, `cancel`; transformers.js 4.3.1 adapter; ghost-word top-k from the
+  step's logits at the sampling temperature, chosen token excluded; blocked-word list via
+  `bad_words_ids`; 60-token and end-of-text stop; WebAssembly when asked (`backend`) or without
+  a WebGPU adapter, WebAssembly fallback if WebGPU cannot load); ONNX Runtime `.wasm` self-hosted
+  under `ort/` (copied at build time, the jsDelivr fallback in the library rewritten away, build
+  fails if it reappears); CSP `connect-src` has `https://huggingface.co` (TODO: T-001 report
+  confirms CDN hosts); ghost-words UI (faint alternatives under each token, probability on hover
+  and focus, one arrow-key tab stop, "almost: X, Y, Z" list for screen readers outside any live
+  region), "Unfiltered 2019 model" label, download size in the loading line, `?debug` console
+  timings; dev-only `?model-gpt2=<repo>@<40-hex commit>` override (absent from production
+  bundles, tested); Trusted Types policy for the worker URL (found by an e2e run: a plain
+  `new Worker(url)` is blocked by the CSP).
+- Decisions: GPT-2 `repositoryId`/`revision` stay `null` ("verify: T-001"), so the worker refuses
+  to load and the UI says it could not come tonight; revision must be a full commit hash.
+  `ancestors.json` gains `dtypes` (GPT-2: fp16 on WebGPU, q8 on WebAssembly, unverified) and
+  `settings` 60 tokens at temperature 0.7. The library samples at temperature 1; the recorder
+  applies the real temperature itself so shown probabilities are the sampled distribution
+  (top-k 50 of the library's sampler still applies). `cancel-load` cannot abort a download in
+  4.3.1: the result is discarded and the model disposed.
+- Not verified here (no GPU, no huggingface.co): a real model load and generation, the
+  dtype files that exist in the repo, WebGPU vs WebAssembly speed, the CDN hosts for the CSP.
+- Next: founder pins repository and revision (or tries `?model-gpt2=` in `npm run dev` with
+  `?debug`), confirms dtypes, the CDN hosts, and the manual check on the reference laptop.

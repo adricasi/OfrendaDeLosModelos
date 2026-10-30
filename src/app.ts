@@ -6,6 +6,8 @@ import { renderAltar, showLoadError } from "./ui/altar.js";
 import { wireOffering } from "./ui/offering.js";
 import { createRitualView } from "./ui/ritual-view.js";
 import { withDebugLogging } from "./debug/debug-log.js";
+import inferenceWorkerUrl from "./worker/inference.worker.ts?worker&url";
+import { workerScriptUrl } from "./worker/trusted-worker.js";
 import { lazyPort, portForWorker } from "./worker/worker-port.js";
 
 /**
@@ -16,7 +18,10 @@ import { lazyPort, portForWorker } from "./worker/worker-port.js";
 export function createProductionDependencies(debug: boolean): RitualDependencies {
   const port = lazyPort(() =>
     portForWorker(
-      new Worker(new URL("./worker/inference.worker.ts", import.meta.url), { type: "module" }),
+      // Trusted Types (CSP) require the script URL to pass through the worker policy.
+      new Worker(workerScriptUrl(new URL(inferenceWorkerUrl, location.href)), {
+        type: "module",
+      }),
     ),
   );
   return {

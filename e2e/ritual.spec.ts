@@ -288,3 +288,30 @@ test("negative control: the privacy assertion catches a leaking fetch and beacon
   expect(() => expectNoRequestCarries(bodyOnly, OWN_QUESTION)).toThrow();
   expect(() => expectNoRequestCarries({ requests: [], websockets: ["ws://x"] }, "q")).toThrow();
 });
+
+test("the real worker build: GPT-2 without a pinned revision cannot come, and nothing leaves (AC-003.3, NFR-002)", async ({
+  page,
+  baseURL,
+}) => {
+  const traffic = trackRequests(page);
+  const logged: string[] = [];
+  page.on("console", (message) => logged.push(message.text()));
+  await page.goto("/OfrendaDeLosModelos/?debug");
+  await expect(page.locator("#places > li")).toHaveCount(5);
+  await expect(page.locator("html")).not.toHaveAttribute("data-model-worker", "fake");
+
+  await page.getByRole("textbox", { name: "Your own question" }).fill(OWN_QUESTION);
+  await page.getByRole("button", { name: "Offer it to the altar" }).click();
+
+  const gpt2 = page.locator('.voice[data-step-id="gpt-2"]');
+  await expect(gpt2).toHaveAttribute("data-state", "unavailable");
+  await expect(gpt2.locator(".voice-status")).toHaveText("This ancestor could not come tonight.");
+  await expect(gpt2.locator(".voice-caveat")).toHaveText("Unfiltered 2019 model");
+  await expect(page.locator("#ritual-end")).not.toHaveText("");
+
+  // Nothing but this site was contacted (worker-initiated requests are not in this list).
+  // ?debug logs why: the worker answered, it did not crash (NFR-007).
+  await expect.poll(() => logged.join("\n")).toContain("no pinned repository and revision");
+  expectOnlySameOrigin(traffic, baseURL);
+  expectNoRequestCarries(traffic, OWN_QUESTION);
+});
