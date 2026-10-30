@@ -14,6 +14,11 @@
 //  - src/utils/dtypes.js: dtype suffixes and per-session dtype objects (selectDtype).
 //  - src/models/session_config.js + registry.js: gemma4 loaded via AutoModelForCausalLM runs
 //    text-only with sessions embed_tokens and decoder_model_merged (per-session dtype keys).
+//  - src/models/gemma4/modeling_gemma4.js: Gemma4ForConditionalGeneration (fallback loader); it is
+//    in the dist export list. Its type ImageAudioTextToText (session_config.js) also loads
+//    vision_encoder and audio_encoder sessions unless text-only, so the fallback dtype map adds
+//    those keys; generation uses the same decoder_prepare_inputs_for_generation path with text-only
+//    processor inputs (src/models/modeling_utils.js).
 //  - src/models/gemma4/processing_gemma4.js: Processor.apply_chat_template(messages, options),
 //    and processor(text, images, audio, options) returns tokenizer inputs.
 
@@ -349,6 +354,26 @@ function smallestFourBit(variants) {
   return any[0]?.[0] ?? null;
 }
 
+function syncDtypeText() {
+  const decoder = $("gemma-dtype-decoder").value;
+  const embed = $("gemma-dtype-embed").value;
+  $("gemma-dtype-json").value = JSON.stringify(
+    { embed_tokens: embed, decoder_model_merged: decoder },
+    null,
+    2,
+  );
+}
+
+function readDtypeMap() {
+  const map = JSON.parse($("gemma-dtype-json").value);
+  if (!map || typeof map !== "object" || Array.isArray(map))
+    throw new Error("dtype map must be a JSON object");
+  for (const [k, v] of Object.entries(map)) {
+    if (typeof v !== "string" || !v) throw new Error(`dtype for ${k} must be a non-empty string`);
+  }
+  return map;
+}
+
 async function inspectPicked() {
   const gpt2Id = $("gpt2-id").value;
   const gemmaId = $("gemma-id").value;
@@ -376,7 +401,12 @@ async function inspectPicked() {
     const d = await guarded("inspect gemma", () => inspectModel(gemmaId));
     if (d) {
       state.gemmaInfo = d;
-      const v = onnxVariants(d.siblings, ["decoder_model_merged", "embed_tokens"]);
+      const v = onnxVariants(d.siblings, [
+        "decoder_model_merged",
+        "embed_tokens",
+        "vision_encoder",
+        "audio_encoder",
+      ]);
       state.gemmaVariants = v;
       fillDtypeSelect(
         $("gemma-dtype-decoder"),
@@ -384,6 +414,7 @@ async function inspectPicked() {
         smallestFourBit(v.decoder_model_merged),
       );
       fillDtypeSelect($("gemma-dtype-embed"), v.embed_tokens, smallestFourBit(v.embed_tokens));
+      syncDtypeText();
       report.models.gemma4 = {
         id: d.id,
         sha: d.sha,
@@ -615,12 +646,10 @@ async function runGemma() {
   if (!state.gemmaInfo) await inspectPicked();
   const info = state.gemmaInfo;
   if (!info) throw new Error("No Gemma 4 model inspected; run section 2 first");
-  const { AutoProcessor, AutoModelForCausalLM, TextStreamer } = tjs;
+  const { AutoProcessor, AutoModelForCausalLM, Gemma4ForConditionalGeneration, TextStreamer } = tjs;
 
-  const decoder = $("gemma-dtype-decoder").value;
-  const embed = $("gemma-dtype-embed").value;
-  if (!decoder || !embed) throw new Error("No decoder/embed dtype available for this repo");
-  const dtype = { embed_tokens: embed, decoder_model_merged: decoder };
+  // The free-text map is the source of truth (the dropdowns only pre-fill it).
+  const dtype = readDtypeMap();
 
   const progress = makeProgress("gemma-progress", "gemma-progress-text");
   const tLoad = nowMs();
@@ -628,12 +657,39 @@ async function runGemma() {
     revision: info.sha,
     progress_callback: progress.cb,
   });
-  const model = await AutoModelForCausalLM.from_pretrained(info.id, {
-    revision: info.sha,
-    device: "webgpu",
-    dtype,
-    progress_callback: progress.cb,
-  });
+  let model = null;
+  let loader = null;
+  let usedDtype = dtype;
+  const loaderErrors = [];
+  try {
+    model = await AutoModelForCausalLM.from_pretrained(info.id, {
+      revision: info.sha,
+      device: "webgpu",
+      dtype,
+      progress_callback: progress.cb,
+    });
+    loader = "AutoModelForCausalLM (text-only sessions)";
+  } catch (err) {
+    loaderErrors.push({
+      loader: "AutoModelForCausalLM",
+      error: err instanceof Error ? err.message : String(err),
+    });
+    recordError("gemma4 load AutoModelForCausalLM", err);
+    if (!Gemma4ForConditionalGeneration) throw err;
+    // Fallback: also loads vision/audio encoders, so pin their dtype to the smallest available.
+    usedDtype = { ...dtype };
+    for (const comp of ["vision_encoder", "audio_encoder"]) {
+      const options = Object.entries(state.gemmaVariants?.[comp] ?? {}).sort((x, y) => x[1] - y[1]);
+      if (!(comp in usedDtype) && options[0]) usedDtype[comp] = options[0][0];
+    }
+    model = await Gemma4ForConditionalGeneration.from_pretrained(info.id, {
+      revision: info.sha,
+      device: "webgpu",
+      dtype: usedDtype,
+      progress_callback: progress.cb,
+    });
+    loader = "Gemma4ForConditionalGeneration (fallback)";
+  }
   const loadMs = nowMs() - tLoad;
   setText("gemma-stream", "");
 
@@ -675,8 +731,9 @@ async function runGemma() {
     sha: info.sha,
     license: info.license,
     device: "webgpu",
-    modelClass: "AutoModelForCausalLM (text-only sessions)",
-    dtype,
+    loaderUsed: loader,
+    loaderErrors,
+    dtype: usedDtype,
     loadMs: Math.round(loadMs),
     downloadBytes: bytes,
     fileSizes: summarizeFiles(progress.files),
@@ -733,6 +790,8 @@ function init() {
   wire("btn-inspect", "inspect", inspectPicked);
   wire("btn-gpt2", "gpt2", runGpt2);
   wire("btn-gpt2-clear", "gpt2 clear cache", () => clearCache("gpt2"));
+  $("gemma-dtype-decoder").addEventListener("change", syncDtypeText);
+  $("gemma-dtype-embed").addEventListener("change", syncDtypeText);
   wire("btn-gemma", "gemma4", runGemma);
   wire("btn-gemma-clear", "gemma clear cache", () => clearCache("gemma"));
   wire("btn-hosts", "hosts", () => Promise.resolve(computeHosts()));

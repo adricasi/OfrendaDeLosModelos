@@ -145,6 +145,11 @@
         embed_tokens dtype
         <select id="gemma-dtype-embed"></select>
       </label>
+      <label>
+        dtype map used for loading (JSON, editable; type the right names from the listed ONNX files
+        if the dropdowns are empty)
+        <textarea id="gemma-dtype-json" rows="4" cols="50" spellcheck="false"></textarea>
+      </label>
       <div id="gemma-files" class="note"></div>
       <button id="btn-gemma" type="button">Load Gemma 4 E2B on WebGPU and ask</button>
       <button id="btn-gemma-clear" type="button">Clear cached Gemma files</button>
