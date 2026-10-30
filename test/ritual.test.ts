@@ -80,14 +80,7 @@ describe("ritual order (design D-4)", () => {
     const { steps, view } = await setup();
     const end = await runRitual(steps, offered, view, new AbortController().signal);
     expect(end).toBe("completed");
-    expect(view.begun).toEqual([
-      "gpt-2",
-      "gemma-1",
-      "gemma-2",
-      "gemma-3",
-      "gemma-4-e2b",
-      "medium",
-    ]);
+    expect(view.begun).toEqual(["gpt-2", "gemma-1", "gemma-2", "gemma-3", "gemma-4-e2b", "medium"]);
     expect(view.events[0]).toBe("start");
     expect(view.events.at(-1)).toBe("finish:completed");
   });
