@@ -27,3 +27,17 @@ The latest entry is shown to Claude at the start of every session.
   revisions and generation settings are `null` pending T-001/T-004.
 - Next: founder merges and sets Pages Source to "GitHub Actions"; verify the live URL with the
   CSP in Chrome (console clean); then T-003.
+
+## 2026-10-30 — T-005: Recording tool (partial: tool done, voices not yet recorded)
+- Done: `npm run record-voices` (`scripts/ollama.ts`, `record.ts`, `record-voices.ts`, config,
+  compiled with `scripts/tsconfig.json`, no new dependencies); `src/data/recorded-voices.ts`
+  (schema, validation, deterministic serialisation); placeholder `public/data/recorded-voices.json`
+  (empty); 32 tests with a fake Ollama on 127.0.0.1 (AC-013.1-AC-013.3, loopback only, validation,
+  deterministic output); README section.
+- Decisions: answers recorded in English and Spanish per question; medium phase supported but
+  disabled until `scripts/medium-prompt.txt` exists (T-006), and it sees only recorded answers
+  (GPT-2 is live in the browser); skipped ancestors keep earlier recordings.
+- Issues: Ollama tags are unverified candidates; request fields checked against Ollama
+  docs/api.md and docs/modelfile.mdx (main branch), not against a running Ollama.
+- Next: founder runs the pulls and `npm run record-voices`, verifies tags, commits the JSON
+  (closes T-005 "Done when"); UI replay (AC-005.1-AC-005.4) is T-003.

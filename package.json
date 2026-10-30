@@ -16,7 +16,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "record-voices": "tsc -p scripts/tsconfig.json && node node_modules/.cache/record-voices/scripts/record-voices.js"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
