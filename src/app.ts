@@ -39,7 +39,13 @@ export function createProductionDependencies(
 }
 
 /** Renders the altar and connects the offering form to the ritual sequencer. */
-export function startAltar(doc: Document, data: AltarData, deps: RitualDependencies): void {
+/** `onRitualCompleted` runs after a ritual that ended as completed (not stopped, not ended early). */
+export function startAltar(
+  doc: Document,
+  data: AltarData,
+  deps: RitualDependencies,
+  onRitualCompleted?: () => void,
+): void {
   renderAltar(doc, data);
   if (deps.webgpu === false) showBrowserNote(doc, NO_WEBGPU_MESSAGE);
   const runner = new RitualRunner(buildRitualPlan(data.ancestors, deps), createRitualView(doc));
@@ -49,6 +55,9 @@ export function startAltar(doc: Document, data: AltarData, deps: RitualDependenc
       if (ritual === null) return;
       form.setRunning(true);
       ritual
+        .then((end) => {
+          if (end === "completed") onRitualCompleted?.();
+        })
         .catch((error: unknown) => {
           showLoadError(doc, error);
         })

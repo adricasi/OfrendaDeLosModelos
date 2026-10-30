@@ -635,6 +635,7 @@ textarea:focus-visible {
 }
 
 .browser-note,
+.offline-note,
 .cultural-review {
   margin: var(--space-2) 0;
   padding: var(--space-2) var(--space-3);
