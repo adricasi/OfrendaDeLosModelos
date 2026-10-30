@@ -2,14 +2,17 @@
   "packages": [
     {
       "name": "@csstools/color-helpers",
+      "version": "6.1.2",
       "reason": "MIT-0 is MIT without the attribution clause; dev-only (jsdom/CSS tooling), not shipped"
     },
     {
       "name": "@csstools/css-syntax-patches-for-csstree",
+      "version": "1.1.16",
       "reason": "MIT-0 is MIT without the attribution clause; dev-only, not shipped"
     },
     {
       "name": "mdn-data",
+      "version": "2.27.1",
       "reason": "CC0-1.0 is a public-domain dedication; dev-only (CSS tooling data), not shipped"
     }
   ]
