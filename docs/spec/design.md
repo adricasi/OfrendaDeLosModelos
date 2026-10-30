@@ -72,7 +72,7 @@ No visitor data is stored (NFR-002). The question lives only in page memory.
   `worker-src 'self'` (no blob workers); `connect-src 'self' https://huggingface.co` plus the
   model download host(s) [TODO: T-001's report confirms the exact CDN hosts Hugging Face
   redirects model files to; add them then]; `img-src 'self' data: blob:`;
-  `style-src 'self'`; `object-src 'none'`; `base-uri 'self'`;
+  `style-src 'self'`; `font-src 'self'` (the two self-hosted OFL fonts in `public/fonts/`); `object-src 'none'`; `base-uri 'self'`;
   `require-trusted-types-for 'script'; trusted-types ofrenda-worker` (the one policy, which
   vouches only for the inference worker's URL). (`frame-ancestors` has no effect in a meta CSP;
   accepted.) ONNX Runtime's WebAssembly files are served from the site itself, not a CDN.

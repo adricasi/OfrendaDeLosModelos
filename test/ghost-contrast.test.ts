@@ -23,13 +23,6 @@ function contrast(a: Rgb, b: Rgb): number {
   return (light + 0.05) / (dark + 0.05);
 }
 
-/** The colour of text drawn at `opacity` over a background. */
-function blend(text: Rgb, background: Rgb, opacity: number): Rgb {
-  return text.map((c, i) =>
-    Math.round(c * opacity + (background[i] ?? 0) * (1 - opacity)),
-  ) as unknown as Rgb;
-}
-
 describe("ghost word contrast (WCAG AA 4.5:1)", () => {
   const css = read("src/styles.css");
   const rule = (selector: string): string => {
@@ -39,14 +32,27 @@ describe("ghost word contrast (WCAG AA 4.5:1)", () => {
     return match[1] ?? "";
   };
 
-  it("the resting ghost words are readable on the answer's background", () => {
+  it("the resting ghost words are readable on the answer's background, with no opacity trick", () => {
     const body = rule(".ghosts");
-    expect(body).toMatch(/color:\s*var\(--text-muted\)/);
-    const opacity = Number(/opacity:\s*([\d.]+)/.exec(body)?.[1]);
-    const background = token(css, "night-soft");
-    expect(
-      contrast(blend(token(css, "text-muted"), background, opacity), background),
-    ).toBeGreaterThanOrEqual(4.5);
+    expect(body).toMatch(/color:\s*var\(--ghost\)/);
+    expect(body).not.toMatch(/opacity/);
+    expect(contrast(token(css, "ghost"), token(css, "night-soft"))).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it("ghost words are fainter than the chosen word, and brighter on hover and focus", () => {
+    const luminanceOf = (name: string): number => luminance(token(css, name));
+    expect(luminanceOf("ghost")).toBeLessThan(luminanceOf("text"));
+    expect(luminanceOf("ghost")).toBeLessThan(luminanceOf("text-muted"));
+    expect(css).toMatch(/\.token:focus \.ghosts \{\s*color: var\(--text-muted\)/);
+  });
+
+  it("ghost text is at least 0.8rem and the probability at least 0.75rem", () => {
+    expect(Number(/font-size:\s*([\d.]+)rem/.exec(rule(".ghosts"))?.[1])).toBeGreaterThanOrEqual(
+      0.8,
+    );
+    expect(Number(/font-size:\s*([\d.]+)rem/.exec(rule(".ghost-p"))?.[1])).toBeGreaterThanOrEqual(
+      0.75,
+    );
   });
 
   it("the probability bubble is readable", () => {

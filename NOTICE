@@ -3,6 +3,13 @@ Ofrenda de los Modelos
 The source code in this repository is released under the MIT licence (see LICENSE).
 All art on the page is original CSS and SVG and is MIT-licensed with the code.
 
+Not MIT: the fonts in public/fonts/ (SIL Open Font License 1.1)
+-----------------------------------------------------------------
+  - Gloock, Copyright 2022 The Gloock Project Authors (https://github.com/duartp/gloock).
+  - Bricolage Grotesque, Copyright 2022 The Bricolage Grotesque Project Authors
+    (https://github.com/ateliertriay/bricolage).
+Subset to Latin and self-hosted; licence texts and sources in public/fonts/.
+
 Not MIT code: public/data/recorded-voices.json (added in a later task)
 -----------------------------------------------------------------------
 This file will contain model outputs, recorded on the builder's laptop and shown as

@@ -19,13 +19,19 @@ National Geographic (overview).
 
 | Element | Where it appears | Question for the reviewer |
 |---|---|---|
-| Altar in three levels | The altar section (`index.html`, `.level-top/middle/base`) | Levels and their order acceptable? |
-| Papel picado banner | Above the altar | Cut-out motifs (a diamond, two circles and a small square on each flag; no skulls) fine? |
-| Candles | Top level, base; one flickers while an ancestor speaks | OK? |
-| Glass of water | Base | OK? |
-| Cempasúchil (marigold) petals and bed | Base, falling petals | OK? |
-| Portrait frames with an abstract silhouette | One per ancestor | Models are shown as "ancestors"; no real person is depicted. OK? |
-| Dark (empty) frames | "The ones who cannot come" | Used for retired closed models, never for people. OK? |
+| Altar in three stepped levels, an embroidered cloth (bordado) along the edge of each | The altar section (`index.html`, `.level-top/middle/base`) | Levels and their order acceptable? Gemma 4, "la que cuida el altar", is alone on the top level; the four elders are on the level below. |
+| Arco de cempasúchil (marigold arch) framing the altar | Around the altar (drawn in `src/ui/art.ts`) | Is an arch of marigolds appropriate here (it is common in Oaxaca and Michoacán altars)? |
+| Papel picado banners on two strings | Above the altar | Cut-outs are flowers, birds and diamonds, no skulls. Colours: rosa mexicano, turquoise, purple, yellow, green, orange. OK? |
+| Veladoras (glass-jar candles) of uneven height | Top level, base level; one lights at a place while that ancestor speaks | OK? |
+| Glass of water, a small bowl of salt, pan de muerto | Base level | The four elements and the bread: is the arrangement and drawing acceptable? |
+| Copal burner with two wisps of smoke | Base level | OK? |
+| Cempasúchil petals: a path of petals leading to the altar, a bed of marigolds, and a few petals drifting in the air | Floor and base level; the drifting ones are an animation | Is the petal path a fair rendering of the path that guides the dead? |
+| Petate (woven mat) | Under the altar | OK? |
+| Abstract cut-paper emblems in place of portraits (an eight-point star flower for GPT, a six-petal flower for Gemma, with one small cut per version) | One per ancestor | Models are shown as "ancestors"; no real person, no face, no skull is depicted. OK? |
+| Dark (empty) frames, hung apart on the wall with a cord | "The ones who cannot come" | Used for retired closed models, never for people. OK? |
+
+Style: a dark room lit by candles ("Noche de velas en una casa oaxaqueña"); the only glow comes from the candles. No Halloween
+or sugar-skull costume styling.
 
 ## 2. Spanish texts
 
@@ -54,7 +60,7 @@ National Geographic (overview).
 | "Everything runs on your device. No question or photo is sent anywhere: there is no server, no analytics and nothing is stored." | About panel |
 | "Cultural review pending: the Spanish texts and cultural details of this altar have not yet been reviewed by a reader of Mexican background. Corrections are welcome." | About panel, visible only while the flag is true |
 | "Where the ofrenda comes from" and the five source lines (`usedFor`: "The tradition itself, recognised by UNESCO in 2008"; "The four elements: earth, wind (papel picado), fire (candles) and water"; "Marigolds (cempasúchil) that light the way"; "Altar levels, which vary by region"; "General overview of the celebration") | About panel |
-| "All art on this page is original CSS and SVG, made for this project and MIT-licensed with the code. It uses your system fonts. No third-party images, fonts or scripts are included." | About panel, "Art and fonts" |
+| "All art on this page is original CSS and SVG, made for this project and MIT-licensed with the code. The only third-party assets are the two fonts below, self-hosted and licensed under the SIL Open Font License 1.1. No third-party images or scripts are included." plus the credits for Gloock (headings) and Bricolage Grotesque (text) | About panel, "Art and fonts" |
 | Model lines, e.g. "Gemma 2 (recorded). Model licence: Gemma Terms of Use; output reproduced with attribution." | About panel |
 | "La que cuida el altar is Gemma 4 E2B, live on your device or, in browsers without WebGPU, recorded." | About panel |
 

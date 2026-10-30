@@ -1,37 +1,86 @@
-/* Design tokens. Components use these, never raw values. */
+/*
+ * Noche de velas en una casa oaxaqueña: a dark, warm room where the light is the decoration.
+ * Design tokens first; components use these, never raw values. The scene (arch, papel picado,
+ * levels, candles, offerings) lives in altar-art.css. Text pairs are checked by
+ * test/contrast.test.ts and test/ghost-contrast.test.ts (WCAG AA).
+ */
+
+@font-face {
+  font-family: Gloock;
+  src: url("/fonts/Gloock-latin.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Bricolage Grotesque";
+  src: url("/fonts/BricolageGrotesque-latin.woff2") format("woff2");
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
-  --night: #1a1030;
-  --night-soft: #271a47;
-  --cloth: #3b2466;
-  --text: #f6efe3;
-  --text-muted: #cfc3e0;
-  --link: #ffd27a;
-  --marigold: #f59e0b;
-  --marigold-deep: #d97706;
-  --marigold-light: #fcd34d;
-  --wax: #f4ecd8;
-  --flame-core: #fff3c4;
-  --flame-edge: #ff9f1c;
-  --water: #9fd8f0;
+  /* The room */
+  --night: #17101c;
+  --night-soft: #241830;
+  --night-raised: #2e2039;
+  --cloth: #4a1a3c;
+  --text: #f4e9d8;
+  --text-muted: #cbbfb0;
+  --ghost: #a89c8f;
+  --link: #f2a33a;
   --error: #ffb4a8;
-  --glass: rgb(255 255 255 / 0.28);
-  --picado-1: #e8508a;
-  --picado-2: #2ec4b6;
-  --picado-3: #9b6bdc;
-  --picado-4: #f7b538;
-  --frame-wood: #8b5a2b;
-  --frame-gold: #d4a64a;
-  --dark-frame: #0d0818;
+
+  /* The one hero colour: cempasúchil. The candle glow is this light at low alpha. */
+  --marigold: #f2a33a;
+  --marigold-deep: #d77a1f;
+  --marigold-light: #ffc76b;
+  --glow: #ffb547;
+  --glow-soft: rgb(255 181 71 / 0.16);
+
+  /* Papel picado fills: decoration only, never body text */
+  --picado-1: #e4007c;
+  --picado-2: #1fa6a0;
+  --picado-3: #7b4aa8;
+  --picado-4: #f7d046;
+  --picado-5: #5fa055;
+  --picado-6: #e8761f;
+  --leaf: #3f7a3c;
+  --leaf-light: #5fa055;
+
+  /* Things on the altar */
+  --wax: #f4e9d8;
+  --flame-core: #fff7da;
+  --flame-mid: #ffd066;
+  --flame-edge: #ff8a1c;
+  --water: #a9dcef;
+  --clay: #b5683a;
+  --clay-dark: #7e4224;
+  --petate: #8c6a3c;
+  --petate-dark: #5c4226;
+  --bread: #d9a35c;
+  --bread-dark: #a86a32;
+  --salt: #fbf6ec;
+  --paper: #f4e9d8;
+  --ink: #2a1a22;
+  --dark-frame: #0c070f;
+
+  /* Type */
+  --font: "Bricolage Grotesque", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: Gloock, Georgia, "Times New Roman", serif;
+
+  /* Space, shape, time */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 1rem;
   --space-4: 1.5rem;
   --space-5: 2.5rem;
+  --space-6: 4rem;
   --radius: 0.5rem;
-  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-display: Georgia, "Times New Roman", serif;
-  --flicker-duration: 2.6s;
-  --petal-duration: 14s;
+  --ease-settle: cubic-bezier(0.2, 0.7, 0.3, 1);
+  --breath-duration: 7.3s;
 }
 
 *,
@@ -40,17 +89,38 @@
   box-sizing: border-box;
 }
 
+html {
+  background: var(--night);
+}
+
 body {
+  position: relative;
   margin: 0;
   min-height: 100vh;
-  background: radial-gradient(ellipse at top, var(--night-soft), var(--night) 70%);
+  background:
+    radial-gradient(ellipse 70% 40% at 50% 0%, var(--glow-soft), transparent 70%),
+    radial-gradient(ellipse 120% 60% at 50% 100%, rgb(74 26 60 / 0.35), transparent 70%);
   color: var(--text);
   font-family: var(--font);
-  line-height: 1.5;
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  overflow-x: hidden;
+}
+
+/* Paper grain: a faint noise over the whole room, behind the content (never over text). */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 a {
   color: var(--link);
+  text-underline-offset: 0.2em;
 }
 
 a:focus-visible,
@@ -72,6 +142,7 @@ a:focus-visible,
   position: absolute;
   left: var(--space-3);
   top: -4rem;
+  z-index: 10;
   padding: var(--space-2) var(--space-3);
   background: var(--text);
   color: var(--night);
@@ -82,8 +153,9 @@ a:focus-visible,
   top: var(--space-3);
 }
 
+/* Header */
 .site-header {
-  padding: var(--space-4) var(--space-3) 0;
+  padding: var(--space-5) var(--space-3) var(--space-3);
   text-align: center;
 }
 
@@ -91,18 +163,47 @@ a:focus-visible,
   margin: 0;
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: clamp(1.75rem, 5vw, 2.75rem);
-  color: var(--marigold-light);
+  font-size: clamp(2.4rem, 7vw, 4.4rem);
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  text-wrap: balance;
+}
+
+/* A cut-paper ornament under the title: a diamond between two thin rules. */
+.ornament {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  width: min(14rem, 60%);
+  margin: var(--space-3) auto 0;
+}
+
+.ornament::before,
+.ornament::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--marigold);
+}
+
+.ornament span {
+  width: 0.6rem;
+  height: 0.6rem;
+  background: var(--marigold);
+  transform: rotate(45deg);
 }
 
 .statement {
-  max-width: 40rem;
-  margin: var(--space-2) auto;
+  max-width: 38rem;
+  margin: var(--space-3) auto var(--space-2);
   color: var(--text-muted);
+  font-size: 1.1875rem;
+  text-wrap: balance;
 }
 
 main {
-  max-width: 60rem;
+  max-width: 64rem;
   margin: 0 auto;
   padding: var(--space-3);
 }
@@ -111,326 +212,28 @@ main {
   padding: var(--space-3);
   border: 2px solid var(--picado-1);
   border-radius: var(--radius);
-}
-
-/* The altar */
-.altar {
-  position: relative;
-  padding-bottom: var(--space-3);
-}
-
-.papel-picado {
-  display: block;
-  width: 100%;
-  height: auto;
-  max-height: 7.5rem;
-}
-
-.papel-picado .string {
-  fill: none;
-  stroke: var(--text-muted);
-  stroke-width: 1.5;
-}
-
-.flag-body {
-  fill: var(--picado-1);
-}
-
-.flag-cut {
-  fill: var(--night);
-}
-
-.flag-2 .flag-body {
-  fill: var(--picado-2);
-}
-
-.flag-3 .flag-body {
-  fill: var(--picado-3);
-}
-
-.flag-4 .flag-body {
-  fill: var(--picado-4);
-}
-
-.level {
-  position: relative;
-  margin: 0 auto;
-  background: var(--cloth);
-  border-top: 4px solid var(--marigold-deep);
-  padding: var(--space-3);
-}
-
-.level-top {
-  width: 50%;
-  min-height: 5rem;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-}
-
-.level-middle {
-  width: 80%;
-  background: color-mix(in srgb, var(--cloth) 85%, var(--night));
-}
-
-.level-base {
-  width: 100%;
-  padding-bottom: var(--space-5);
-  overflow: hidden;
-}
-
-.candle-row,
-.offerings {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  gap: var(--space-4);
-}
-
-.candle {
-  position: relative;
-  display: inline-block;
-  width: 1rem;
-  height: 3rem;
-  margin-top: 1.75rem;
-  background: var(--wax);
-  border-radius: 0.2rem 0.2rem 0 0;
-}
-
-.flame {
-  position: absolute;
-  left: 50%;
-  bottom: 100%;
-  width: 0.7rem;
-  height: 1.4rem;
-  margin-left: -0.35rem;
-  background: radial-gradient(ellipse at 50% 70%, var(--flame-core), var(--flame-edge) 70%);
-  border-radius: 50% 50% 50% 50% / 65% 65% 35% 35%;
-  transform-origin: 50% 100%;
-  animation: flicker var(--flicker-duration) ease-in-out infinite alternate;
-}
-
-.candle:nth-child(2) .flame {
-  animation-delay: -0.9s;
-}
-
-.candle:nth-child(3) .flame {
-  animation-delay: -1.7s;
-}
-
-.glass-of-water {
-  position: relative;
-  display: inline-block;
-  width: 2rem;
-  height: 3rem;
-  background: var(--glass);
-  border: 2px solid var(--water);
-  border-radius: 0.2rem 0.2rem 0.6rem 0.6rem;
-  overflow: hidden;
-}
-
-.water {
-  position: absolute;
-  inset: 25% 0 0;
-  background: var(--water);
-  opacity: 0.8;
-}
-
-/* Places for the ancestors */
-.places {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--space-3);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.frame {
-  margin: 0;
-  width: 8.5rem;
-  padding: var(--space-2);
-  background: var(--frame-wood);
-  border: 3px solid var(--frame-gold);
-  border-radius: var(--radius);
-  text-align: center;
-}
-
-.portrait {
-  background: var(--night);
-  border-radius: 0.25rem;
-  aspect-ratio: 5 / 6;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.portrait svg {
-  width: 70%;
-  fill: var(--marigold-light);
-  opacity: 0.85;
-}
-
-.frame figcaption {
-  display: flex;
-  flex-direction: column;
-  margin-top: var(--space-2);
-  background: var(--night);
-  border-radius: 0.25rem;
-  padding: var(--space-1) var(--space-2);
-  font-size: 0.875rem;
-}
-
-.frame .name {
-  font-size: 1rem;
-  color: var(--marigold-light);
-}
-
-.frame .year,
-.frame .kind,
-.frame .maker {
-  color: var(--text-muted);
-}
-
-.place-recorded .frame {
-  border-style: dashed;
-}
-
-/* Dark frames: where the closed models would be */
-.dark-frames-section h2,
-.about h2 {
-  font-family: var(--font-display);
-  font-weight: 400;
-  color: var(--marigold-light);
-}
-
-.dark-frames {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.frame-dark {
-  background: var(--dark-frame);
-  border-color: var(--text-muted);
-}
-
-.frame-dark .portrait {
-  background: #000;
-  min-height: 4rem;
-}
-
-.frame-dark figcaption {
-  background: transparent;
-}
-
-.frame-dark .retired,
-.frame-dark .never {
-  display: block;
-}
-
-/* Cempasúchil petals and the marigold bed */
-.marigold-bed {
-  position: absolute;
-  inset: auto 0 0;
-  height: 1.75rem;
-  background:
-    radial-gradient(circle at 10px 14px, var(--marigold) 0 8px, transparent 9px),
-    radial-gradient(circle at 26px 8px, var(--marigold-deep) 0 8px, transparent 9px),
-    radial-gradient(circle at 42px 16px, var(--marigold-light) 0 7px, transparent 8px);
-  background-size: 48px 28px;
-  background-repeat: repeat-x;
-}
-
-.petals {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.petal {
-  position: absolute;
-  top: -1rem;
-  left: calc(var(--i) * 5.4%);
-  width: 0.55rem;
-  height: 0.9rem;
-  background: var(--marigold);
-  border-radius: 80% 20% 80% 20%;
-  opacity: 0.9;
-  animation: petal-fall var(--petal-duration) linear infinite;
-  animation-delay: calc(var(--i) * -0.8s);
-}
-
-.petal:nth-child(3n) {
-  background: var(--marigold-deep);
-}
-
-.petal:nth-child(3n + 1) {
-  background: var(--marigold-light);
-}
-
-.about {
-  margin-top: var(--space-4);
-  padding: var(--space-3) var(--space-4);
   background: var(--night-soft);
-  border-radius: var(--radius);
 }
 
-.about li {
-  margin-bottom: var(--space-2);
+.browser-note,
+.offline-note,
+.cultural-review {
+  max-width: 44rem;
+  margin: var(--space-2) auto var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--night-soft);
+  border-left: 4px solid var(--marigold);
+  border-radius: 0 var(--radius) var(--radius) 0;
 }
 
-@keyframes flicker {
-  0% {
-    transform: scale(1, 1) rotate(-2deg);
-    opacity: 0.95;
-  }
-  50% {
-    transform: scale(0.92, 1.08) rotate(1.5deg);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1.05, 0.95) rotate(-1deg);
-    opacity: 0.9;
-  }
+/* The offline note is a live region that stays in the page, empty, until it has something to say. */
+.offline-note:empty {
+  margin: 0;
+  padding: 0;
+  border: 0;
 }
 
-@keyframes petal-fall {
-  from {
-    transform: translateY(0) rotate(0deg);
-  }
-  to {
-    transform: translateY(16rem) rotate(240deg);
-  }
-}
-
-@media (max-width: 40rem) {
-  .level-top,
-  .level-middle {
-    width: 100%;
-  }
-}
-
-/* AC-001.3: with reduced motion, candles and petals are shown without animation. */
-@media (prefers-reduced-motion: reduce) {
-  .flame,
-  .petal {
-    animation: none;
-  }
-
-  .petal {
-    top: auto;
-    bottom: 0.25rem;
-    opacity: 0.8;
-  }
-}
-
-/* Offering form and ritual (T-003). */
+/* Offering form and ritual */
 .offering,
 .ritual {
   max-width: 44rem;
@@ -438,39 +241,141 @@ main {
   padding: 0 var(--space-3);
 }
 
+/* A string of cut-paper pennants divides the sections: five colours, a thin string above. */
+.offering::before,
+.ritual::before {
+  content: "";
+  display: block;
+  height: 1.1rem;
+  margin: 0 0 var(--space-4);
+  background:
+    conic-gradient(from -30deg at 0.75rem 100%, var(--picado-1) 0 60deg, transparent 0) 0 0 / 7.5rem
+      1rem repeat-x,
+    conic-gradient(from -30deg at 2.25rem 100%, var(--picado-2) 0 60deg, transparent 0) 0 0 / 7.5rem
+      1rem repeat-x,
+    conic-gradient(from -30deg at 3.75rem 100%, var(--picado-4) 0 60deg, transparent 0) 0 0 / 7.5rem
+      1rem repeat-x,
+    conic-gradient(from -30deg at 5.25rem 100%, var(--picado-3) 0 60deg, transparent 0) 0 0 / 7.5rem
+      1rem repeat-x,
+    conic-gradient(from -30deg at 6.75rem 100%, var(--picado-6) 0 60deg, transparent 0) 0 0 / 7.5rem
+      1rem repeat-x,
+    linear-gradient(var(--text-muted), var(--text-muted)) 0 0 / 100% 1px no-repeat;
+}
+
+.offering h2,
+.ritual h2,
+.dark-frames-section h2,
+.about h2 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(1.7rem, 4vw, 2.2rem);
+  line-height: 1.15;
+  color: var(--text);
+}
+
 .offering fieldset {
   margin: 0 0 var(--space-3);
-  padding: var(--space-3);
-  border: 1px solid var(--text-muted);
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  background: var(--night-soft);
+  border: 1px solid rgb(244 233 216 / 0.22);
   border-radius: var(--radius);
 }
 
 .offering legend {
   padding: 0 var(--space-2);
   font-family: var(--font-display);
-  font-size: 1.15rem;
+  font-size: 1.25rem;
+  color: var(--marigold-light);
 }
 
+/* The language group is its own small panel, apart from the questions below it. */
 .language-choice {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-3);
-  margin-bottom: var(--space-3);
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-4);
+  padding: var(--space-3);
+  background: var(--night);
+  border: 1px dashed rgb(244 233 216 / 0.3);
+  border-radius: var(--radius);
   color: var(--text-muted);
 }
 
-.choice {
-  display: block;
-  padding: var(--space-2) 0;
+.language-choice label {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.5rem;
+  padding: 0 var(--space-3) 0 var(--space-2);
+  color: var(--text);
+  border: 1px solid rgb(244 233 216 / 0.3);
+  border-radius: 999px;
 }
 
-.choice input,
-.language-choice input {
-  width: 1.25rem;
-  height: 1.25rem;
-  margin-right: var(--space-2);
-  vertical-align: middle;
-  accent-color: var(--marigold);
+.language-choice label:has(input:checked) {
+  border-color: var(--marigold);
+  background: var(--night-raised);
+}
+
+.offered-questions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  gap: var(--space-1) var(--space-3);
+}
+
+.choice {
+  display: flex;
+  align-items: flex-start;
+  min-height: 2.5rem;
+  padding: var(--space-2) var(--space-2);
+  border-left: 3px solid transparent;
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+.choice:hover {
+  background: var(--night-raised);
+}
+
+.choice:has(input:checked) {
+  background: var(--night);
+  border-left-color: var(--marigold);
+}
+
+/* Radios: 24 px, a light ring, a marigold dot when chosen (a shape, not only a colour). */
+input[type="radio"] {
+  appearance: none;
+  display: inline-grid;
+  flex: none;
+  place-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin: 0 var(--space-2) 0 0;
+  background: var(--night);
+  border: 2px solid var(--text);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+input[type="radio"]::before {
+  content: "";
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: var(--marigold);
+  transform: scale(0);
+  transition: transform 0.15s;
+}
+
+input[type="radio"]:checked {
+  border-color: var(--marigold);
+}
+
+input[type="radio"]:checked::before {
+  transform: scale(1);
+}
+
+.own-question {
+  margin-top: var(--space-2);
 }
 
 .own-question textarea {
@@ -516,11 +421,22 @@ button {
   font: inherit;
   font-weight: 700;
   cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+button:hover:not(:disabled) {
+  background: var(--marigold-light);
+  border-color: var(--marigold-light);
 }
 
 button.secondary {
   background: transparent;
   color: var(--text);
+  border-color: var(--text);
+}
+
+button.secondary:hover:not(:disabled) {
+  background: var(--night-raised);
   border-color: var(--text);
 }
 
@@ -538,10 +454,12 @@ textarea:focus-visible {
   outline-offset: 3px;
 }
 
+/* The ritual */
 .ritual-question {
   font-family: var(--font-display);
-  font-size: 1.2rem;
-  font-style: italic;
+  font-size: 1.35rem;
+  line-height: 1.35;
+  color: var(--marigold-light);
 }
 
 .ritual-voices {
@@ -550,22 +468,137 @@ textarea:focus-visible {
   padding: 0;
 }
 
+/*
+ * One card per ancestor, cut like the papel picado over the altar: a scalloped edge in the
+ * ancestor's colour, the emblem and a small candle in the header. Gemma 4 and the medium are
+ * larger and warmer: the end of the ritual.
+ */
 .voice {
-  margin-bottom: var(--space-3);
-  padding: var(--space-3);
-  background: var(--night-soft);
-  border-left: 4px solid var(--marigold);
-  border-radius: var(--radius);
+  --voice-tone: var(--marigold);
+  position: relative;
+  margin: 0 0 var(--space-4);
+  padding: 1.8rem var(--space-4) var(--space-4);
+  background:
+    radial-gradient(
+      ellipse 55% 70% at 0 0,
+      color-mix(in srgb, var(--voice-tone) 16%, transparent),
+      transparent 75%
+    ),
+    var(--night-soft);
+  border: 1px solid rgb(244 233 216 / 0.16);
+  border-radius: 0.2rem;
+  box-shadow: 0 0.8rem 1rem -0.8rem #000;
+}
+
+.voice[data-family="gpt"] {
+  --voice-tone: var(--picado-2);
+}
+
+.voice[data-family="gemma"] {
+  --voice-tone: var(--picado-1);
+}
+
+.voice[data-family="medium"] {
+  --voice-tone: var(--marigold);
 }
 
 .voice[data-state="unavailable"],
-.voice[data-state="not-invited"] {
-  border-left-color: var(--text-muted);
+.voice[data-state="not-invited"],
+.voice[data-state="gathering"] {
+  --voice-tone: var(--text-muted);
+}
+
+/* The scalloped paper edge along the top of the card, in the ancestor's colour. */
+.voice::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 0.9rem;
+  background:
+    radial-gradient(circle at 0.5rem 0.2rem, var(--voice-tone) 0.5rem, transparent 0.52rem) 0 0 /
+      1rem 1rem repeat-x,
+    linear-gradient(var(--voice-tone), var(--voice-tone)) 0 0 / 100% 0.2rem no-repeat;
+}
+
+.voice-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.voice-emblem {
+  flex: none;
+  width: 3.2rem;
+}
+
+.voice-emblem .emblem {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0;
+  transform: none;
+}
+
+.voice .voice-emblem .emblem-fill {
+  fill: var(--voice-tone);
+}
+
+.voice-titles {
+  min-width: 0;
+  flex: 1;
+}
+
+.voice-candle {
+  --jar-w: 1.1rem;
+  --h: 1.9rem;
+  margin: 1.5rem 0 0.2rem auto;
+}
+
+/* The candle is lit while the ancestor speaks, and flares when it begins. */
+.voice-candle .flame {
+  opacity: 0;
+  transform: scale(0.4);
+}
+
+.voice[data-state="speaking"] .voice-candle .flame {
+  opacity: 1;
+  transform: none;
+}
+
+.voice[data-state="spoken"] .voice-candle .flame,
+.voice[data-state="recorded"] .voice-candle .flame {
+  opacity: 0.55;
+  transform: scale(0.7);
+}
+
+.voice[data-culmination] {
+  --voice-tone: var(--marigold);
+  margin-top: var(--space-5);
+  padding-top: 2.4rem;
+  background:
+    radial-gradient(ellipse 80% 90% at 50% 0, rgb(255 181 71 / 0.2), transparent 75%),
+    var(--night-raised);
+  border: 1px solid var(--marigold);
+  box-shadow:
+    0 0 0 4px var(--night),
+    0 0 0 5px rgb(242 163 58 / 0.55),
+    0 1.2rem 2rem -1rem #000;
+}
+
+.voice[data-culmination] .voice-name {
+  font-size: 1.8rem;
+}
+
+.voice[data-culmination] .voice-emblem {
+  width: 4.4rem;
 }
 
 .voice-name {
   margin: 0;
   font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.35rem;
+  line-height: 1.2;
 }
 
 .voice-label,
@@ -576,82 +609,14 @@ textarea:focus-visible {
 }
 
 .voice-text {
-  margin: var(--space-2) 0 0;
+  margin: var(--space-3) 0 0;
   white-space: pre-wrap;
-}
-
-/* The candle of the speaking ancestor flickers; the others stay still. */
-.place-candle {
-  display: block;
-  margin: 0 auto;
-  height: 1.5rem;
-  margin-top: 1.25rem;
-}
-
-.place-candle .flame {
-  animation: none;
-  opacity: 0.35;
-}
-
-.place.speaking .place-candle .flame {
-  opacity: 1;
-  animation-name: flicker;
-  animation-duration: var(--flicker-duration);
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
-  animation-direction: alternate;
-}
-
-.place.speaking .frame {
-  outline: 2px solid var(--marigold-light);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .place.speaking .place-candle .flame {
-    animation-name: none;
-  }
-}
-
-/* The medium's words: one block per ancestor inside the medium's own voice. */
-.medium-note {
-  margin-top: var(--space-3);
-  padding-top: var(--space-2);
-  border-top: 1px solid var(--text-muted);
-}
-
-.medium-note h4 {
-  margin: 0;
-  font-family: var(--font-display);
-}
-
-.medium-meaning {
-  margin: var(--space-1) 0 0;
-}
-
-.medium-calaverita {
-  margin: var(--space-2) 0 0;
-  font-style: italic;
-  white-space: pre-line;
-}
-
-.browser-note,
-.offline-note,
-.cultural-review {
-  margin: var(--space-2) 0;
-  padding: var(--space-2) var(--space-3);
-  background: var(--night-soft);
-  border-left: 4px solid var(--marigold);
-  border-radius: var(--radius);
-}
-
-.voice[data-state="gathering"] {
-  border-left-color: var(--text-muted);
 }
 
 /* The caution that goes with GPT-2's answer (AC-003.4). */
 .voice-caveat {
   display: inline-block;
-  margin: var(--space-1) 0 0;
+  margin: var(--space-2) 0 0;
   padding: 0 var(--space-2);
   border: 1px solid var(--marigold-deep);
   border-radius: var(--radius);
@@ -659,60 +624,132 @@ textarea:focus-visible {
   font-size: 0.85rem;
 }
 
+/* The medium's words: small cards, one per ancestor, set down on the altar cloth. */
+.altar-cloth {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: var(--space-4) var(--space-3);
+  margin: var(--space-4) calc(var(--space-2) * -1) 0;
+  padding: 2.6rem var(--space-3) var(--space-4);
+  background: var(--cloth);
+  border-bottom: 3px solid var(--marigold-deep);
+  box-shadow: inset 0 0.6rem 0.8rem -0.4rem rgb(0 0 0 / 0.5);
+}
+
+.altar-cloth .cloth-edge {
+  inset: 0.6rem 0 auto;
+}
+
+.medium-note {
+  position: relative;
+  margin: 0;
+  padding: var(--space-3) var(--space-3) var(--space-3);
+  background: var(--paper);
+  color: var(--ink);
+  border-radius: 0.2rem;
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.4) inset,
+    0 0.6rem 1rem -0.4rem rgb(0 0 0 / 0.7);
+  transform: rotate(var(--tilt, -0.9deg));
+}
+
+.medium-note:nth-of-type(even) {
+  --tilt: 0.8deg;
+}
+
+.medium-note:nth-of-type(3n) {
+  --tilt: -0.4deg;
+}
+
+/* The scalloped cut-paper edge along the top of each card. */
+.medium-note::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 0.7rem;
+  background: radial-gradient(circle at 0.5rem 0, var(--cloth) 0.32rem, transparent 0.34rem) 0 0 /
+    1rem 0.7rem repeat-x;
+}
+
+.medium-note h4 {
+  margin: var(--space-2) 0 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.2rem;
+}
+
+.medium-meaning {
+  margin: var(--space-1) 0 0;
+  font-size: 0.95rem;
+}
+
+.medium-calaverita {
+  margin: var(--space-2) 0 0;
+  font-style: italic;
+  white-space: pre-line;
+  border-left: 3px solid var(--picado-1);
+  padding-left: var(--space-3);
+}
+
 /*
- * Ghost words: what the model almost said, fainter, under each token (AC-004.1).
- * Contrast (WCAG AA 4.5:1, checked by test/ghost-contrast.test.ts): resting ghosts are
- * --text-muted at 0.8 opacity on --night-soft (6.5:1), full strength on hover and focus
- * (9.5:1); the probability is --text on --night (15.8:1).
+ * Ghost words: what the model almost said, fainter, under each token (AC-004.1), so the answer
+ * still reads as one sentence. Each token is a small cell: the word, a thin rule, then up to
+ * three ghosts. Contrast (checked by test/contrast.test.ts and test/ghost-contrast.test.ts):
+ * resting ghosts are --ghost on --night-soft with no opacity trick, --text-muted on hover and
+ * focus; the probability is --text on --night. The probability is always laid out beside its
+ * ghost word (hidden, not removed), so showing it never moves or covers a neighbouring word.
  */
 .token {
   display: inline-block;
   position: relative;
   vertical-align: top;
+  margin: 0 0.35em 0.6rem;
+  padding: 0.15em 0.3em;
   border-radius: 0.25rem;
 }
 
 .token:focus {
   outline: 2px solid var(--marigold-light);
-  outline-offset: 1px;
+  outline-offset: 0;
 }
 
 .token-text {
   display: block;
+  padding-bottom: 0.1em;
+  border-bottom: 1px solid rgb(244 233 216 / 0.3);
 }
 
 .ghosts {
   display: block;
-  color: var(--text-muted);
-  font-size: 0.7rem;
-  line-height: 1.2;
-  opacity: 0.8;
+  margin-top: 0.25em;
+  color: var(--ghost);
+  font-size: 0.8rem;
+  line-height: 1.3;
   user-select: none;
 }
 
 .ghost {
-  display: block;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5em;
   white-space: nowrap;
 }
 
-/* The probability appears on hover and on keyboard focus, never shifting the layout. */
+/* No gap between the word and its probability: the pointer can travel onto it (WCAG 1.4.13). */
 .ghost-p {
-  position: absolute;
-  left: 100%;
-  /* No gap between the word and the probability: the pointer can travel onto it (WCAG 1.4.13). */
-  padding: 0 var(--space-1);
+  padding: 0 0.3em;
   background: var(--night);
-  border: 1px solid var(--text-muted);
-  border-radius: 0.25rem;
+  border-radius: 0.6rem;
   color: var(--text);
   font-size: 0.75rem;
   visibility: hidden;
-  z-index: 1;
 }
 
 .token:hover .ghosts,
 .token:focus .ghosts {
-  opacity: 1;
+  color: var(--text-muted);
 }
 
 .token:hover .ghost-p,
@@ -727,24 +764,56 @@ textarea:focus-visible {
 
 /* The question before Gemma 4 is downloaded (AC-006.2). */
 .consent {
-  margin: var(--space-2) 0;
-  padding: var(--space-2) var(--space-3);
-  background: var(--night-soft);
-  border-left: 4px solid var(--marigold);
+  margin: var(--space-3) 0 var(--space-2);
+  padding: var(--space-3);
+  background: var(--night-raised);
+  border: 1px solid var(--marigold-deep);
   border-radius: var(--radius);
 }
 
 .consent-text {
-  margin: 0 0 var(--space-2);
+  margin: 0 0 var(--space-3);
 }
 
 .consent button {
-  margin-right: var(--space-2);
+  margin: 0 var(--space-2) var(--space-2) 0;
 }
 
-/* The offline note is a live region that stays in the page, empty, until it has something to say. */
-.offline-note:empty {
-  margin: 0;
-  padding: 0;
-  border: 0;
+/* About */
+.about {
+  max-width: 44rem;
+  margin: var(--space-5) auto 0;
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  background: var(--night-soft);
+  border: 1px solid rgb(244 233 216 / 0.18);
+  border-top: 4px solid var(--marigold);
+  border-radius: var(--radius);
+}
+
+.about h3 {
+  margin: var(--space-4) 0 var(--space-2);
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.2rem;
+  color: var(--marigold-light);
+}
+
+.about li {
+  margin-bottom: var(--space-2);
+}
+
+#about-link {
+  display: inline-block;
+  padding: var(--space-1) var(--space-2);
+}
+
+/* AC-001.3: with reduced motion nothing animates; the scene is shown at rest. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
 }

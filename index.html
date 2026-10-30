@@ -14,7 +14,7 @@
          based CSP), then remove this TODO and the one in design.md. -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; connect-src 'self' https://huggingface.co; img-src 'self' data: blob:; style-src 'self'; object-src 'none'; base-uri 'self'; require-trusted-types-for 'script'; trusted-types ofrenda-worker"
+      content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; connect-src 'self' https://huggingface.co; img-src 'self' data: blob:; style-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; require-trusted-types-for 'script'; trusted-types ofrenda-worker"
     />
     <meta
       name="description"
@@ -22,12 +22,22 @@
     />
     <title>Ofrenda de los modelos</title>
     <link rel="icon" href="data:," />
+    <link rel="preload" href="/fonts/Gloock-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link
+      rel="preload"
+      href="/fonts/BricolageGrotesque-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
     <link rel="stylesheet" href="/src/styles.css" />
+    <link rel="stylesheet" href="/src/altar-art.css" />
   </head>
   <body>
     <a class="skip-link" href="#altar">Skip to the altar</a>
     <header class="site-header">
       <h1>Ofrenda de los modelos</h1>
+      <span class="ornament" aria-hidden="true"><span></span></span>
       <p id="statement" class="statement">
         An altar where open-weight AI models come home for Día de los Muertos; Gemma 4 tends it on
         your device.
@@ -45,49 +55,67 @@
 
       <section id="altar" class="altar" aria-labelledby="altar-title" tabindex="-1">
         <h2 id="altar-title" class="visually-hidden">The altar</h2>
+        <svg id="art-defs" class="art-defs" aria-hidden="true" focusable="false"></svg>
 
-        <svg class="papel-picado" viewBox="0 0 960 120" aria-hidden="true" focusable="false">
-          <defs>
-            <symbol id="flag" viewBox="0 0 80 100">
-              <path class="flag-body" d="M0 0h80v82L40 100 0 82Z" />
-              <path
-                class="flag-cut"
-                fill-rule="evenodd"
-                d="M40 22l8 12-8 12-8-12ZM16 60a6 6 0 1 0 12 0 6 6 0 1 0-12 0ZM52 60a6 6 0 1 0 12 0 6 6 0 1 0-12 0ZM36 70h8v8h-8Z"
-              />
-            </symbol>
-          </defs>
-          <path class="string" d="M0 8Q480 28 960 8" />
-          <use class="flag flag-1" href="#flag" x="30" y="14" width="80" height="100" />
-          <use class="flag flag-2" href="#flag" x="150" y="20" width="80" height="100" />
-          <use class="flag flag-3" href="#flag" x="270" y="24" width="80" height="100" />
-          <use class="flag flag-4" href="#flag" x="390" y="26" width="80" height="100" />
-          <use class="flag flag-1" href="#flag" x="490" y="26" width="80" height="100" />
-          <use class="flag flag-2" href="#flag" x="610" y="24" width="80" height="100" />
-          <use class="flag flag-3" href="#flag" x="730" y="20" width="80" height="100" />
-          <use class="flag flag-4" href="#flag" x="850" y="14" width="80" height="100" />
-        </svg>
+        <div class="room">
+          <div class="pool pool-wall" aria-hidden="true"></div>
+          <div class="pool pool-altar" aria-hidden="true"></div>
+          <svg
+            id="papel-picado"
+            class="papel-picado"
+            viewBox="0 0 1200 200"
+            preserveAspectRatio="xMidYMin slice"
+            aria-hidden="true"
+            focusable="false"
+          ></svg>
 
-        <div class="level level-top">
-          <div class="candle-row" aria-hidden="true">
-            <span class="candle"><span class="flame"></span></span>
-            <span class="candle"><span class="flame"></span></span>
-            <span class="candle"><span class="flame"></span></span>
+          <div class="shrine">
+            <svg
+              id="arch-top"
+              class="arch-top"
+              viewBox="0 0 1000 270"
+              aria-hidden="true"
+              focusable="false"
+            ></svg>
+
+            <div class="tiers">
+              <svg class="arch-leg arch-leg-left" aria-hidden="true" focusable="false">
+                <rect width="100%" height="100%" />
+              </svg>
+              <svg class="arch-leg arch-leg-right" aria-hidden="true" focusable="false">
+                <rect width="100%" height="100%" />
+              </svg>
+
+              <div class="level level-top">
+                <div id="top-candles" class="candle-row" aria-hidden="true"></div>
+                <svg class="bordado" aria-hidden="true" focusable="false">
+                  <rect width="100%" height="100%" />
+                </svg>
+              </div>
+
+              <div class="level level-middle">
+                <svg class="bordado" aria-hidden="true" focusable="false">
+                  <rect width="100%" height="100%" />
+                </svg>
+              </div>
+
+              <ol id="places" class="places" aria-label="Places for the ancestors"></ol>
+
+              <div class="level level-base">
+                <div id="offerings" class="offerings" aria-hidden="true"></div>
+                <div id="marigold-bed" class="marigold-bed" aria-hidden="true"></div>
+                <svg class="bordado" aria-hidden="true" focusable="false">
+                  <rect width="100%" height="100%" />
+                </svg>
+              </div>
+            </div>
+
+            <div class="floor" aria-hidden="true">
+              <div class="petate"></div>
+              <div id="petals" class="petals"></div>
+            </div>
           </div>
-        </div>
-
-        <div class="level level-middle">
-          <ol id="places" class="places" aria-label="Places for the ancestors"></ol>
-        </div>
-
-        <div class="level level-base">
-          <div class="offerings" aria-hidden="true">
-            <span class="candle"><span class="flame"></span></span>
-            <span class="glass-of-water"><span class="water"></span></span>
-            <span class="candle"><span class="flame"></span></span>
-          </div>
-          <div id="petals" class="petals" aria-hidden="true"></div>
-          <div class="marigold-bed" aria-hidden="true"></div>
+          <canvas id="petal-drift" class="petal-drift" aria-hidden="true"></canvas>
         </div>
       </section>
 
@@ -152,6 +180,7 @@
       ></div>
 
       <section id="dark-frames-section" class="dark-frames-section" hidden>
+        <div id="unlit-candle" class="unlit-candle" aria-hidden="true"></div>
         <h2>The ones who cannot come</h2>
         <p>Closed models whose weights were never released. They cannot be brought home.</p>
         <ul id="dark-frames" class="dark-frames"></ul>
@@ -173,6 +202,19 @@
         <ul id="about-sources"></ul>
         <h3>Art and fonts</h3>
         <p id="about-assets"></p>
+        <ul id="about-fonts" class="font-credits">
+          <li>
+            <strong>Gloock</strong> (headings), © 2022 The Gloock Project Authors, by Duarte Pinto.
+            <a href="fonts/OFL-Gloock.txt">SIL Open Font License 1.1</a>.
+            <a href="https://github.com/duartp/gloock">Source</a>.
+          </li>
+          <li>
+            <strong>Bricolage Grotesque</strong> (text), © 2022 The Bricolage Grotesque Project
+            Authors, by Mathieu Triay.
+            <a href="fonts/OFL-BricolageGrotesque.txt">SIL Open Font License 1.1</a>.
+            <a href="https://github.com/ateliertriay/bricolage">Source</a>.
+          </li>
+        </ul>
       </section>
     </main>
 
