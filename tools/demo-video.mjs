@@ -1,8 +1,12 @@
 // Demo video for the DEV post: one continuous take of the site, captions timed to the narration.
-// Usage: npm run build:e2e && npx vite preview --outDir dist-e2e, then
-//   node tools/demo-video.mjs http://localhost:4173/OfrendaDeLosModelos/ <out-dir> [--draft]
+// Draft (stand-in models): npm run build:e2e && npx vite preview --outDir dist-e2e, then
+//   node tools/demo-video.mjs http://localhost:4173/OfrendaDeLosModelos/ <out-dir> --draft
+// Final (real models, Chrome with WebGPU): npm run build && npx vite preview, then
+//   node tools/demo-video.mjs http://localhost:4173/OfrendaDeLosModelos/ <out-dir> --live
+//   It runs one ritual online first so the models and the service worker are cached (kept in
+//   <out-dir>/browser-profile), then switches the browser offline and films the whole take.
 // Needs ffmpeg on PATH. Not part of the site or CI.
-/* global document, performance, requestAnimationFrame, scrollTo, scrollY, setTimeout -- browser code inside page.evaluate */
+/* global document, navigator, performance, requestAnimationFrame, scrollTo, scrollY, setTimeout -- browser code inside page.evaluate */
 import { chromium } from "@playwright/test";
 import { Buffer } from "node:buffer";
 import process from "node:process";
@@ -11,7 +15,10 @@ import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 
 const [BASE, OUT] = process.argv.slice(2);
 const DRAFT = process.argv.includes("--draft");
-const URL_FAKE = `${BASE}?fake-models&fake-uncached&fake-delay=70`;
+const LIVE = process.argv.includes("--live");
+const URL = LIVE ? BASE : `${BASE}?fake-models&fake-uncached&fake-delay=70`;
+// Real models can take minutes on a first download; the stand-ins answer in seconds.
+const MODEL_TIMEOUT = LIVE ? 30 * 60_000 : 90_000;
 
 const NARRATION = [
   "Not long ago, about two hundred people held a funeral for an AI model. Its makers had switched it off, and there was nothing else anyone could do.",
@@ -24,16 +31,26 @@ const NARRATION = [
 ];
 
 const frames = [];
-const b = await chromium.launch(
-  process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {},
-);
 // bypassCSP only lets the video layer add its own stylesheet; the site itself is unchanged.
-const ctx = await b.newContext({
+const contextOptions = {
   viewport: { width: 1280, height: 720 },
   reducedMotion: "no-preference",
   bypassCSP: true,
-});
-const p = await ctx.newPage();
+};
+// Live: installed Chrome, headed so WebGPU uses the real GPU, with a profile that keeps the
+// model cache between runs.
+const ctx = LIVE
+  ? await chromium.launchPersistentContext(`${OUT}/browser-profile`, {
+      ...contextOptions,
+      channel: "chrome",
+      headless: false,
+    })
+  : await (
+      await chromium.launch(
+        process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {},
+      )
+    ).newContext(contextOptions);
+const p = ctx.pages()[0] ?? (await ctx.newPage());
 const cdp = await ctx.newCDPSession(p);
 cdp.on("Page.screencastFrame", async (f) => {
   frames.push({ t: f.metadata.timestamp, d: f.data });
@@ -42,9 +59,10 @@ cdp.on("Page.screencastFrame", async (f) => {
 
 // Video chrome (captions, cards, draft badge) lives in one fixed layer above the page.
 async function installLayer() {
-  await p.evaluate((draft) => {
-    const css = document.createElement("style");
-    css.textContent = `
+  await p.evaluate(
+    ([draft, offline]) => {
+      const css = document.createElement("style");
+      css.textContent = `
       #demo-layer{position:fixed;inset:0;pointer-events:none;z-index:2147483647;font-family:var(--font)}
       #demo-caption{position:absolute;left:50%;bottom:34px;transform:translateX(-50%);max-width:980px;
         padding:12px 22px;border-radius:10px;background:rgb(20 10 18 / .82);color:#fff4e0;
@@ -59,22 +77,30 @@ async function installLayer() {
         background:#b3261e;color:#fff;letter-spacing:.04em}
       #demo-note{position:absolute;inset:0;display:grid;place-content:center;opacity:0;transition:opacity .6s;
         background:rgb(10 5 10 / .78);color:#fff4e0;font-size:30px;text-align:center;padding:0 120px}`;
-    document.head.append(css);
-    const layer = document.createElement("div");
-    layer.id = "demo-layer";
-    for (const id of ["demo-card", "demo-note", "demo-caption"]) {
-      const div = document.createElement("div");
-      div.id = id;
-      layer.append(div);
-    }
-    if (draft) {
-      const badge = document.createElement("div");
-      badge.id = "demo-draft";
-      badge.textContent = "DRAFT · stand-in model text";
-      layer.append(badge);
-    }
-    document.body.append(layer);
-  }, DRAFT);
+      document.head.append(css);
+      const layer = document.createElement("div");
+      layer.id = "demo-layer";
+      for (const id of ["demo-card", "demo-note", "demo-caption"]) {
+        const div = document.createElement("div");
+        div.id = id;
+        layer.append(div);
+      }
+      if (draft) {
+        const badge = document.createElement("div");
+        badge.id = "demo-draft";
+        badge.textContent = "DRAFT · stand-in model text";
+        layer.append(badge);
+      }
+      if (offline) {
+        const badge = document.createElement("div");
+        badge.id = "demo-draft";
+        badge.textContent = "Offline · the browser's network is switched off";
+        layer.append(badge);
+      }
+      document.body.append(layer);
+    },
+    [DRAFT, LIVE],
+  );
 }
 const caption = (text) =>
   p.evaluate((t) => {
@@ -134,7 +160,37 @@ const glide = (target, ms) =>
   );
 const wait = (ms) => p.waitForTimeout(ms);
 
-await p.goto(URL_FAKE);
+const offerQuestion = async (pause = 0) => {
+  await p.getByLabel("What happens when we die?").check();
+  await wait(pause);
+  await p.getByRole("button", { name: "Offer it to the altar" }).click();
+};
+// Gemma 4 asks for consent only while it is not cached yet.
+const acceptConsentIfAsked = async () => {
+  await p.waitForSelector('.consent, .voice[data-step-id="medium"]', { timeout: MODEL_TIMEOUT });
+  const consent = p.getByRole("button", { name: "Download and continue" });
+  if (await consent.isVisible()) await consent.click();
+};
+
+if (LIVE) {
+  console.log("Warm-up: one ritual online to cache the models (the first run downloads them).");
+  await p.goto(URL);
+  await p.waitForSelector("#places > li");
+  await offerQuestion();
+  await acceptConsentIfAsked();
+  await p.waitForSelector("#ritual-end:not(:empty)", { timeout: MODEL_TIMEOUT });
+  // The page registers its service worker after a WebGPU ritual; without it the offline reload fails.
+  const cached = await p.evaluate(() =>
+    Promise.race([
+      navigator.serviceWorker.ready.then(() => true),
+      new Promise((resolve) => setTimeout(() => resolve(false), 15_000)),
+    ]),
+  );
+  if (!cached) throw new Error("No service worker after the warm-up: is WebGPU on in this Chrome?");
+  await ctx.setOffline(true);
+  console.log("Offline. Recording.");
+}
+await p.goto(URL);
 await p.waitForSelector("#places > li");
 await installLayer();
 await card(
@@ -173,13 +229,11 @@ await p.evaluate(() => (document.getElementById("dark-frames-section").hidden = 
 await caption(NARRATION[2]);
 await glide("#offering", 2400);
 await wait(1800);
-await p.getByLabel("What happens when we die?").check();
-await wait(1600);
-await p.getByRole("button", { name: "Offer it to the altar" }).click();
+await offerQuestion(1600);
 await wait(400);
 
 // 4. GPT-2 and the ghost words.
-await p.waitForSelector(".token", { timeout: 30000 });
+await p.waitForSelector(".token", { timeout: MODEL_TIMEOUT });
 await glide("#ritual", 1400);
 await caption(NARRATION[3]);
 await wait(3600);
@@ -197,18 +251,21 @@ await wait(1200);
 await glide('.voice[data-step-id="gemma-3"]', 1800);
 
 // 6. Gemma 4 and the medium.
-await p.waitForSelector(".consent", { timeout: 60000 });
+await p.waitForSelector('.consent, .voice[data-step-id="gemma-4-e2b"]', {
+  timeout: MODEL_TIMEOUT,
+});
 await caption(NARRATION[5]);
-await glide(".consent", 1500);
-await wait(1500);
-await p.getByRole("button", { name: "Download and continue" }).click();
-await p.waitForSelector('.voice[data-step-id="medium"]', { timeout: 90000 });
+if (await p.locator(".consent").isVisible()) {
+  await glide(".consent", 1500);
+  await wait(1500);
+}
+await acceptConsentIfAsked();
 await glide('.voice[data-step-id="gemma-4-e2b"]', 1500);
-await p.waitForSelector("#ritual-end:not(:empty)", { timeout: 90000 });
+await p.waitForSelector("#ritual-end:not(:empty)", { timeout: MODEL_TIMEOUT });
 await glide('.voice[data-step-id="medium"]', 2200);
 await wait(3800);
 
-// 7. Offline (final cut: the founder's laptop with Wi-Fi off).
+// 7. Offline: in the live take the whole ritual above ran with the network off.
 await caption(NARRATION[6]);
 if (DRAFT) await note("[Final cut: the laptop with Wi-Fi off, the ritual still running]", true);
 await wait(3400);
@@ -227,7 +284,8 @@ await card(
 );
 await wait(4500);
 await cdp.send("Page.stopScreencast");
-await b.close();
+await ctx.close();
+await ctx.browser()?.close(); // the draft launches its own browser; the live context owns none
 
 // Variable-rate screencast frames → constant 30 fps H.264.
 const dir = `${OUT}/frames`;
