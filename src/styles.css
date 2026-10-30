@@ -667,7 +667,7 @@ textarea:focus-visible {
   color: var(--text-muted);
   font-size: 0.7rem;
   line-height: 1.2;
-  opacity: 0.6;
+  opacity: 0.8;
   user-select: none;
 }
 

@@ -100,9 +100,22 @@ test("a full ritual for an offered question sends nothing anywhere (AC-002.1, NF
     "Gemma 4 E2B",
     "La que cuida el altar",
   ]);
-  await expect(page.locator(".voice").nth(0).locator(".voice-text")).toContainText(
-    "[gpt-2]Fake voice",
-  );
+  // GPT-2's answer is made of tokens with ghost words under them (REQ-004).
+  const gpt2 = page.locator(".voice").nth(0);
+  await expect(gpt2.locator(".token-text").first()).toHaveText("[gpt-2]");
+  await expect(gpt2.locator(".voice-caveat")).toHaveText("Unfiltered 2019 model");
+  await expect(gpt2.locator(".token").first().locator(".ghost-word")).toHaveText([
+    "maybe0",
+    "perhaps0",
+    "almost0",
+  ]);
+  // The probability is hidden until hover or keyboard focus.
+  const firstProbability = gpt2.locator(".token").first().locator(".ghost-p").first();
+  await expect(firstProbability).toHaveCSS("opacity", "0");
+  await gpt2.locator(".token").first().focus();
+  await expect(firstProbability).toHaveCSS("opacity", "1");
+  await expect(firstProbability).toHaveText("20%");
+  await page.mouse.move(0, 0);
   await expect(page.locator(".voice").nth(1).locator(".voice-text")).toContainText(
     "Fake recording of gemma-1",
   );
