@@ -106,7 +106,8 @@ describe("the statement and the about panel (AC-001.2, REQ-009)", () => {
 
   it("lists every model with licence and model card (AC-009.1)", () => {
     const lines = [...document.querySelectorAll("#about-models > li")];
-    expect(lines).toHaveLength(data.ancestors.length);
+    // Every ancestor, plus the medium (Gemma 4 E2B in its other role).
+    expect(lines).toHaveLength(data.ancestors.length + 1);
     const gemma4 = lines.find((l) => l.textContent.includes("Gemma 4 E2B"));
     expect(gemma4?.textContent).toContain("Apache-2.0");
     expect(gemma4?.textContent).toContain("Model card");

@@ -1,0 +1,86 @@
+{
+  "packages": [
+    {
+      "name": "@csstools/color-helpers",
+      "reason": "MIT-0 is MIT without the attribution clause; dev-only (jsdom/CSS tooling), not shipped"
+    },
+    {
+      "name": "@csstools/css-syntax-patches-for-csstree",
+      "reason": "MIT-0 is MIT without the attribution clause; dev-only, not shipped"
+    },
+    {
+      "name": "mdn-data",
+      "reason": "CC0-1.0 is a public-domain dedication; dev-only (CSS tooling data), not shipped"
+    },
+    {
+      "name": "@img/sharp-libvips-darwin-arm64",
+      "reason": "Prebuilt binary of sharp, a Node-only image library pulled in by @huggingface/transformers; the browser build never imports it, so it is not shipped in dist. Its LGPL libvips part is unmodified",
+      "production": true
+    },
+    {
+      "name": "@img/sharp-libvips-darwin-x64",
+      "reason": "Prebuilt binary of sharp, a Node-only image library pulled in by @huggingface/transformers; the browser build never imports it, so it is not shipped in dist. Its LGPL libvips part is unmodified",
+      "production": true
+    },
+    {
+      "name": "@img/sharp-libvips-linux-arm",
+      "reason": "Prebuilt binary of sharp, a Node-only image library pulled in by @huggingface/transformers; the browser build never imports it, so it is not shipped in dist. Its LGPL libvips part is unmodified",
+      "production": true
+    },
+    {
+      "name": "@img/sharp-libvips-linux-arm64",
+      "reason": "Prebuilt binary of sharp, a Node-only image library pulled in by @huggingface/transformers; the browser build never imports it, so it is not shipped in dist. Its LGPL libvips part is unmodified",
+      "production": true
+    },
+    {
+      "name": "@img/sharp-libvips-linux-ppc64",
+      "reason": "Prebuilt binary of sharp, a Node-only image library pulled in by @huggingface/transformers; the browser build never imports it, so it is not shipped in dist. Its LGPL libvips part is unmodified",
+      "production": true
+    },
+    {
+      "name": "@img/sharp-libvips-linux-riscv64",
+      "reason": "Prebuilt binary of sharp, a Node-only image library pulled in by @huggingface/transformers; the browser build never imports it, so it is not shipped in dist. Its LGPL libvips part is unmodified",
+      "production": true
+    },
+    {
+      "name": "@img/sharp-libvips-linux-s390x",
+      "reason": "Prebuilt binary of sharp, a Node-only image library pulled in by @huggingface/transformers; the browser build never imports it, so it is not shipped in dist. Its LGPL libvips part is unmodified",
+      "production": true
+    },
+    {
+      "name": "@img/sharp-libvips-linux-x64",
+      "reason": "Prebuilt binary of sharp, a Node-only image library pulled in by @huggingface/transformers; the browser build never imports it, so it is not shipped in dist. Its LGPL libvips part is unmodified",
+      "production": true
+    },
+    {
+      "name": "@img/sharp-libvips-linuxmusl-arm64",
+      "reason": "Prebuilt binary of sharp, a Node-only image library pulled in by @huggingface/transformers; the browser build never imports it, so it is not shipped in dist. Its LGPL libvips part is unmodified",
+      "production": true
+    },
+    {
+      "name": "@img/sharp-libvips-linuxmusl-x64",
+      "reason": "Prebuilt binary of sharp, a Node-only image library pulled in by @huggingface/transformers; the browser build never imports it, so it is not shipped in dist. Its LGPL libvips part is unmodified",
+      "production": true
+    },
+    {
+      "name": "@img/sharp-wasm32",
+      "reason": "Prebuilt binary of sharp, a Node-only image library pulled in by @huggingface/transformers; the browser build never imports it, so it is not shipped in dist. Its LGPL libvips part is unmodified",
+      "production": true
+    },
+    {
+      "name": "@img/sharp-win32-arm64",
+      "reason": "Prebuilt binary of sharp, a Node-only image library pulled in by @huggingface/transformers; the browser build never imports it, so it is not shipped in dist. Its LGPL libvips part is unmodified",
+      "production": true
+    },
+    {
+      "name": "@img/sharp-win32-ia32",
+      "reason": "Prebuilt binary of sharp, a Node-only image library pulled in by @huggingface/transformers; the browser build never imports it, so it is not shipped in dist. Its LGPL libvips part is unmodified",
+      "production": true
+    },
+    {
+      "name": "@img/sharp-win32-x64",
+      "reason": "Prebuilt binary of sharp, a Node-only image library pulled in by @huggingface/transformers; the browser build never imports it, so it is not shipped in dist. Its LGPL libvips part is unmodified",
+      "production": true
+    }
+  ]
+}
