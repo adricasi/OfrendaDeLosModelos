@@ -10,12 +10,7 @@ import {
 import { BLOCKED_WORDS } from "../data/blocked-words.js";
 import { blockedTokenSequences } from "./blocked-tokens.js";
 import { StepRecorder, ghostAlternatives } from "./ghost-words.js";
-import type {
-  GenerateParams,
-  LoadedModel,
-  ModelRuntime,
-  PinnedSource,
-} from "./inference-host.js";
+import type { GenerateParams, LoadedModel, ModelRuntime, PinnedSource } from "./inference-host.js";
 import type { ModelDevice } from "./protocol.js";
 import { RecordingProcessor } from "./recording-processor.js";
 import { TokenTextAssembler } from "./token-text.js";

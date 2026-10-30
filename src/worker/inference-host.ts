@@ -171,12 +171,7 @@ export function createInferenceHost({ runtime, send }: InferenceHostOptions): In
           void handleLoad(message.modelId, message.source);
           break;
         case "generate":
-          void handleGenerate(
-            message.requestId,
-            message.modelId,
-            message.prompt,
-            message.settings,
-          );
+          void handleGenerate(message.requestId, message.modelId, message.prompt, message.settings);
           break;
         case "cancel":
           running.get(message.requestId)?.abort();
