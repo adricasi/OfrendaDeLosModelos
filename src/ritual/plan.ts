@@ -62,6 +62,8 @@ export function buildRitualPlan(
     });
   });
   if (!webgpu) {
+    // Without WebGPU the medium never runs live, whatever `includeMedium` says: its words are
+    // always replayed from the recordings (so this step exists even before T-006 lands).
     // AC-007.5: the medium's recorded words, for offered questions only, labelled as recorded.
     steps.push(
       new RecordedVoiceStep(

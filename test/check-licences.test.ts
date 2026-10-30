@@ -5,12 +5,20 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
+import {
+  expressionAllowed,
+  PRODUCTION_LICENCES,
+  versionInRange,
+} from "../tools/check-licences.mjs";
+
 const SCRIPT = join(process.cwd(), "tools", "check-licences.mjs");
 
 interface LockPackage {
   version?: string;
   license?: string;
   dev?: boolean;
+  devOptional?: boolean;
+  optional?: boolean;
 }
 
 function run(
@@ -77,7 +85,9 @@ describe("tools/check-licences.mjs (NFR-008)", () => {
   });
 
   it("accepts an allowlisted dev package, with its reason, but not for production", () => {
-    const allowlist = { packages: [{ name: "mdn-data", reason: "CC0 data, dev-only" }] };
+    const allowlist = {
+      packages: [{ name: "mdn-data", version: "2.0.0", reason: "CC0 data, dev-only" }],
+    };
     const dev = run(
       { "node_modules/mdn-data": { version: "2.0.0", license: "CC0-1.0", dev: true } },
       allowlist,
@@ -92,10 +102,56 @@ describe("tools/check-licences.mjs (NFR-008)", () => {
     expect(shipped.status).toBe(1);
   });
 
+  it("does not let a waiver cover other versions", () => {
+    const allowlist = {
+      packages: [{ name: "pkg", version: "1.0.0", reason: "reviewed 1.0.0 only" }],
+    };
+    const other = run(
+      { "node_modules/pkg": { version: "1.0.1", license: "CC0-1.0", dev: true } },
+      allowlist,
+    );
+    expect(other.status).toBe(1);
+    const ranged = {
+      packages: [{ name: "pkg", versions: ">=1.0.0 <2.0.0", reason: "reviewed 1.x" }],
+    };
+    expect(
+      run({ "node_modules/pkg": { version: "1.5.0", license: "CC0-1.0", dev: true } }, ranged)
+        .status,
+    ).toBe(0);
+    expect(
+      run({ "node_modules/pkg": { version: "2.0.0", license: "CC0-1.0", dev: true } }, ranged)
+        .status,
+    ).toBe(1);
+  });
+
+  it("requires exactly one of version or versions in an allowlist entry", () => {
+    const result = run(
+      { "node_modules/a": { version: "1.0.0", license: "MIT" } },
+      { packages: [{ name: "a", reason: "r" }] },
+    );
+    expect(result.status).toBe(1);
+    expect(result.err).toContain('exactly one of "version" or "versions"');
+  });
+
+  it("checks devOptional and optional packages as production", () => {
+    const devOptional = run({
+      "node_modules/o": { version: "1.0.0", license: "MPL-2.0", devOptional: true },
+    });
+    expect(devOptional.status).toBe(1);
+    expect(devOptional.err).toContain("o@1.0.0 [production]");
+    const optional = run({
+      "node_modules/p": { version: "1.0.0", license: "GPL-3.0-only", optional: true },
+    });
+    expect(optional.status).toBe(1);
+    const fine = run({ "node_modules/q": { version: "1.0.0", license: "MIT", optional: true } });
+    expect(fine.status).toBe(0);
+    expect(fine.out).toContain("Shipped (production) packages: 1");
+  });
+
   it("requires a reason for every allowlist entry", () => {
     const result = run(
       { "node_modules/a": { version: "1.0.0", license: "MIT" } },
-      { packages: [{ name: "a", reason: "" }] },
+      { packages: [{ name: "a", version: "1.0.0", reason: "" }] },
     );
     expect(result.status).toBe(1);
     expect(result.err).toContain("needs a name and a reason");
@@ -106,5 +162,54 @@ describe("tools/check-licences.mjs (NFR-008)", () => {
     expect(result.stderr).toBe("");
     expect(result.status).toBe(0);
     expect(result.stdout).toContain("Licence check passed.");
+  });
+});
+
+describe("expressionAllowed", () => {
+  const ok = (expression: string): boolean => expressionAllowed(expression, PRODUCTION_LICENCES);
+
+  it("handles AND, OR and parentheses with the right precedence", () => {
+    expect(ok("MIT")).toBe(true);
+    expect(ok("(MIT OR Apache-2.0) AND GPL-3.0")).toBe(false);
+    expect(ok("(MIT AND GPL-3.0) OR Apache-2.0")).toBe(true);
+    expect(ok("MIT AND (Apache-2.0 OR GPL-3.0)")).toBe(true);
+    expect(ok("GPL-3.0 OR LGPL-2.1")).toBe(false);
+    expect(ok("MIT OR GPL-3.0 AND LGPL-2.1")).toBe(true);
+    expect(ok("GPL-3.0 AND LGPL-2.1 OR MIT")).toBe(true);
+    expect(ok("MIT AND GPL-3.0 OR LGPL-2.1")).toBe(false);
+  });
+
+  it("treats WITH exceptions as part of the licence id", () => {
+    expect(ok("Apache-2.0 WITH LLVM-exception")).toBe(false);
+    expect(
+      expressionAllowed(
+        "Apache-2.0 WITH LLVM-exception",
+        new Set(["Apache-2.0 WITH LLVM-exception"]),
+      ),
+    ).toBe(true);
+  });
+
+  it("rejects malformed expressions", () => {
+    for (const bad of [
+      "",
+      "MIT AND",
+      "OR MIT",
+      "(MIT",
+      "MIT)",
+      "MIT Apache-2.0",
+      "()",
+      "MIT WITH",
+      "AND",
+    ]) {
+      expect(ok(bad), bad).toBe(false);
+    }
+  });
+});
+
+describe("versionInRange", () => {
+  it("evaluates comparators", () => {
+    expect(versionInRange("1.2.3", ">=1.0.0 <2.0.0")).toBe(true);
+    expect(versionInRange("2.0.0", ">=1.0.0 <2.0.0")).toBe(false);
+    expect(versionInRange("1.2.3", "1.2.3")).toBe(true);
   });
 });

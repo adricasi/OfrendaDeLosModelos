@@ -10,6 +10,7 @@
 // Usage: node tools/check-licences.mjs [--lock package-lock.json] [--allowlist tools/licence-allowlist.json]
 import { existsSync, readFileSync } from "node:fs";
 import process from "node:process";
+import { pathToFileURL } from "node:url";
 
 export const PRODUCTION_LICENCES = new Set([
   "MIT",
@@ -29,16 +30,109 @@ export const DEV_ONLY_LICENCES = new Set([
 ]);
 
 /**
- * Evaluates a (simple) SPDX expression: `OR` needs one acceptable alternative, `AND` needs all
- * its terms acceptable. Parentheses are flattened, which is enough for the licences npm reports.
+ * Evaluates an SPDX licence expression with a small recursive-descent parser:
+ *   or   := and ("OR" and)*        (OR binds looser than AND)
+ *   and  := atom ("AND" atom)*
+ *   atom := "(" or ")" | id ("WITH" id)?
+ * `X WITH Y` is one licence id, so it is allowed only if that exact string is in `allowed`.
+ * A malformed expression is never allowed.
  */
 export function expressionAllowed(expression, allowed) {
-  const alternatives = expression.replaceAll(/[()]/g, " ").split(/\s+OR\s+/i);
-  return alternatives.some((alternative) =>
-    alternative
-      .split(/\s+AND\s+/i)
-      .map((term) => term.trim())
-      .every((term) => term !== "" && allowed.has(term)),
+  const tokens = expression.match(/\(|\)|[^\s()]+/g) ?? [];
+  let position = 0;
+  const peek = () => tokens[position];
+  const isKeyword = (token, word) => token !== undefined && token.toUpperCase() === word;
+
+  function parseOr() {
+    let result = parseAnd();
+    while (isKeyword(peek(), "OR")) {
+      position += 1;
+      const right = parseAnd();
+      result = result || right;
+    }
+    return result;
+  }
+  function parseAnd() {
+    let result = parseAtom();
+    while (isKeyword(peek(), "AND")) {
+      position += 1;
+      const right = parseAtom();
+      result = result && right;
+    }
+    return result;
+  }
+  function parseAtom() {
+    const token = peek();
+    if (token === undefined) throw new Error("unexpected end");
+    position += 1;
+    if (token === "(") {
+      const inner = parseOr();
+      if (peek() !== ")") throw new Error("missing )");
+      position += 1;
+      return inner;
+    }
+    const keyword = ["AND", "OR", "WITH", ")"].includes(token.toUpperCase());
+    if (keyword) throw new Error(`unexpected ${token}`);
+    let id = token;
+    if (isKeyword(peek(), "WITH")) {
+      position += 1;
+      const exception = peek();
+      if (exception === undefined || exception === "(" || exception === ")") {
+        throw new Error("missing exception");
+      }
+      position += 1;
+      id = `${token} WITH ${exception}`;
+    }
+    return allowed.has(id);
+  }
+
+  try {
+    const result = parseOr();
+    return position === tokens.length && result;
+  } catch {
+    return false;
+  }
+}
+
+/** True when `version` satisfies space-separated comparators such as ">=1.2.0 <2.0.0". */
+export function versionInRange(version, range) {
+  const parse = (v) =>
+    v
+      .split("-")[0]
+      .split(".")
+      .map((n) => Number.parseInt(n, 10));
+  const compare = (x, y) => {
+    for (let i = 0; i < 3; i += 1) {
+      const d = (x[i] ?? 0) - (y[i] ?? 0);
+      if (d !== 0) return d;
+    }
+    return 0;
+  };
+  const have = parse(version);
+  return range.split(/\s+/).every((comparator) => {
+    const match = /^(>=|<=|>|<|=)?(\d+\.\d+\.\d+)$/.exec(comparator);
+    if (match === null) throw new Error(`unsupported version range: ${range}`);
+    const order = compare(have, parse(match[2]));
+    switch (match[1] ?? "=") {
+      case ">=":
+        return order >= 0;
+      case "<=":
+        return order <= 0;
+      case ">":
+        return order > 0;
+      case "<":
+        return order < 0;
+      default:
+        return order === 0;
+    }
+  });
+}
+
+function waiverFor(entries, name, version) {
+  return entries.find(
+    (e) =>
+      e.name === name &&
+      (e.version !== undefined ? e.version === version : versionInRange(version, e.versions)),
   );
 }
 
@@ -61,16 +155,17 @@ export function checkLock(lock, allowlist) {
   const shipped = [];
   const devOnly = [];
   const failures = [];
-  const allowed = new Map((allowlist.packages ?? []).map((p) => [p.name, p]));
+  const waivers = allowlist.packages ?? [];
   for (const [path, entry] of Object.entries(lock.packages ?? {})) {
     if (path === "" || entry.link === true) continue;
     const name = nameOf(path);
     const licence = licenceOf(entry);
-    // `dev` and `devOptional` packages never reach the production bundle.
-    const isDev = entry.dev === true || entry.devOptional === true;
+    // Only `dev: true` is dev-only. `devOptional` and `optional` packages can be installed for
+    // (and shipped with) production, so they are checked as production.
+    const isDev = entry.dev === true;
     const row = { name, version: entry.version ?? "?", licence: licence ?? "(none)" };
-    // A waiver covers dev-only packages unless the entry says `"production": true`.
-    const found = allowed.get(name);
+    // A waiver covers one version (or a range) of dev-only packages unless it says `"production": true`.
+    const found = waiverFor(waivers, name, entry.version ?? "0.0.0");
     const waiver = found !== undefined && (isDev || found.production === true) ? found : undefined;
     const acceptable =
       licence !== null &&
@@ -103,6 +198,9 @@ function loadAllowlist(path) {
   for (const entry of parsed.packages ?? []) {
     if (typeof entry.name !== "string" || typeof entry.reason !== "string" || entry.reason === "") {
       throw new Error(`${path}: every allowlist entry needs a name and a reason`);
+    }
+    if ((entry.version === undefined) === (entry.versions === undefined)) {
+      throw new Error(`${path}: ${entry.name} needs exactly one of "version" or "versions"`);
     }
   }
   return parsed;
@@ -141,10 +239,7 @@ function main() {
 }
 
 // Run only when executed directly, so tests and other tools can import the functions.
-if (
-  process.argv[1] !== undefined &&
-  import.meta.url === new URL(`file://${process.argv[1]}`).href
-) {
+if (process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {
     main();
   } catch (error) {
