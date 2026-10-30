@@ -21,7 +21,7 @@ const URL = LIVE ? BASE : `${BASE}?fake-models&fake-uncached&fake-delay=70`;
 const MODEL_TIMEOUT = LIVE ? 30 * 60_000 : 90_000;
 
 const NARRATION = [
-  "Not long ago, about two hundred people held a funeral for an AI model. Its makers had switched it off, and there was nothing else anyone could do.",
+  "In August 2025, about two hundred people held a funeral for an AI model. Its makers had switched it off, and there was nothing else anyone could do.",
   "Closed models die like that. Their weights were never released. They cannot come home.",
   "But some models can. This is an ofrenda for open-weight models. You leave one question, and the ancestors answer, oldest first.",
   "GPT-2, from 2019, speaks live in your browser. Beneath its words float the ghost words: the ones it almost said.",
