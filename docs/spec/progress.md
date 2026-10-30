@@ -49,3 +49,18 @@ The latest entry is shown to Claude at the start of every session.
   negative control; protocol gained `cancel-load`; `StepContext.previous` and
   `SpokenOutcome.notes` (medium notes, rendered one block per ancestor inside the medium's step)
   added for T-006.
+
+## 2026-10-30 — T-005: Recording tool (partial: tool done, voices not yet recorded)
+- Done: `npm run record-voices` (`scripts/ollama.ts`, `record.ts`, `record-voices.ts`, config,
+  compiled with `scripts/tsconfig.json`, no new dependencies); `src/data/recorded-voices.ts`
+  (schema, validation, deterministic serialisation); placeholder `public/data/recorded-voices.json`
+  (empty); 32 tests with a fake Ollama on 127.0.0.1 (AC-013.1-AC-013.3, loopback only, validation,
+  deterministic output); README section.
+- Decisions: answers recorded in English and Spanish per question; medium phase supported but
+  disabled until `scripts/medium-prompt.txt` exists (T-006), and it sees only recorded answers
+  (GPT-2 is live in the browser); skipped ancestors keep earlier recordings.
+- Issues: Ollama tags are unverified candidates; request fields checked against Ollama
+  docs/api.md and docs/modelfile.mdx (main branch), not against a running Ollama.
+- Next: founder runs the pulls and `npm run record-voices`, verifies tags, commits the JSON
+  (closes T-005 "Done when"); UI replay (AC-005.1-AC-005.4) is T-003.
+- Review fixes (2026-10-30): redirect refused and timeouts in the client; loopback bypass tests; one timestamp per run and unchanged entries reused; per-ancestor failure isolation with non-zero exit; stale ids dropped and checked; --allow-unverified required for unverified tags; T-005 marked [~].
