@@ -12,8 +12,20 @@ import {
 } from "../src/data/recorded-voices.js";
 import { parseAncestors } from "../src/data/validate.js";
 import { OllamaClient, OllamaUnreachableError, assertLoopbackUrl } from "../scripts/ollama.js";
-import { fillMediumPrompt, parseRecorderConfig, recordVoices } from "../scripts/record.js";
-import type { RecorderConfig } from "../scripts/record.js";
+import { parseArgs } from "../scripts/args.js";
+import {
+  fillMediumPrompt,
+  parseRecorderConfig,
+  recordVoices as recordVoicesStrict,
+} from "../scripts/record.js";
+import type { RecorderConfig, RecorderDeps } from "../scripts/record.js";
+
+/** The shipped tags are unverified, so the tests pass the flag unless they test the refusal. */
+const recordVoices = (
+  config: RecorderConfig,
+  previous: Parameters<typeof recordVoicesStrict>[1],
+  deps: RecorderDeps,
+) => recordVoicesStrict(config, previous, { allowUnverified: true, ...deps });
 
 const DIGEST_A = "a".repeat(64);
 const DIGEST_B = "b".repeat(64);
@@ -358,6 +370,7 @@ describe("recorded-voices.json validation", () => {
   const voice = {
     ancestorId: "gemma-1",
     questionId: "love-poem",
+    questionText: "Write a love poem.",
     language: "en",
     answer: "Roses.",
     ...provenance,

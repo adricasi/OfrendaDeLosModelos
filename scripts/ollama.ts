@@ -61,33 +61,63 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+export interface Timeouts {
+  /** Per /api/generate call. */
+  readonly generateMs: number;
+  /** For /api/version and /api/tags. */
+  readonly quickMs: number;
+}
+
+export const DEFAULT_TIMEOUTS: Timeouts = { generateMs: 300_000, quickMs: 10_000 };
+
 export class OllamaClient {
   private readonly base: string;
 
   constructor(
     baseUrl: string,
     private readonly fetchFn: FetchLike = (url, init) => fetch(url, init),
+    private readonly timeouts: Timeouts = DEFAULT_TIMEOUTS,
   ) {
     this.base = assertLoopbackUrl(baseUrl).origin;
   }
 
-  private async request(path: string, init?: RequestInit): Promise<Record<string, unknown>> {
+  private async request(
+    path: string,
+    timeoutMs: number,
+    init: RequestInit = {},
+  ): Promise<Record<string, unknown>> {
     let response: Response;
+    let body: unknown;
     try {
-      response = await this.fetchFn(`${this.base}${path}`, init);
+      // redirect: "error" so a loopback server can never bounce us to another host.
+      response = await this.fetchFn(`${this.base}${path}`, {
+        ...init,
+        redirect: "error",
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+      if (!response.ok) {
+        throw new OllamaApiError(`Ollama ${path} answered HTTP ${response.status}`);
+      }
+      body = await response.json();
     } catch (error) {
+      if (error instanceof OllamaApiError) throw error;
+      if (error instanceof SyntaxError) {
+        throw new OllamaApiError(`Ollama ${path} did not return valid JSON`);
+      }
+      if (error instanceof DOMException && error.name === "TimeoutError") {
+        throw new OllamaUnreachableError(
+          this.base,
+          `no answer to ${path} within ${Math.round(timeoutMs / 1000)} s`,
+        );
+      }
       throw new OllamaUnreachableError(this.base, error);
     }
-    if (!response.ok) {
-      throw new OllamaApiError(`Ollama ${path} answered HTTP ${response.status}`);
-    }
-    const body: unknown = await response.json();
     if (!isRecord(body)) throw new OllamaApiError(`Ollama ${path} did not return a JSON object`);
     return body;
   }
 
   async version(): Promise<string> {
-    const body = await this.request("/api/version");
+    const body = await this.request("/api/version", this.timeouts.quickMs);
     if (typeof body["version"] !== "string") {
       throw new OllamaApiError("Ollama /api/version has no version string");
     }
@@ -96,7 +126,7 @@ export class OllamaClient {
 
   /** Local model digests by normalised tag. */
   async digests(): Promise<ReadonlyMap<string, string>> {
-    const body = await this.request("/api/tags");
+    const body = await this.request("/api/tags", this.timeouts.quickMs);
     const models = body["models"];
     if (!Array.isArray(models)) throw new OllamaApiError("Ollama /api/tags has no models list");
     const digests = new Map<string, string>();
@@ -111,7 +141,7 @@ export class OllamaClient {
   }
 
   async generate(tag: string, prompt: string, options: GenerateOptions): Promise<string> {
-    const body = await this.request("/api/generate", {
+    const body = await this.request("/api/generate", this.timeouts.generateMs, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
