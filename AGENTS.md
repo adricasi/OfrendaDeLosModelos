@@ -1,25 +1,37 @@
-# ofrenda-de-los-modelos
+# Ofrenda de los Modelos
 
-An altar where open-weight AI models come home for Día de los Muertos; Gemma 4 tends it on your device
+An altar where open-weight AI models come home for Día de los Muertos; Gemma 4 tends it on your device.
+*Closed models die. Open weights come home.*
 
 > Global engineering standards are loaded automatically from `~/ai-toolkit/AGENTS.md`
 > (Claude Code via `~/.claude/CLAUDE.md`, Gemini via `~/.gemini/AGENTS.md`).
 > This file only adds what is specific to this project. Keep it short and current.
 
 ## Specification
-`docs/spec/` is the source of truth: `product.md` (why), `requirements.md` (what, with
+Specification: docs/spec/ — the source of truth: `product.md` (why), `requirements.md` (what, with
 REQ/AC IDs), `design.md` (how), `tasks.md` (plan). Build with the `implement-task` skill;
 change the spec first (`spec` skill) when requirements change. Reference IDs in commits.
 
 ## Project overview
-<!-- Filled by the `spec` skill from docs/spec/product.md (3–5 lines). -->
+A static web page (GitHub Pages) where the visitor leaves a question on a Día de los Muertos
+altar and open-weight models answer, oldest first: GPT-2 live with "ghost words" (the words it
+almost said), recorded voices of Gemma 1–3, then Gemma 4 live on the visitor's device, which
+tends the altar and writes a calaverita for each ancestor. Retired closed models appear as dark
+frames. Entry for DEV's Hacktoberfest Week 4 challenge; code freeze Oct 31 18:00 Spain time.
+Details: [product.md](docs/spec/product.md).
 
 ## Stack
 - TypeScript (strict) on Node.js LTS, ESM
 - Vitest (+ v8 coverage), ESLint (typescript-eslint, type-checked), Prettier, npm audit
 
 ## Architecture
-<!-- Filled by the `spec` skill: short summary + link to docs/spec/design.md and ADRs. -->
+- Static site, no backend (ADR-0002). TypeScript + Vite + plain DOM (no UI framework).
+- Live models run in the browser: transformers.js (`@huggingface/transformers`, pinned) on
+  WebGPU inside a Web Worker (ADR-0003). ONNX Runtime WebAssembly files are self-hosted.
+- Data is static JSON in `public/data/` (ancestors, offered questions, recorded voices, dark
+  frames, credits), validated at load.
+- Recorded voices are made on the builder's laptop with Ollama (`npm run record-voices`).
+- Full design: [design.md](docs/spec/design.md).
 
 ## Commands
 ```bash
@@ -34,10 +46,24 @@ npm audit --audit-level=high             # dependency vulnerabilities
 ## Project rules
 - Keep this repository's CI green; run the commands above before committing.
 - Record significant decisions as ADRs in `docs/adr/` (use the `adr` skill).
-<!-- TODO: add project conventions agents must follow (naming, module boundaries, API style). -->
+- Pin exact versions of `@huggingface/transformers` and model revisions; upgrade deliberately.
 
 ## Domain rules
-<!-- Filled by the `spec` skill: invariants from docs/spec/requirements.md. -->
+- Nothing the visitor types or photographs leaves the device: no backend, analytics, cookies
+  or storage of questions/answers/photos. The only network requests are the site's own files
+  and model downloads from pinned revisions (NFR-002).
+- Render every model output and data string as text (`textContent`), never as HTML.
+- Never invent ghost words: they come only from the model's own probabilities at that step.
+- Recorded voices are shown exactly as recorded and always labelled as recorded, with model,
+  version, licence and date. A dark frame needs an official retirement source.
+- Ancestors "have passed on"; only closed models are lost. The medium is kind, never mocks a
+  model, never speaks as a real person; the altar receives photos of objects, never people.
+- Cultural accuracy: use the ofrenda's real elements and cite sources; no Halloween or
+  sugar-skull costume styling; Spanish is written properly (NFR-010).
+- Licences: shipped code and models are permissive (MIT, Apache-2.0, BSD, ISC). Gemma 1–3
+  appear only as credited recorded outputs (Gemma Terms of Use). Say "open-weight", not
+  "open source", for models.
+- Public repository: no secrets, no personal data, no model weights committed.
 
 ## Project kit
 <!-- Filled by the `project-kit` skill: project-specific agents/skills and when to use them. -->
@@ -46,3 +72,4 @@ npm audit --audit-level=high             # dependency vulnerabilities
 - `.github/workflows/` (CI and security gates)
 - `.claude/settings.json`, `.agents/` (agent configuration)
 - `infra/` state/backend configuration
+- Exception approved 2026-10-30: one minimal GitHub Pages deploy workflow (T-002).
