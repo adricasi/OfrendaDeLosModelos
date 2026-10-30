@@ -6,6 +6,7 @@ import {
   formatTable,
   mockingHits,
   personHits,
+  questionLanguage,
   summarise,
 } from "../src/medium/check.js";
 import { extractJson, parseMedium } from "../src/medium/parse.js";
@@ -223,6 +224,17 @@ describe("the eval checks (AC-007.3, NFR-010)", () => {
     expect(detectLanguage("¿Qué pasa cuando morimos? La noche es de todos")).toBe("es");
     expect(detectLanguage("What happens when we die? The night is for all of us")).toBe("en");
     expect(detectLanguage("")).toBeNull();
+  });
+
+  it("asks for the offered question's language, or guesses an own question's (AC-007.2)", () => {
+    expect(questionLanguage({ text: "anything", lang: "es" })).toBe("es");
+    expect(
+      questionLanguage({ text: "¿Por qué brilla la luna sobre la ofrenda?", lang: null }),
+    ).toBe("es");
+    expect(questionLanguage({ text: "Why does the moon shine over the altar?", lang: null })).toBe(
+      "en",
+    );
+    expect(questionLanguage({ text: "月はなぜ輝くの", lang: null })).toBeNull();
   });
 
   it("passes good Spanish and English entries", () => {

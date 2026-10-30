@@ -111,3 +111,36 @@ The latest entry is shown to Claude at the start of every session.
   recordings until the founder runs `npm run record-voices`.
 - Next: founder sends `docs/cultural-review.md` and sample medium outputs by Oct 31 12:00; set
   `culturalReviewPending` to false after approval; T-004 handles `backend: "wasm"`.
+
+## 2026-10-30 — T-006: Gemma 4 speaks and tends the altar (partial: real-model check and eval pending)
+- Done: Gemma 4 E2B in the real worker (`src/worker/transformers-runtime.ts`): `AutoProcessor` +
+  `AutoModelForCausalLM` with a per-session dtype map (text-only sessions), `Gemma4ForConditionalGeneration`
+  as the fallback loader (extra vision/audio dtypes), `processor.apply_chat_template` + `TextStreamer`;
+  WebGPU only. New `probe`/`probed` worker messages (is the model stored? `ModelRegistry.is_cached`;
+  an unpinned model is reported as refused, so the visitor is never asked to download what will not
+  load). Consent before a download: model name and size (`downloadBytes` in `ancestors.json`, null
+  = "not verified yet"), "Download and continue" / "Not now", Stop closes it. Declined: recorded
+  Gemma 4 (relabelled "Recorded voice") or "waiting to be invited" for own questions; the medium then
+  replays its recorded words, parsed per ancestor. Failure: ritual ends without the medium. Dev-only
+  `?model-gemma4=<id>@<40-hex>` (inert in production, bundle test). Prompts as versioned files
+  (`prompts/medium.md`, `prompts/gemma4-answer.md`) filled by `src/medium/template.ts` (escaped data
+  sections, one-pass placeholders, shared with the recorder, which now reads `prompts/medium.md` and
+  has the medium phase enabled). Strict parser (`src/medium/parse.ts`: fence/prose tolerated, 4 lines,
+  one entry per ancestor), one retry with the validation error when the first try took < 45 s, else
+  the raw text as one message (AC-007.4). `npm run eval:medium` (`src/medium/check.ts`): JSON, 4 lines,
+  language heuristic, R1/R2 patterns, table, >= 4 usable per language. Unit tests, e2e with the fake worker
+  (valid, broken, retry, consent accept/decline/stop, failure).
+- Decisions: one user turn (instructions then delimited data) because the Gemma 4 chat template's system
+  role is unverified; Gemma 4 answers 160 tokens at 0.7, the medium 1100 tokens at 0.5 (unverified);
+  JSON is not streamed to the visitor, a "Writing for each ancestor…" status shows instead; own
+  questions get the medium in the language the stopword heuristic guesses (else "same language as the
+  question"); the medium honours only ancestors that spoke or were recorded.
+  Licence check: sharp's Node-only platform binaries (LGPL libvips, via transformers.js, not in dist)
+  are allowlisted per version.
+- Not verified here (no GPU, no huggingface.co): any real Gemma 4 load or generation, the ONNX file
+  names and dtypes (`embed_tokens`/`decoder_model_merged` q4 are guesses), the download size,
+  `is_cached` with a dtype map, the chat template, JSON quality of the 2B model, timings (NFR-004).
+- Next (founder): pin `repositoryId`/`revision`, `dtypes`, `downloadBytes` for Gemma 4 in `ancestors.json`
+  (or try `?model-gemma4=` with `?debug`); run `npm run record-voices` then `npm run eval:medium`; read the
+  words and note the verdict here (>= 4 of 6 usable per language, 0 breaking R1/R2; NFR-010); if JSON
+  fails often, lower the temperature or shorten the prompt.

@@ -1,5 +1,6 @@
 import type { Ancestor } from "../data/validate.js";
 import type { ModelSource, ModelWorkerPort } from "../worker/protocol.js";
+import { questionLanguage } from "../medium/check.js";
 import { buildAnswerPrompt, buildMediumPrompt } from "../medium/prompt-source.js";
 import {
   MEDIUM_RETRY_BUDGET_MS,
@@ -86,7 +87,7 @@ export function buildRitualPlan(
             buildPrompt: (context) =>
               buildAnswerPrompt({
                 question: context.question.text,
-                language: context.question.lang,
+                language: questionLanguage(context.question),
               }),
             consent: {
               modelName: ancestor.name,

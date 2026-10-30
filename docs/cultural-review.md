@@ -91,6 +91,10 @@ National Geographic (overview).
 | Decorative art (papel picado, candles, water, petals, marigold bed, portrait silhouettes, dark frames' empty portraits) | Hidden from screen readers (`aria-hidden`); none has alt text |
 | "The recorded voices are still being gathered. This ancestor will speak here soon." | A recorded voice is not yet recorded (also in the table above) |
 | "This browser has no WebGPU, so most ancestors speak from recordings. For the live ritual, use Chrome or Edge on a desktop computer." | One line above the altar without WebGPU (also in the table above) |
+| "Gemma 4 E2B is not stored on this device yet. It is a download of about <size>. It stays in your browser for later visits, and nothing you write leaves your device." with the buttons "Download and continue" / "Not now" (the size line reads "Its download size has not been verified yet." until the size is verified) | Question before Gemma 4 is downloaded (`src/ui/ritual-view.ts`) |
+| "Gemma 4 is waiting to be invited: it answers your own question on your device once you allow the download." | Gemma 4 declined for an own question (`src/ritual/plan.ts`) |
+| "Writing for each ancestor…" | Status line of the medium while it writes |
+| The medium's instructions: the rules R1 (kind, never mock a model), R2 (never speak as a real person), R3 (meaning in one or two sentences and a four-line calaverita literaria per ancestor) | `prompts/medium.md`, version 1; Gemma 4's own-answer prompt is `prompts/gemma4-answer.md` |
 | "La que cuida el altar only speaks for questions the ancestors left for us." | The medium when the visitor wrote their own question and the medium is replayed from recordings |
 
 ### Dark frames (`public/data/dark-frames.json`, `src/ui/altar.ts`)

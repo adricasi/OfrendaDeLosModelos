@@ -5,6 +5,7 @@ import type {
   ModelWorkerPort,
   WorkerToUiMessage,
 } from "../worker/protocol.js";
+import { questionLanguage } from "../medium/check.js";
 import { parseMedium } from "../medium/parse.js";
 import { retryPrompt, type AncestorWords, type PromptValues } from "../medium/template.js";
 import type {
@@ -337,7 +338,7 @@ export class MediumStep implements RitualStep {
     const ids = words.map((w) => w.ancestorId);
     const prompt = this.options.buildPrompt({
       question: context.question.text,
-      language: context.question.lang,
+      language: questionLanguage(context.question),
       answers: words,
     });
     const now = this.options.now ?? Date.now;

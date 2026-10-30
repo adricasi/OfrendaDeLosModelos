@@ -47,6 +47,18 @@ export function detectLanguage(text: string): CheckLanguage | null {
   return es > en ? "es" : "en";
 }
 
+/**
+ * The language to ask the medium for (AC-007.2): the offered question's own language, or, for the
+ * visitor's own question, what the stopwords and accents suggest; null (any language, best effort)
+ * when it is unclear.
+ */
+export function questionLanguage(question: {
+  readonly text: string;
+  readonly lang: CheckLanguage | null;
+}): CheckLanguage | null {
+  return question.lang ?? detectLanguage(question.text);
+}
+
 /** R1: words that mock a model (checked as whole words, case-insensitive). */
 export const MOCKING_WORDS: readonly string[] = [
   "stupid",
