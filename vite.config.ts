@@ -98,11 +98,53 @@ function noCdnForOrt(): Plugin {
   };
 }
 
+/**
+ * Hosts that may appear as URLs in the built code (NFR-001). A new host must be added here on
+ * purpose. The files in public/data are copied as they are, not bundled, so the source links in
+ * the credits and dark frames are not checked here (their validators require https).
+ */
+export const ALLOWED_BUNDLE_HOSTS: readonly string[] = [
+  "huggingface.co", // models; the T-001 report adds the download CDN hosts here and in the CSP
+  "www.w3.org", // XML and SVG namespace identifiers: names, never fetched
+  // Documentation links inside library error and warning messages and the bundler's runtime
+  // comments (found in the transformers.js worker bundle on 2026-10-30): text, never fetched.
+  "rolldown.rs",
+  "web.dev",
+  "developer.mozilla.org",
+  "github.com",
+  "gist.github.com",
+];
+
+/** Fails the build when the bundle mentions an http(s) host outside the allowlist. */
+function checkBundleHosts(): Plugin {
+  return {
+    name: "check-bundle-hosts",
+    generateBundle(_options, bundle) {
+      const unexpected = new Map<string, string>();
+      for (const [name, item] of Object.entries(bundle)) {
+        const text =
+          item.type === "chunk" ? item.code : typeof item.source === "string" ? item.source : "";
+        if (text === "" || name.endsWith(".wasm")) continue;
+        for (const match of text.matchAll(/https?:\/\/([A-Za-z0-9.-]+)/g)) {
+          const host = (match[1] ?? "").toLowerCase();
+          if (!ALLOWED_BUNDLE_HOSTS.includes(host)) unexpected.set(host, name);
+        }
+      }
+      if (unexpected.size > 0) {
+        const list = [...unexpected].map(([host, file]) => `${host} (in ${file})`).join(", ");
+        this.error(
+          `The build mentions hosts that are not allowed: ${list}. Add a host to ALLOWED_BUNDLE_HOSTS only on purpose.`,
+        );
+      }
+    },
+  };
+}
+
 export default defineConfig({
   base: BASE,
-  plugins: [stripCspInDev(), selfHostOrt(), noCdnForOrt()],
+  plugins: [stripCspInDev(), selfHostOrt(), noCdnForOrt(), checkBundleHosts()],
   // The inference worker is a module worker (new Worker(url, { type: "module" })).
-  worker: { format: "es", plugins: () => [noCdnForOrt()] },
+  worker: { format: "es", plugins: () => [noCdnForOrt(), checkBundleHosts()] },
   build: {
     target: "es2023",
     // Chrome and Edge support modulepreload natively; no injected polyfill code.

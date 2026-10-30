@@ -27,3 +27,13 @@ laptop and must be reproducible (model tag, digest, settings).
 - One runtime for both live models; the worker keeps the page responsive.
 - If the spike fails for Gemma 4 in the browser, the fallback in the brief applies: the medium
   runs through Ollama for the video, and the site shows recorded Gemma 4 answers.
+- transformers.js 4.3.1 (pinned exactly, Apache-2.0) depends on an exact prerelease of
+  `onnxruntime-web`, `1.31.0-dev.20260914-8d85527a0`, not on a stable release. The
+  self-hosted WebAssembly files (`ort/ort-wasm-simd-threaded.asyncify.{mjs,wasm}`) are copied
+  from that build, so upgrading transformers.js changes the ONNX Runtime build that ships;
+  upgrade deliberately and re-run the browser checks. The library also contains its own
+  jsDelivr fallback for these files: the build rewrites it to the site's `ort/` folder and
+  fails if it finds that fallback in a form it does not recognise (`vite.config.ts`).
+- The page's meta CSP does not apply to the inference worker (see design.md, Security design),
+  so the worker's network exposure is bounded by its code, a build-time check of hosts in the
+  bundle and an e2e test of all requests, not by `connect-src`.

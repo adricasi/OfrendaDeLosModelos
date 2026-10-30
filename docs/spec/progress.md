@@ -90,3 +90,14 @@ The latest entry is shown to Claude at the start of every session.
   dtype files that exist in the repo, WebGPU vs WebAssembly speed, the CDN hosts for the CSP.
 - Next: founder pins repository and revision (or tries `?model-gpt2=` in `npm run dev` with
   `?debug`), confirms dtypes, the CDN hosts, and the manual check on the reference laptop.
+- Review fixes (2026-10-30): sampler draws from the full vocabulary (`top_k: 0`) so ghost
+  probabilities are the sampled ones; generations queue behind a cancelled one; `cancel-load`
+  keeps and reuses the in-flight load; new `unload` message frees a model; ghost words are a
+  per-word description (no 60-item hidden list), dismissible with Escape, hoverable, tap-focus,
+  contrast tested; held-back characters capped; first-run WebGPU failure falls back to wasm;
+  CSP `worker-src 'self'` and `trusted-types ofrenda-worker`; design.md and index.html state
+  that the meta CSP does not cover the worker; e2e records worker requests; `.npmrc`
+  `ignore-scripts=true` (build, tests, e2e unaffected; the CI browser install is explicit);
+  build fails on unlisted hosts in the bundle; override gated on DEV and development mode;
+  revisions validated as 40-hex in `parseAncestors`; blocked words stored base64; ADR-0003
+  notes the onnxruntime-web prerelease.

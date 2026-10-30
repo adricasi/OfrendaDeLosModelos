@@ -21,12 +21,24 @@ interface Chunk {
   code?: string;
 }
 
-async function bundledCode(mode: string): Promise<string> {
-  const result = await build({ mode, logLevel: "silent", build: { write: false } });
-  const outputs = (Array.isArray(result) ? result : [result]).flatMap((r) =>
-    "output" in r ? (r.output as Chunk[]) : [],
-  );
-  return outputs.map((o) => o.code ?? "").join("\n");
+/** Builds as the CLI does: NODE_ENV is "production" unless a test says otherwise. */
+async function bundledCode(
+  mode: string,
+  nodeEnv = "production",
+  define: Record<string, string> = {},
+): Promise<string> {
+  const previous = process.env["NODE_ENV"];
+  process.env["NODE_ENV"] = nodeEnv;
+  try {
+    const result = await build({ mode, logLevel: "silent", define, build: { write: false } });
+    const outputs = (Array.isArray(result) ? result : [result]).flatMap((r) =>
+      "output" in r ? (r.output as Chunk[]) : [],
+    );
+    return outputs.map((o) => o.code ?? "").join("\n");
+  } finally {
+    if (previous === undefined) delete process.env["NODE_ENV"];
+    else process.env["NODE_ENV"] = previous;
+  }
 }
 
 describe("the development model override (?model-gpt2=<id>@<rev>)", () => {
@@ -77,12 +89,20 @@ describe("the production build ignores development overrides", () => {
     expect(code).not.toContain(MODEL_OVERRIDE_MARKER);
   }, 60_000);
 
-  it('a test-mode build ignores it too (only mode "development" has it)', async () => {
+  it("a test-mode build ignores it too", async () => {
     expect(await bundledCode("test")).not.toContain(MODEL_OVERRIDE_MARKER);
   }, 60_000);
 
-  it("is present in a development-mode build (so the checks above can fail)", async () => {
-    const code = await bundledCode("development");
+  it("a mis-set NODE_ENV alone does not switch it on (mode must be development as well)", async () => {
+    expect(await bundledCode("production", "development")).not.toContain(MODEL_OVERRIDE_MARKER);
+  }, 60_000);
+
+  it("development mode alone does not either (import.meta.env.DEV must be true)", async () => {
+    expect(await bundledCode("development", "production")).not.toContain(MODEL_OVERRIDE_MARKER);
+  }, 60_000);
+
+  it("is present when both hold, as in the dev server (so the checks above can fail)", async () => {
+    const code = await bundledCode("development", "development");
     expect(code).toContain(MODEL_OVERRIDE_MARKER);
   }, 60_000);
 });

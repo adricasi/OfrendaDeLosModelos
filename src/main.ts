@@ -15,9 +15,11 @@ async function main(): Promise<void> {
     }
   }
   let data = await loadAltarData(import.meta.env.BASE_URL);
-  // Only the dev server runs in mode "development"; the comparison is folded to `false` in
-  // builds made with any other mode, which drops the override code from them.
-  if (import.meta.env.MODE === "development") {
+  // `import.meta.env.DEV` is true only when the dev server runs (and in a build only if
+  // NODE_ENV is set to something other than production); requiring the "development" mode as
+  // well means a mis-set NODE_ENV alone cannot switch the override on. Both comparisons are
+  // folded to `false` in the production build, which drops the override code.
+  if (import.meta.env.DEV && import.meta.env.MODE === "development") {
     const override = await import("./dev/model-override.js");
     data = { ...data, ancestors: override.applyModelOverrides(data.ancestors, location.search) };
   }

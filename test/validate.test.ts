@@ -125,6 +125,24 @@ describe("validation failures", () => {
   });
 });
 
+describe("pinned model revisions", () => {
+  const sha = "0123456789abcdef0123456789abcdef01234567";
+
+  it("accepts null (not pinned yet) and a full commit hash", () => {
+    expect(parseAncestors({ ancestors: [validAncestor] })[0]?.revision).toBeNull();
+    const [pinned] = parseAncestors({
+      ancestors: [{ ...validAncestor, repositoryId: "owner/model", revision: sha }],
+    });
+    expect(pinned?.revision).toBe(sha);
+  });
+
+  it.each(["main", "v1.0", "abc1234", sha.toUpperCase(), `${sha}0`])("rejects %s", (revision) => {
+    expect(() => parseAncestors({ ancestors: [{ ...validAncestor, revision }] })).toThrow(
+      /commit hash/,
+    );
+  });
+});
+
 describe("https-only links (AC-008.2)", () => {
   const badUrls = [
     ["javascript:", "javascript:alert(1)"],
