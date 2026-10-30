@@ -635,6 +635,7 @@ textarea:focus-visible {
 }
 
 .browser-note,
+.offline-note,
 .cultural-review {
   margin: var(--space-2) 0;
   padding: var(--space-2) var(--space-3);
@@ -739,4 +740,11 @@ textarea:focus-visible {
 
 .consent button {
   margin-right: var(--space-2);
+}
+
+/* The offline note is a live region that stays in the page, empty, until it has something to say. */
+.offline-note:empty {
+  margin: 0;
+  padding: 0;
+  border: 0;
 }

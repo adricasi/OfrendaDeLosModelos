@@ -163,3 +163,59 @@ The latest entry is shown to Claude at the start of every session.
   R1 stems (accent/case-insensitive), `a`/`he` out of the English list; `escapeData` escapes `& " < >`;
   `eval:medium` fails with a language at 0; one size formatter. Founder: `downloadBytes` in
   `ancestors.json` must be set (with the pin) or Gemma 4 is never offered live.
+
+## 2026-10-30 — T-008: Offline after the first visit (partial)
+- Done: hand-written service worker (`src/sw/sw.ts`, pure parts in `routing.ts`, `precache.ts`),
+  built by Vite as the second entry `sw.js` at the base path (scope = base). The `offlineShell`
+  plugin in `vite.config.ts` lists every output file plus `public/` and writes the manifest and a
+  content-derived cache name (`ofrenda-shell-<hash>`) into the worker; old `ofrenda-shell-*` caches
+  are deleted on activate (`transformers-cache` is never touched). Page loads: network first,
+  cached page as fallback, nothing stored from them; manifest files: cache first; everything else
+  (cross-origin, non-GET, any query string, paths outside the manifest) is not intercepted, so
+  nothing that could hold visitor input is ever cached. No `skipWaiting`: an open tab keeps its
+  hashed files. Registration (`src/sw/register.ts`, from `main.ts`) runs after page load, in
+  production and test builds only, on secure contexts. Note "This altar now works offline on this
+  device." after a complete ritual (textContent; in `docs/cultural-review.md`). Tests: unit
+  (manifest, routing, registration, Trusted Types policy), e2e `e2e/offline.spec.ts` (ritual,
+  network off, reload, ritual again with fakes; cache holds only same-origin files; a
+  cross-origin fetch is not answered by the worker).
+- Decisions: `serviceWorker.register` is a TrustedScriptURL sink (Chromium; the e2e passes under
+  the real CSP), so the one policy `ofrenda-worker` now vouches for the inference worker URL and
+  `sw.js` only; `worker-src 'self'` covers the service worker. transformers.js (4.3.1,
+  `utils/cache.js`) caches model files in Cache Storage `transformers-cache` when
+  `env.useBrowserCache` (default true where `caches` exists); `transformers-runtime.ts` does not
+  turn it off. `useWasmCache = false` (kept for the CSP) means transformers.js does NOT cache the
+  ONNX Runtime `.mjs`/`.wasm`; the service worker precaches them (27 MB, so the first visit
+  downloads them once more in the background after page load).
+- Issues: not verified with real models (GPT-2 / Gemma 4 offline) or on the reference laptop.
+  The note appears after any complete ritual even if Gemma 4 was declined (then offline replays
+  its recording).
+- Next (founder): AC-011.1 by hand with the network off on the reference laptop after a live
+  ritual incl. Gemma 4 (check that `transformers-cache` holds the models, ORT files load from the
+  worker's cache); note the result here; then mark T-008 done.
+
+## 2026-10-30 — T-008: security review fixes (partial)
+- Done: (1) version skew: unhashed same-origin files (`data/*.json`, `ort/*`) are network-first
+  (revalidating, cache only as offline fallback), only content-hashed `assets/*` are cache-first;
+  worker logic moved to `src/sw/shell.ts` (environment injected) and tested with build A then
+  build B (page and data always match, online and offline). A failed install logs the entry,
+  deletes the half cache and throws; the old worker stays correct because it asks the network
+  first. (2) Trusted Types policy compares whole URLs: the built inference worker URL and
+  `<origin><base>sw.js` (tests for `/other-repo/sw.js` and other same-origin URLs). (3) The
+  service worker is registered only after the first completed ritual with `deps.webgpu` true.
+  (4) Each manifest entry has a SHA-256 digest, stored on the cached response; a new build copies
+  unchanged files from the previous cache instead of downloading them again (27 MB wasm).
+  (5) `#offline-note` is a live region that is always in the page, empty until set.
+- Decisions: navigations to `?debug` / `?fake-models` are answered with the cached index.html when
+  offline (routing.ts comment); no `skipWaiting`, so the old shell stays until every tab closes
+  (sw.ts comment). Known edge: network lost mid-session after a deploy can pair the new page with
+  cached old data for unhashed files fetched later.
+- Founder check (NFR-003, AC-011.1) with real models, on the reference laptop in Chrome/Edge:
+  1. Open the deployed site online, run a full ritual with GPT-2 and agree to download Gemma 4;
+     wait for "This altar now works offline on this device." (the service worker installs after
+     the ritual; DevTools, Application, Service workers shows it activated).
+  2. DevTools, Application, Cache storage: `ofrenda-shell-*` (page, assets, data, `ort/`) and
+     `transformers-cache` (GPT-2 and Gemma 4 files) both exist.
+  3. Turn Wi-Fi off (or DevTools Network, Offline), close the tab, open the site again, run a
+     full ritual: GPT-2 live with ghost words, recordings, Gemma 4 live, medium. No request
+     errors in the console. Write the result and timings here, then mark T-008 done.

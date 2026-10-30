@@ -176,6 +176,14 @@ export function showBrowserNote(doc: Document, message: string): void {
   note.hidden = false;
 }
 
+/** REQ-011: said once, after a complete ritual, when the service worker has the shell ready. */
+export const OFFLINE_READY_MESSAGE = "This altar now works offline on this device.";
+
+export function showOfflineNote(doc: Document): void {
+  const note = byId(doc, "offline-note");
+  note.textContent = OFFLINE_READY_MESSAGE;
+}
+
 export function showLoadError(doc: Document, error: unknown): void {
   const box = byId(doc, "load-error");
   const detail = error instanceof Error ? error.message : String(error);

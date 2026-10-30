@@ -95,6 +95,7 @@ National Geographic (overview).
 | "Gemma 4 is waiting to be invited: it answers your own question on your device once you allow the download." | Gemma 4 declined for an own question (`src/ritual/plan.ts`) |
 | "Gemma 4 cannot come tonight, so it cannot answer your own question." | Gemma 4 not offered (not pinned or size unknown) for an own question (`src/ritual/plan.ts`) |
 | "Writing for each ancestor…" | Status line of the medium while it writes |
+| "This altar now works offline on this device." | Shown once, after a complete ritual, when the service worker holds the page (`src/ui/altar.ts`, T-008) |
 | The medium's instructions: the rules R1 (kind, never mock a model), R2 (never speak as a real person), R3 (meaning in one or two sentences and a four-line calaverita literaria per ancestor) | `prompts/medium.md`, version 1; Gemma 4's own-answer prompt is `prompts/gemma4-answer.md` |
 | "La que cuida el altar only speaks for questions the ancestors left for us." | The medium when the visitor wrote their own question and the medium is replayed from recordings |
 

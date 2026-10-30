@@ -1,8 +1,11 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import { createRequire } from "node:module";
-import { dirname, join } from "node:path";
+import { dirname, join, relative, resolve, sep } from "node:path";
 
 import { defineConfig, type Plugin } from "vite";
+
+import { SERVICE_WORKER_FILE } from "./src/sw/constants.js";
+import { buildPrecacheManifest, type PrecacheFile } from "./src/sw/precache.js";
 
 const BASE = "/OfrendaDeLosModelos/";
 
@@ -140,14 +143,73 @@ function checkBundleHosts(): Plugin {
   };
 }
 
+function filesUnder(directory: string): string[] {
+  return readdirSync(directory).flatMap((name) => {
+    const path = join(directory, name);
+    return statSync(path).isDirectory() ? filesUnder(path) : [path];
+  });
+}
+
+/**
+ * Offline shell (T-008, REQ-011). `src/sw/sw.ts` is built as a second entry named `sw.js` (no
+ * hash: the browser must find the same URL again to update it). Once every other file is known,
+ * this plugin lists them (the page, the hashed JS and CSS, the self-hosted ONNX Runtime files)
+ * plus everything in public/ (the data files), and writes that list, with a version derived from
+ * the files' contents, into the service worker where it says `__PRECACHE__`.
+ */
+function offlineShell(): Plugin {
+  let publicDirectory = "";
+  return {
+    name: "offline-shell",
+    enforce: "post",
+    apply: "build",
+    configResolved(config) {
+      publicDirectory = config.publicDir;
+    },
+    generateBundle(_options, bundle) {
+      const files: PrecacheFile[] = [];
+      for (const [name, item] of Object.entries(bundle)) {
+        if (name === SERVICE_WORKER_FILE) continue;
+        files.push({ path: name, content: item.type === "chunk" ? item.code : item.source });
+      }
+      if (publicDirectory !== "") {
+        for (const path of filesUnder(publicDirectory)) {
+          const name = relative(publicDirectory, path).split(sep).join("/");
+          if (!(name in bundle)) files.push({ path: name, content: readFileSync(path) });
+        }
+      }
+      const manifest = buildPrecacheManifest(files);
+      const worker = bundle[SERVICE_WORKER_FILE];
+      if (worker?.type !== "chunk") {
+        this.error(`The build has no ${SERVICE_WORKER_FILE} entry (src/sw/sw.ts).`);
+      }
+      if (!worker.code.includes("__PRECACHE__")) {
+        this.error("The service worker has no __PRECACHE__ placeholder to fill.");
+      }
+      if (/^\s*(import|export)\b/m.test(worker.code)) {
+        this.error("sw.js must be one self-contained classic script (no import or export).");
+      }
+      const literal = JSON.stringify({ cacheName: manifest.cacheName, entries: manifest.entries });
+      worker.code = worker.code.replaceAll("__PRECACHE__", literal);
+    },
+  };
+}
+
 export default defineConfig({
   base: BASE,
-  plugins: [stripCspInDev(), selfHostOrt(), noCdnForOrt(), checkBundleHosts()],
+  plugins: [stripCspInDev(), selfHostOrt(), noCdnForOrt(), checkBundleHosts(), offlineShell()],
   // The inference worker is a module worker (new Worker(url, { type: "module" })).
   worker: { format: "es", plugins: () => [noCdnForOrt(), checkBundleHosts()] },
   build: {
     target: "es2023",
     // Chrome and Edge support modulepreload natively; no injected polyfill code.
     modulePreload: { polyfill: false },
+    rollupOptions: {
+      input: { index: resolve("index.html"), sw: resolve("src/sw/sw.ts") },
+      output: {
+        entryFileNames: (chunk) =>
+          chunk.name === "sw" ? SERVICE_WORKER_FILE : "assets/[name]-[hash].js",
+      },
+    },
   },
 });
