@@ -131,6 +131,7 @@ describe("the ritual plan for GPT-2", () => {
       signal: controller.signal,
       emitToken: () => undefined,
       reportProgress: () => undefined,
+      askConsent: () => Promise.resolve(true),
       previous: [],
     });
     run?.catch(() => undefined);

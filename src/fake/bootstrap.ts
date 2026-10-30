@@ -1,3 +1,4 @@
+import type { AltarData } from "../data/load.js";
 import type { RitualDependencies } from "../ritual/plan.js";
 import type { RecordedVoiceSource } from "../ritual/steps.js";
 import { createFakeWorker } from "./fake-worker.js";
@@ -27,10 +28,24 @@ const noFakeRecordings: RecordedVoiceSource = {
   lookupMedium: () => null,
 };
 
+/** The fake Gemma 4 download is announced as 1.9 GB, so the consent question can be tested. */
+export const FAKE_DOWNLOAD_BYTES = 1_900_000_000;
+
+export function withFakeDownloadSize(data: AltarData): AltarData {
+  return {
+    ...data,
+    ancestors: data.ancestors.map((a) =>
+      a.kind === "live" && a.downloadBytes === null
+        ? { ...a, downloadBytes: FAKE_DOWNLOAD_BYTES }
+        : a,
+    ),
+  };
+}
+
 /**
  * Optional URL knobs for e2e: `fake-delay=<ms>` slows the tokens, `fake-fail=<id,id>` makes
  * those models fail while answering, `fake-no-recordings` empties the recordings, and
- * `detect-gpu` makes the page honour real WebGPU detection (otherwise the fake run assumes it).
+ * `fake-uncached` makes Gemma 4 ask for consent, `fake-medium=broken|broken-then-valid` breaks the medium's JSON, `detect-gpu` makes the page honour real WebGPU detection (otherwise the fake run assumes it).
  */
 export function createFakeDependencies(
   search: string,
@@ -39,11 +54,19 @@ export function createFakeDependencies(
   const params = new URLSearchParams(search);
   const delay = Number(params.get("fake-delay") ?? "0");
   const failing = (params.get("fake-fail") ?? "").split(",").filter((id) => id !== "");
+  const medium = params.get("fake-medium");
+  // Models count as stored on the device unless the page asks for the download question.
+  const cachedModels = params.has("fake-uncached") ? [] : ["gpt-2", "gemma-4-e2b"];
   return {
     worker: createFakeWorker({
       tokenDelayMs: Number.isFinite(delay) && delay >= 0 ? delay : 0,
       failGenerate: failing,
       alternativesFor: ["gpt-2"],
+      cachedModels,
+      mediumReply:
+        medium === "broken" || medium === "broken-then-valid" || medium === "valid"
+          ? medium
+          : "valid",
     }),
     recorded: params.has("fake-no-recordings") ? noFakeRecordings : fakeRecordedVoices,
     includeMedium: true,

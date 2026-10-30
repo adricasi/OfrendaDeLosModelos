@@ -19,6 +19,7 @@ import type {
 } from "../src/data/recorded-voices.js";
 import { DataValidationError, isHttpsUrl, parseOfferedQuestions } from "../src/data/validate.js";
 import type { Licence, OfferedQuestion } from "../src/data/validate.js";
+import { fillPrompt, parsePromptFile } from "../src/medium/template.js";
 import { DEFAULT_TIMEOUTS, OllamaClient, assertLoopbackUrl, normalizeTag } from "./ollama.js";
 import type { FetchLike, Timeouts } from "./ollama.js";
 
@@ -169,13 +170,6 @@ export function parseRecorderConfig(input: unknown): RecorderConfig {
 
 function questionText(question: OfferedQuestion, language: VoiceLanguage): string {
   return question[language];
-}
-
-/** The medium prompt is a text file with {{question}} and {{answers}} placeholders. */
-export function fillMediumPrompt(template: string, question: string, answers: string): string {
-  return template
-    .replaceAll("{{question}}", () => question)
-    .replaceAll("{{answers}}", () => answers);
 }
 
 function sha256(text: string): string {
@@ -360,9 +354,7 @@ async function recordMedium(
   const log = run.deps.log ?? (() => undefined);
   const template = run.deps.readText(config.medium.promptFile);
   if (template === null) {
-    log(
-      `SKIP medium: prompt file ${config.medium.promptFile} does not exist yet (it comes with T-006).`,
-    );
+    log(`SKIP medium: prompt file ${config.medium.promptFile} does not exist.`);
     return earlier;
   }
   const ancestor = config.ancestors.find((a) => a.id === config.medium.ancestorId);
@@ -371,16 +363,21 @@ async function recordMedium(
     log(`SKIP medium: model for "${config.medium.ancestorId}" is not installed.`);
     return earlier;
   }
+  const promptFile = parsePromptFile(template);
   const promptHash = sha256(template);
   const words: RecordedMedium[] = [];
   for (const question of questions) {
     for (const language of VOICE_LANGUAGES) {
       // The medium sees the recorded answers; GPT-2 answers live in the browser and is not here.
+      // Same template function as the browser (src/medium/template.ts), so the recording is the eval.
       const answers = voices
         .filter((v) => v.questionId === question.id && v.language === language)
-        .map((v) => `${v.model.name}: ${v.answer}`)
-        .join("\n");
-      const prompt = fillMediumPrompt(template, questionText(question, language), answers);
+        .map((v) => ({ ancestorId: v.ancestorId, name: v.model.name, text: v.answer }));
+      const prompt = fillPrompt(promptFile, {
+        question: questionText(question, language),
+        language,
+        answers,
+      });
       const stamp = provenance(ancestor, digest, config, run.runAt, version);
       const promptInfo = {
         file: config.medium.promptFile,

@@ -1,8 +1,12 @@
 import {
   AutoModelForCausalLM,
+  AutoProcessor,
   AutoTokenizer,
   BaseStreamer,
+  Gemma4ForConditionalGeneration,
   InterruptableStoppingCriteria,
+  ModelRegistry,
+  TextStreamer,
   env,
   type PretrainedModelOptions,
 } from "@huggingface/transformers";
@@ -16,8 +20,26 @@ import { RecordingProcessor } from "./recording-processor.js";
 import { samplingOptions } from "./sampling.js";
 import { TokenTextAssembler } from "./token-text.js";
 
-/** The ids this runtime serves; Gemma 4 arrives with T-006. */
-const SUPPORTED_MODEL_IDS: ReadonlySet<string> = new Set(["gpt-2"]);
+export const GPT2_MODEL_ID = "gpt-2";
+export const GEMMA4_MODEL_ID = "gemma-4-e2b";
+
+/** The ids this runtime serves. */
+const SUPPORTED_MODEL_IDS: ReadonlySet<string> = new Set([GPT2_MODEL_ID, GEMMA4_MODEL_ID]);
+
+/**
+ * Gemma 4's ONNX sessions when run text-only (transformers.js 4.3.1, src/models/session_config.js:
+ * `text_only_sessions` of ImageAudioTextToText). Used when ancestors.json names no map; the exact
+ * precisions are unverified until T-001 (the spike picked them from the repository's files).
+ */
+const GEMMA4_DEFAULT_DTYPE: Readonly<Record<string, string>> = {
+  embed_tokens: "q4",
+  decoder_model_merged: "q4",
+};
+/** The fallback loader also opens these sessions, so they get the smallest precision too. */
+const GEMMA4_FALLBACK_EXTRA_DTYPE: Readonly<Record<string, string>> = {
+  vision_encoder: "q4",
+  audio_encoder: "q4",
+};
 
 /** Used when ancestors.json names no dtype for a runtime. Both keep GPT-2 well under 300 MB. */
 const DEFAULT_DTYPE: Readonly<Record<ModelDevice, string>> = { webgpu: "fp16", wasm: "q8" };
@@ -26,6 +48,7 @@ const DEFAULT_DTYPE: Readonly<Record<ModelDevice, string>> = { webgpu: "fp16", w
 const WASM_FILE_STEM = "ort-wasm-simd-threaded.asyncify";
 
 type Dtype = Extract<PretrainedModelOptions["dtype"], string>;
+type DtypeOption = NonNullable<PretrainedModelOptions["dtype"]>;
 
 let configured = false;
 
@@ -118,8 +141,24 @@ export function createTransformersRuntime(): ModelRuntime {
   return {
     supports: (modelId) => SUPPORTED_MODEL_IDS.has(modelId),
 
-    async load(_modelId, source, onProgress, backend): Promise<LoadedModel> {
+    async isCached(modelId, source): Promise<boolean> {
       configureEnvironment();
+      const setting = source.dtypes?.webgpu;
+      const dtype =
+        modelId === GEMMA4_MODEL_ID
+          ? typeof setting === "object"
+            ? setting
+            : GEMMA4_DEFAULT_DTYPE
+          : undefined;
+      return ModelRegistry.is_cached(source.repositoryId, {
+        revision: source.revision,
+        ...(dtype === undefined ? {} : { dtype: dtype as DtypeOption }),
+      });
+    },
+
+    async load(modelId, source, onProgress, backend): Promise<LoadedModel> {
+      configureEnvironment();
+      if (modelId === GEMMA4_MODEL_ID) return loadGemma4(source, onProgress, backend);
       const tokenizer = await AutoTokenizer.from_pretrained(source.repositoryId, {
         revision: source.revision,
       });
@@ -128,7 +167,8 @@ export function createTransformersRuntime(): ModelRuntime {
       );
 
       const loadOn = async (device: ModelDevice): Promise<Loaded> => {
-        const dtype = source.dtypes?.[device] ?? DEFAULT_DTYPE[device];
+        const setting = source.dtypes?.[device];
+        const dtype = typeof setting === "string" ? setting : DEFAULT_DTYPE[device];
         const model = await AutoModelForCausalLM.from_pretrained(source.repositoryId, {
           revision: source.revision,
           device,
@@ -242,6 +282,109 @@ async function generateWith(
       stopping_criteria: [stop],
     };
     await model.generate(options);
+  } finally {
+    signal.removeEventListener("abort", onAbort);
+  }
+}
+
+type Gemma4Processor = Awaited<ReturnType<typeof AutoProcessor.from_pretrained>>;
+type Gemma4Model = Awaited<ReturnType<typeof AutoModelForCausalLM.from_pretrained>>;
+
+/**
+ * Gemma 4 E2B on WebGPU only (without WebGPU the ritual replays recordings, AC-010.1). Loaded the
+ * way the T-001 spike did: the processor (it owns the chat template), then
+ * AutoModelForCausalLM with a per-session dtype map (text-only sessions), and
+ * Gemma4ForConditionalGeneration as the fallback loader, which also opens the vision and audio
+ * sessions and so needs a dtype for them too. Both classes are exported by the library
+ * (dist/transformers.web.js, checked in 4.3.1).
+ */
+async function loadGemma4(
+  source: Parameters<ModelRuntime["load"]>[1],
+  onProgress: (loaded: number, total: number) => void,
+  backend: ModelDevice | undefined,
+): Promise<LoadedModel> {
+  if (backend === "wasm" || !(await webGpuAvailable())) {
+    throw new Error("Gemma 4 needs WebGPU, which this browser does not offer.");
+  }
+  const setting = source.dtypes?.webgpu;
+  const dtype: Readonly<Record<string, string>> =
+    typeof setting === "object" ? setting : GEMMA4_DEFAULT_DTYPE;
+  const options = {
+    revision: source.revision,
+    progress_callback: totalProgress(onProgress),
+  };
+  const processor = await AutoProcessor.from_pretrained(source.repositoryId, options);
+  let model: Gemma4Model;
+  try {
+    model = await AutoModelForCausalLM.from_pretrained(source.repositoryId, {
+      ...options,
+      device: "webgpu",
+      dtype: dtype as DtypeOption,
+    });
+  } catch (error: unknown) {
+    console.warn(
+      "[ofrenda] AutoModelForCausalLM could not load Gemma 4; trying the fallback",
+      error,
+    );
+    model = await Gemma4ForConditionalGeneration.from_pretrained(source.repositoryId, {
+      ...options,
+      device: "webgpu",
+      dtype: { ...GEMMA4_FALLBACK_EXTRA_DTYPE, ...dtype } as DtypeOption,
+    });
+  }
+  return {
+    device: "webgpu",
+    dtype: JSON.stringify(dtype),
+    async generate(params: GenerateParams): Promise<void> {
+      await generateGemma4(model, processor, params);
+    },
+    async dispose(): Promise<void> {
+      await model.dispose();
+    },
+  };
+}
+
+async function generateGemma4(
+  model: Gemma4Model,
+  processor: Gemma4Processor,
+  { prompt, settings, signal, onToken }: GenerateParams,
+): Promise<void> {
+  const stop = new InterruptableStoppingCriteria();
+  const onAbort = (): void => {
+    stop.interrupt();
+  };
+  signal.addEventListener("abort", onAbort, { once: true });
+  if (signal.aborted) return;
+  try {
+    // The prompt is one user turn (instructions and delimited data): the Gemma 4 chat template's
+    // handling of a system role is unverified, so none is used. Verified in the library source:
+    // Processor.apply_chat_template(messages, options) delegates to the tokenizer with
+    // tokenize: false, and calling the processor returns the model inputs.
+    const text: unknown = processor.apply_chat_template([{ role: "user", content: prompt }], {
+      add_generation_prompt: true,
+    });
+    if (typeof text !== "string") throw new Error("The chat template did not return text.");
+    const inputs = (await processor(text, null, null, { add_special_tokens: false })) as Record<
+      string,
+      unknown
+    >;
+    const { tokenizer } = processor;
+    if (tokenizer === undefined) throw new Error("Gemma 4's processor has no tokenizer.");
+    const streamer = new TextStreamer(tokenizer, {
+      skip_prompt: true,
+      skip_special_tokens: true,
+      callback_function: (piece: string) => {
+        if (piece !== "") onToken({ text: piece });
+      },
+    });
+    await model.generate({
+      ...inputs,
+      // Same sampler settings as GPT-2 (top_k 0: the whole vocabulary), at Gemma 4's own temperature.
+      ...samplingOptions(settings, []),
+      temperature: settings.temperature,
+      streamer,
+      stopping_criteria: [stop],
+    });
   } finally {
     signal.removeEventListener("abort", onAbort);
   }

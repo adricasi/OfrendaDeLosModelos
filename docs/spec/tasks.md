@@ -77,7 +77,7 @@ At most 2 tasks in parallel. Marked ⚡ where a task can run beside the previous
     questions.
   - Done when: AC-013.1–AC-013.3 tests pass with a fake Ollama; AC-005.1–AC-005.4 tests pass;
     `recorded-voices.json` committed with metadata; CI green.
-- [ ] T-006: Gemma 4 speaks and tends the altar
+- [~] T-006: Gemma 4 speaks and tends the altar (code done; real-model check and eval pending the founder)
   - Requirements: REQ-006, REQ-007
   - Depends on: T-004
   - Scope: Gemma 4 E2B in the worker with consent and progress; its own answer; the medium

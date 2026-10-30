@@ -12,5 +12,12 @@
     "rootDir": "..",
     "outDir": "../node_modules/.cache/record-voices"
   },
-  "include": ["./*.ts", "../src/data/recorded-voices.ts", "../src/data/validate.ts"]
+  "include": [
+    "./*.ts",
+    "../src/data/recorded-voices.ts",
+    "../src/data/validate.ts",
+    "../src/medium/template.ts",
+    "../src/medium/parse.ts",
+    "../src/medium/check.ts"
+  ]
 }

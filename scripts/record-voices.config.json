@@ -34,8 +34,8 @@
     }
   ],
   "medium": {
-    "enabled": false,
+    "enabled": true,
     "ancestorId": "gemma-4-e2b",
-    "promptFile": "scripts/medium-prompt.txt"
+    "promptFile": "prompts/medium.md"
   }
 }

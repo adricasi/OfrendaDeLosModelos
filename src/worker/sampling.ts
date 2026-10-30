@@ -20,6 +20,6 @@ export function samplingOptions(
     do_sample: true,
     temperature: 1,
     top_k: 0,
-    bad_words_ids: blockedSequences,
+    ...(blockedSequences.length === 0 ? {} : { bad_words_ids: blockedSequences }),
   };
 }

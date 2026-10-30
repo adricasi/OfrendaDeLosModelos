@@ -20,8 +20,48 @@ export interface FakeWorkerOptions {
   readonly alternativesFor?: readonly string[];
   /** Delay before a model is ready, in ms (lets tests press Stop during a load). */
   readonly loadDelayMs?: number;
-  /** Overrides the deterministic words of a model. */
-  readonly wordsFor?: (modelId: string) => readonly string[];
+  /** Overrides the deterministic words of a model; the prompt is what the UI sent. */
+  readonly wordsFor?: (modelId: string, prompt: string) => readonly string[];
+  /** Model ids stored on the device already: a `probe` of them answers cached. Absent: all are. */
+  readonly cachedModels?: readonly string[];
+  /**
+   * What the medium's prompt gets back: a valid JSON reply, a broken one, or a broken first reply
+   * and a valid retry. Any other prompt gets the model's plain words.
+   */
+  readonly mediumReply?: "valid" | "broken" | "broken-then-valid";
+}
+
+const MEDIUM_MARKER = "<answers>";
+
+/** The ancestor ids a medium prompt asks for (its `<answer id="…">` blocks). */
+export function idsInMediumPrompt(prompt: string): string[] {
+  return [...prompt.matchAll(/<answer id="([^"]+)"/g)].map((m) => m[1] ?? "");
+}
+
+function validMediumJson(prompt: string): string {
+  const spanish = /Spanish/.test(prompt);
+  const entries = idsInMediumPrompt(prompt).map((ancestorId) => ({
+    ancestorId,
+    meaning: spanish ? `Quiso decir algo sobre ${ancestorId}.` : `It tried to say something.`,
+    calaverita: spanish
+      ? [
+          "Linea uno del altar,",
+          "linea dos para cantar,",
+          "linea tres sin dudar,",
+          "linea cuatro a descansar.",
+        ]
+      : [
+          "Line one for the altar,",
+          "line two will not falter,",
+          "line three sets us free,",
+          "line four, rest in peace.",
+        ],
+  }));
+  return JSON.stringify(entries);
+}
+
+function chunks(text: string): string[] {
+  return text.match(/[\s\S]{1,14}/g) ?? [];
 }
 
 const DEFAULT_WORDS = ["Fake", " voice", " of", " the", " altar", " speaks", " tonight."];
@@ -81,22 +121,37 @@ export function createFakeWorker(options: FakeWorkerOptions = {}): ModelWorkerPo
     emit({ type: "ready", modelId });
   }
 
-  async function generate(requestId: string, modelId: string): Promise<void> {
+  async function generate(requestId: string, modelId: string, prompt: string): Promise<void> {
     if (!loaded.has(modelId)) {
       emit({ type: "error", requestId, message: `${modelId} is not loaded.` });
       return;
     }
     active.add(requestId);
     try {
-      await speak(requestId, modelId);
+      await speak(requestId, modelId, prompt);
     } finally {
       active.delete(requestId);
       cancelledRequests.delete(requestId);
     }
   }
 
-  async function speak(requestId: string, modelId: string): Promise<void> {
-    const words = (options.wordsFor ?? defaultWords)(modelId);
+  let mediumRequests = 0;
+
+  function wordsOf(modelId: string, prompt: string): readonly string[] {
+    if (prompt.includes(MEDIUM_MARKER) && options.mediumReply !== undefined) {
+      mediumRequests += 1;
+      const valid =
+        options.mediumReply === "valid" ||
+        (options.mediumReply === "broken-then-valid" && mediumRequests > 1);
+      return chunks(
+        valid ? validMediumJson(prompt) : "Here is some verse, but not as JSON: {broken",
+      );
+    }
+    return (options.wordsFor ?? defaultWords)(modelId, prompt);
+  }
+
+  async function speak(requestId: string, modelId: string, prompt: string): Promise<void> {
+    const words = wordsOf(modelId, prompt);
     const failing = options.failGenerate?.includes(modelId) === true;
     const failAfter = options.failAfterTokens ?? 2;
     for (const [index, text] of words.entries()) {
@@ -123,7 +178,15 @@ export function createFakeWorker(options: FakeWorkerOptions = {}): ModelWorkerPo
           void load(message.modelId);
           break;
         case "generate":
-          void generate(message.requestId, message.modelId);
+          void generate(message.requestId, message.modelId, message.prompt);
+          break;
+        case "probe":
+          emit({
+            type: "probed",
+            modelId: message.modelId,
+            cached:
+              options.cachedModels === undefined || options.cachedModels.includes(message.modelId),
+          });
           break;
         case "cancel":
           if (active.has(message.requestId)) cancelledRequests.add(message.requestId);

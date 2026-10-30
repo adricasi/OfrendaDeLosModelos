@@ -86,6 +86,7 @@ describe("the production build ignores development overrides", () => {
     const code = await bundledCode("production");
     expect(code.length).toBeGreaterThan(1000);
     expect(code).not.toContain("model-gpt2");
+    expect(code).not.toContain("model-gemma4");
     expect(code).not.toContain(MODEL_OVERRIDE_MARKER);
   }, 60_000);
 

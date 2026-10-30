@@ -306,7 +306,7 @@ describe("the ritual without WebGPU (AC-010.1, AC-010.2, AC-006.3, AC-007.5)", (
   it("shows one browser line naming Chrome and Edge on desktop", async () => {
     mountPage();
     const data = await loadTestData();
-    startAltar(document, data, createProductionDependencies(data, false));
+    startAltar(document, data, createProductionDependencies(data, false, false));
     const note = document.getElementById("browser-note");
     expect(note?.hidden).toBe(false);
     expect(note?.textContent).toBe(NO_WEBGPU_MESSAGE);
@@ -317,7 +317,7 @@ describe("the ritual without WebGPU (AC-010.1, AC-010.2, AC-006.3, AC-007.5)", (
   it("hides the browser line when WebGPU is available", async () => {
     mountPage();
     const data = await loadTestData();
-    startAltar(document, data, createProductionDependencies(data, true));
+    startAltar(document, data, createProductionDependencies(data, true, false));
     expect(document.getElementById("browser-note")?.hidden).toBe(true);
   });
 

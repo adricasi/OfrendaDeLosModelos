@@ -35,6 +35,7 @@ npm ci
 ollama serve                      # if Ollama is not already running
 ollama pull gemma:2b && ollama pull gemma2:2b && ollama pull gemma3:1b && ollama pull gemma4:e2b
 npm run record-voices -- --allow-unverified   # writes public/data/recorded-voices.json
+npm run eval:medium                           # checks the recorded medium words (JSON, 4 lines, language, R1/R2)
 ```
 
 - Settings live in `scripts/record-voices.config.json`: ancestors with their Ollama tag and model

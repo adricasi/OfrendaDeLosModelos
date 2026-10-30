@@ -68,7 +68,9 @@
       "modelCardUrl": "https://ai.google.dev/gemma/docs",
       "repositoryId": null,
       "revision": null,
-      "settings": null,
+      "dtypes": { "webgpu": { "embed_tokens": "q4", "decoder_model_merged": "q4" } },
+      "downloadBytes": null,
+      "settings": { "maxTokens": 160, "temperature": 0.7 },
       "verify": "T-001"
     }
   ]

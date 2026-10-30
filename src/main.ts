@@ -22,6 +22,7 @@ async function main(): Promise<void> {
     const fake = await import("./fake/bootstrap.js");
     if (fake.fakeModelsRequested(location.search)) {
       deps = fake.createFakeDependencies(location.search, webgpu);
+      data = fake.withFakeDownloadSize(data);
       document.documentElement.dataset["modelWorker"] = "fake";
     }
   }

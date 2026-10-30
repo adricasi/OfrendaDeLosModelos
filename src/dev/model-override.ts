@@ -1,7 +1,7 @@
 import type { Ancestor } from "../data/validate.js";
 
 /**
- * Development only: `?model-gpt2=<repository>@<revision>` lets the builder try a model before
+ * Development only: `?model-gpt2=<repository>@<revision>` (and `?model-gemma4=…` for Gemma 4 E2B) lets the builder try a model before
  * its repository and revision are pinned in ancestors.json. Only main.ts imports this, behind
  * `import.meta.env.DEV`, so the production build contains neither this code nor the parameter
  * name (test/model-override.test.ts checks the bundle). The revision must be a full commit hash.
@@ -16,8 +16,9 @@ const OVERRIDE = /^([A-Za-z0-9][A-Za-z0-9._-]*\/[A-Za-z0-9][A-Za-z0-9._-]*)@([0-
 /** Present only in builds that include the override; the production-bundle test looks for it. */
 export const MODEL_OVERRIDE_MARKER = "dev-model-override-v1";
 
-/** The parameter name for an ancestor: `gpt-2` is `model-gpt2`. */
+/** The parameter name for an ancestor: `gpt-2` is `model-gpt2`, `gemma-4-e2b` is `model-gemma4`. */
 export function overrideParameter(ancestorId: string): string {
+  if (ancestorId === "gemma-4-e2b") return "model-gemma4";
   return `model-${ancestorId.replaceAll("-", "")}`;
 }
 

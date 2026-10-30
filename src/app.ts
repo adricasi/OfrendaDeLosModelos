@@ -12,9 +12,9 @@ import { workerScriptUrl } from "./worker/trusted-worker.js";
 import { lazyPort, portForWorker } from "./worker/worker-port.js";
 
 /**
- * What ships: the real inference worker (GPT-2 now, Gemma 4 with T-006), created on first use.
- * The medium (T-006) is not plugged in yet. With `debug`, load times, tokens per second and
- * errors go to the console (NFR-007).
+ * What ships: the real inference worker (GPT-2 and Gemma 4), created on first use, and the
+ * recorded voices (T-005). With `debug`, load times, tokens per second and errors go to the
+ * console (NFR-007).
  */
 export function createProductionDependencies(
   data: AltarData,
@@ -32,7 +32,8 @@ export function createProductionDependencies(
   return {
     worker: debug ? withDebugLogging(port, console) : port,
     recorded: createRecordedSource(data.recordedVoices),
-    includeMedium: false,
+    includeMedium: true,
+    ...(debug ? { log: (message: string) => console.info(message) } : {}),
     webgpu,
   };
 }

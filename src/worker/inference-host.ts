@@ -52,6 +52,8 @@ export interface ModelRuntime {
     onProgress: (loaded: number, total: number) => void,
     backend?: ModelDevice,
   ): Promise<LoadedModel>;
+  /** True when every file of the model is already stored on this device. Never downloads. */
+  isCached?(modelId: string, source: PinnedSource): Promise<boolean>;
 }
 
 /**
@@ -182,6 +184,27 @@ export function createInferenceHost({ runtime, send }: InferenceHostOptions): In
     }
   }
 
+  /** Anything that goes wrong counts as "not stored", so the visitor is asked before a download. */
+  async function handleProbe(modelId: string, source: ModelSource | undefined): Promise<void> {
+    // A model that would be refused is reported as such, so the visitor is never asked to
+    // download something that will not load (AC-003.3).
+    let pinned: PinnedSource;
+    try {
+      if (!runtime.supports(modelId)) throw new Error(`No runtime for ${modelId} yet.`);
+      pinned = pinnedSource(source);
+    } catch (error: unknown) {
+      send({ type: "probed", modelId, cached: false, refused: describe(error) });
+      return;
+    }
+    let cached = false;
+    try {
+      cached = (await runtime.isCached?.(modelId, pinned)) ?? false;
+    } catch {
+      cached = false;
+    }
+    send({ type: "probed", modelId, cached });
+  }
+
   function cancelLoad(modelId: string): void {
     const entry = loading.get(modelId);
     if (entry === undefined || entry.settled) return;
@@ -271,6 +294,9 @@ export function createInferenceHost({ runtime, send }: InferenceHostOptions): In
           break;
         case "cancel-load":
           cancelLoad(message.modelId);
+          break;
+        case "probe":
+          void handleProbe(message.modelId, message.source);
           break;
         case "unload":
           unload(message.modelId);

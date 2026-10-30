@@ -22,9 +22,14 @@ export interface Alternative {
 export interface ModelSource {
   readonly repositoryId: string | null;
   readonly revision: string | null;
-  /** ONNX weight precision per runtime (for example "fp16" or "q8"); null uses the worker's default. */
-  readonly dtypes: { readonly webgpu?: string; readonly wasm?: string } | null;
+  /**
+   * ONNX weight precision per runtime (for example "fp16" or "q8"); null uses the worker's default.
+   * Multi-part models (Gemma 4) take a map from ONNX session to precision.
+   */
+  readonly dtypes: { readonly webgpu?: DtypeSetting; readonly wasm?: DtypeSetting } | null;
 }
+
+export type DtypeSetting = string | Readonly<Record<string, string>>;
 
 export type ModelDevice = "webgpu" | "wasm";
 
@@ -39,7 +44,7 @@ export type UiToWorkerMessage =
       readonly type: "load";
       readonly modelId: string;
       readonly source?: ModelSource;
-      /** Without WebGPU the UI asks for "wasm" (REQ-010); absent means "webgpu". */
+      /** Without WebGPU the UI asks for "wasm" (AC-010.1); absent means WebGPU is tried first. */
       readonly backend?: InferenceBackend;
     }
   | {
@@ -57,6 +62,16 @@ export type UiToWorkerMessage =
    * starts again. Ignored when the model is already loaded or not loading.
    */
   | { readonly type: "cancel-load"; readonly modelId: string }
+  /**
+   * Asks whether the model's files are already stored on this device (AC-006.2: the visitor is
+   * asked before a download only when there is one). Answered with `probed`; never downloads.
+   */
+  | {
+      readonly type: "probe";
+      readonly modelId: string;
+      readonly source?: ModelSource;
+      readonly backend?: InferenceBackend;
+    }
   /**
    * Frees a model's memory (stops its answers, then disposes it). No reply is expected; a later
    * `load` starts afresh. For Gemma 4 to take GPT-2's place when memory is tight (T-006).
@@ -76,6 +91,13 @@ export type WorkerToUiMessage =
       /** What the model runs on; reported for `?debug` and the manual checks. */
       readonly device?: ModelDevice;
       readonly dtype?: string;
+    }
+  | {
+      readonly type: "probed";
+      readonly modelId: string;
+      readonly cached: boolean;
+      /** Set when the model would not be loaded at all (for example no pinned revision). */
+      readonly refused?: string;
     }
   | {
       readonly type: "token";
