@@ -107,6 +107,12 @@ class TokenStreamer extends BaseStreamer {
   }
 }
 
+interface Loaded {
+  readonly device: ModelDevice;
+  readonly dtype: string;
+  readonly model: CausalModel;
+}
+
 export function createTransformersRuntime(): ModelRuntime {
   return {
     supports: (modelId) => SUPPORTED_MODEL_IDS.has(modelId),
@@ -119,37 +125,70 @@ export function createTransformersRuntime(): ModelRuntime {
       const blocked = blockedTokenSequences(BLOCKED_WORDS, (text) =>
         tokenizer.encode(text, { add_special_tokens: false }),
       );
+
+      const loadOn = async (device: ModelDevice): Promise<Loaded> => {
+        const dtype = source.dtypes?.[device] ?? DEFAULT_DTYPE[device];
+        const model = await AutoModelForCausalLM.from_pretrained(source.repositoryId, {
+          revision: source.revision,
+          device,
+          dtype: dtype as Dtype,
+          progress_callback: totalProgress(onProgress),
+        });
+        return { device, dtype, model };
+      };
+
       // AC-010.1: WebAssembly when asked, or when there is no WebGPU adapter; otherwise WebGPU
       // first, with WebAssembly as the fallback if WebGPU cannot initialise.
       const attempts: ModelDevice[] =
         backend !== "wasm" && (await webGpuAvailable()) ? ["webgpu", "wasm"] : ["wasm"];
+      let current: Loaded | null = null;
       let lastError: unknown = new Error("No runtime could load the model.");
       for (const device of attempts) {
-        const dtype = source.dtypes?.[device] ?? DEFAULT_DTYPE[device];
         try {
-          const model = await AutoModelForCausalLM.from_pretrained(source.repositoryId, {
-            revision: source.revision,
-            device,
-            dtype: dtype as Dtype,
-            progress_callback: totalProgress(onProgress),
-          });
-          return {
-            device,
-            dtype,
-            async generate(params: GenerateParams): Promise<void> {
-              await generateWith(model, tokenizer, blocked, params);
-            },
-            async dispose(): Promise<void> {
-              await model.dispose();
-            },
-          };
+          current = await loadOn(device);
+          break;
         } catch (error: unknown) {
           // Typically WebGPU without shader-f16, or a device that cannot hold the weights.
-          console.warn(`[ofrenda] ${device}/${dtype} could not load the model`, error);
+          console.warn(`[ofrenda] ${device} could not load the model`, error);
           lastError = error;
         }
       }
-      throw lastError;
+      if (current === null) throw lastError;
+      let loaded: Loaded = current;
+
+      return {
+        get device(): ModelDevice {
+          return loaded.device;
+        },
+        get dtype(): string {
+          return loaded.dtype;
+        },
+        async generate(params: GenerateParams): Promise<void> {
+          let emitted = 0;
+          const counting: GenerateParams = {
+            ...params,
+            onToken: (event) => {
+              emitted += 1;
+              params.onToken(event);
+            },
+          };
+          try {
+            await generateWith(loaded.model, tokenizer, blocked, counting);
+          } catch (error: unknown) {
+            // A WebGPU model can load fine and still fail on its first run (a shader or
+            // device error). Before any token was shown, move to WebAssembly and try once more.
+            if (loaded.device !== "webgpu" || emitted > 0 || params.signal.aborted) throw error;
+            console.warn("[ofrenda] webgpu failed on its first run, using wasm", error);
+            const failed = loaded;
+            loaded = await loadOn("wasm");
+            await failed.model.dispose();
+            await generateWith(loaded.model, tokenizer, blocked, counting);
+          }
+        },
+        async dispose(): Promise<void> {
+          await loaded.model.dispose();
+        },
+      };
     },
   };
 }

@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { blockedTokenSequences } from "../src/worker/blocked-tokens.js";
 import { StepRecorder, ghostAlternatives, topCandidates } from "../src/worker/ghost-words.js";
 import { RecordingProcessor } from "../src/worker/recording-processor.js";
-import { TokenTextAssembler } from "../src/worker/token-text.js";
+import { MAX_HELD_TOKENS, TokenTextAssembler } from "../src/worker/token-text.js";
 
 function softmax(values: number[], temperature: number): number[] {
   const scaled = values.map((v) => v / temperature);
@@ -225,5 +225,19 @@ describe("token text assembly", () => {
     expect(assembler.push(10)).toBe("caf");
     expect(assembler.push(11)).toBe("");
     expect(assembler.push(12)).toBe("é");
+  });
+});
+
+describe("holding back an incomplete character", () => {
+  it("gives up after a few tokens and shows the text as it is", () => {
+    // Every id decodes to a trailing incomplete sequence: it can never complete.
+    const decode = (ids: readonly number[]): string =>
+      `ab${"�".repeat(ids.length)}`.slice(0, 2 + ids.length);
+    const assembler = new TokenTextAssembler(decode);
+    const shown: string[] = [];
+    for (let id = 0; id < MAX_HELD_TOKENS + 2; id += 1) shown.push(assembler.push(id));
+    expect(shown.slice(0, MAX_HELD_TOKENS)).toEqual(Array<string>(MAX_HELD_TOKENS).fill(""));
+    expect(shown[MAX_HELD_TOKENS]).toContain("�");
+    expect(shown.join("")).toBe(decode(Array.from({ length: MAX_HELD_TOKENS + 2 }, (_, i) => i)));
   });
 });
