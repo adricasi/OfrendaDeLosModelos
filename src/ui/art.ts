@@ -306,13 +306,7 @@ function stringPoint(
   return { x, y, d: `M${x0} ${options.y0}Q${(x0 + x1) / 2} ${control} ${x1} ${options.y1}` };
 }
 
-function papelRow(
-  doc: Document,
-  root: SVGGElement,
-  options: RowOptions,
-  width: number,
-  reduced: boolean,
-): void {
+function papelRow(doc: Document, root: SVGGElement, options: RowOptions, width: number): void {
   const random = seeded(options.seed);
   const string = stringPoint(options, 0, width).d;
   root.append(svgEl(doc, "path", { class: "string", d: string }));
@@ -327,7 +321,11 @@ function papelRow(
       doc,
       "g",
       { class: `flag flag-c${String(colour)}` },
-      svgEl(doc, "path", { class: "flag-body", "fill-rule": "evenodd", d: shape.outline + shape.cuts }),
+      svgEl(doc, "path", {
+        class: "flag-body",
+        "fill-rule": "evenodd",
+        d: shape.outline + shape.cuts,
+      }),
       svgEl(doc, "path", {
         class: "flag-shade",
         "fill-rule": "evenodd",
@@ -353,7 +351,6 @@ function papelRow(
     sway(`${round(between(random, 3.4, 6.2))}s`, "--sway-duration");
     sway(`${round(-between(random, 0, 6))}s`, "--sway-delay");
     sway(`${round(between(random, -2.5, 2.5))}deg`, "--sway-skew");
-    if (reduced) flag.classList.add("still");
     root.append(
       svgEl(
         doc,
@@ -379,7 +376,6 @@ export function renderPapelPicado(doc: Document, target: SVGSVGElement): void {
     far,
     { y0: 74, y1: 62, sag: 22, count: 7, scale: 0.95, seed: 4711, first: 2 },
     width,
-    false,
   );
   const near = svgEl(doc, "g", { class: "row-near" });
   papelRow(
@@ -387,7 +383,6 @@ export function renderPapelPicado(doc: Document, target: SVGSVGElement): void {
     near,
     { y0: 12, y1: 18, sag: 18, count: 7, scale: 1.35, seed: 1031, first: 0 },
     width,
-    false,
   );
   root.append(far, near);
   target.replaceChildren(root);
@@ -447,7 +442,8 @@ export function renderArchTop(doc: Document, target: SVGSVGElement): void {
     const size = between(random, 54, 92);
     // One side is fuller than the other: more small buds on the right.
     const tone = Math.floor(random() * 3);
-    if (random() < 0.5) leaves.append(leafUse(doc, x, y, (angle * 180) / Math.PI + between(random, -50, 50), 62));
+    if (random() < 0.5)
+      leaves.append(leafUse(doc, x, y, (angle * 180) / Math.PI + between(random, -50, 50), 62));
     (index % 2 === 0 ? back : front).append(flowerUse(doc, x, y, size, random() * 360, tone));
     if (index % 3 === 0) {
       const inner = between(random, 40, 52);
@@ -480,7 +476,11 @@ export function renderArchTop(doc: Document, target: SVGSVGElement): void {
 }
 
 /** The strip down each leg of the arch: a tile of flowers repeated downwards. */
-export function renderArchLegs(doc: Document, defs: SVGDefsElement, sizes: readonly number[]): void {
+export function renderArchLegs(
+  doc: Document,
+  defs: SVGDefsElement,
+  sizes: readonly number[],
+): void {
   const random = seeded(88);
   for (const width of sizes) {
     const height = 230;
@@ -504,11 +504,15 @@ export function renderArchLegs(doc: Document, defs: SVGDefsElement, sizes: reado
     for (const [fx, fy, size] of spots) {
       const x = fx * width + between(random, -4, 4) * scale;
       const y = fy * height;
-      if (random() < 0.5) pattern.append(leafUse(doc, x + between(random, -10, 10), y + 16, between(random, -60, 60), 50 * scale));
+      if (random() < 0.5)
+        pattern.append(
+          leafUse(doc, x + between(random, -10, 10), y + 16, between(random, -60, 60), 50 * scale),
+        );
       pattern.append(flowerUse(doc, x, y, size * scale, random() * 360, Math.floor(random() * 3)));
       // Wrap the flowers that cross the tile edge so the repeat has no seam.
       if (y < 40) pattern.append(flowerUse(doc, x, y + height, size * scale, random() * 360, 0));
-      if (y > height - 40) pattern.append(flowerUse(doc, x, y - height, size * scale, random() * 360, 1));
+      if (y > height - 40)
+        pattern.append(flowerUse(doc, x, y - height, size * scale, random() * 360, 1));
     }
     defs.append(pattern);
   }
@@ -644,7 +648,10 @@ function panDeMuerto(doc: Document): SVGSVGElement {
     doc,
     "svg",
     { class: "offering-pan", viewBox: "0 0 90 50", "aria-hidden": "true", focusable: "false" },
-    svgEl(doc, "path", { class: "pan-loaf", d: "M4 44C2 22 20 6 45 6C70 6 88 22 86 44C70 49 20 49 4 44Z" }),
+    svgEl(doc, "path", {
+      class: "pan-loaf",
+      d: "M4 44C2 22 20 6 45 6C70 6 88 22 86 44C70 49 20 49 4 44Z",
+    }),
     svgEl(doc, "path", {
       class: "pan-bone",
       d: "M20 36C28 22 34 14 40 8M70 36C62 22 56 14 50 8M45 44V12M12 36C26 30 62 30 78 36",
@@ -671,7 +678,10 @@ function copalBurner(doc: Document): HTMLSpanElement {
     doc,
     "svg",
     { class: "brazier", viewBox: "0 0 64 40", "aria-hidden": "true", focusable: "false" },
-    svgEl(doc, "path", { class: "clay", d: "M6 10H58C57 24 48 30 38 30V36H44V39H20V36H26V30C16 30 7 24 6 10Z" }),
+    svgEl(doc, "path", {
+      class: "clay",
+      d: "M6 10H58C57 24 48 30 38 30V36H44V39H20V36H26V30C16 30 7 24 6 10Z",
+    }),
     svgEl(doc, "ellipse", { class: "ember", cx: 32, cy: 10, rx: 22, ry: 4 }),
     svgEl(doc, "path", { class: "copal-lumps", d: "M24 9l3-3 3 2 3-3 4 3 3-1" }),
   );
@@ -741,7 +751,14 @@ export function renderMarigoldBed(doc: Document, target: HTMLElement): void {
   });
   for (let x = -10; x < width + 30; x += between(random, 30, 44)) {
     svg.append(
-      flowerUse(doc, x, between(random, 30, 52), between(random, 46, 66), random() * 360, Math.floor(random() * 3)),
+      flowerUse(
+        doc,
+        x,
+        between(random, 30, 52),
+        between(random, 46, 66),
+        random() * 360,
+        Math.floor(random() * 3),
+      ),
     );
   }
   target.replaceChildren(svg);

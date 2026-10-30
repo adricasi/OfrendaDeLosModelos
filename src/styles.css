@@ -451,8 +451,8 @@ textarea:focus-visible {
   position: absolute;
   inset: 0 0 auto;
   height: 0.7rem;
-  background: radial-gradient(circle at 0.5rem 0, var(--night-soft) 0.32rem, transparent 0.34rem)
-    0 0 / 1rem 0.7rem repeat-x;
+  background: radial-gradient(circle at 0.5rem 0, var(--night-soft) 0.32rem, transparent 0.34rem) 0
+    0 / 1rem 0.7rem repeat-x;
 }
 
 .medium-note h4 {

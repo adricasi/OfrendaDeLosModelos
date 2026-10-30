@@ -71,7 +71,11 @@ export function placeCard(card: Element, index: number): void {
   card.animate(
     [
       { opacity: 0, transform: `translateY(-1.1rem) rotate(${String(tilt * 4)}deg)` },
-      { opacity: 1, transform: `translateY(0.12rem) rotate(${String(tilt * 0.6)}deg)`, offset: 0.7 },
+      {
+        opacity: 1,
+        transform: `translateY(0.12rem) rotate(${String(tilt * 0.6)}deg)`,
+        offset: 0.7,
+      },
       { opacity: 1, transform: `translateY(0) rotate(${String(tilt)}deg)` },
     ],
     { duration: 720, delay: index * 220, easing: "cubic-bezier(.3,.7,.3,1)", fill: "backwards" },
@@ -166,7 +170,8 @@ export function startPetalDrift(canvas: HTMLCanvasElement, win: Window = window)
     clock += seconds;
     ctx.clearRect(0, 0, width, height);
     for (const particle of particles) {
-      const wind = noise(clock * 0.15 + particle.y * 0.004) * 26 + noise(clock * 0.5 + particle.seed) * 8;
+      const wind =
+        noise(clock * 0.15 + particle.y * 0.004) * 26 + noise(clock * 0.5 + particle.seed) * 8;
       particle.x += (wind + 6) * seconds;
       particle.y += particle.speed * seconds;
       particle.angle += particle.spin * seconds;

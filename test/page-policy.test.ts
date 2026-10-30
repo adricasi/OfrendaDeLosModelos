@@ -70,26 +70,58 @@ describe("Content Security Policy (NFR-001)", () => {
   });
 });
 
+const STYLESHEETS = ["src/styles.css", "src/altar-art.css"];
+
 describe("reduced motion (AC-001.3)", () => {
   // This is a CSS-text check on purpose: jsdom does not evaluate media queries, so the
   // reduced-motion behaviour cannot be observed in a DOM test.
-  it("disables candle and petal animation under prefers-reduced-motion", () => {
+  it("switches every animation and transition off under prefers-reduced-motion", () => {
     const css = read("src/styles.css");
     const block = /@media \(prefers-reduced-motion: reduce\)\s*\{([\s\S]*?\n\})/.exec(css)?.[1];
     expect(block).toBeDefined();
-    expect(block).toMatch(/\.flame,\s*\.petal\s*\{\s*animation:\s*none;/);
+    expect(block).toMatch(/\*,\s*\*::before,\s*\*::after\s*\{/);
+    expect(block).toMatch(/animation:\s*none\s*!important;/);
+    expect(block).toMatch(/transition:\s*none\s*!important;/);
   });
 
-  it("only animates inside rules the reduced-motion block overrides", () => {
-    const css = read("src/styles.css");
-    const animated = [...css.matchAll(/([^{}]+)\{[^{}]*animation:\s*(?![\s]|none)[^;]+;/g)].map(
-      (m) => (m[1] ?? "").trim(),
-    );
-    expect(animated.sort()).toEqual([".flame", ".petal"]);
+  it("has no second reduced-motion rule that could undo the first", () => {
+    for (const file of STYLESHEETS) {
+      const blocks = read(file).match(/prefers-reduced-motion/g) ?? [];
+      expect(blocks.length, file).toBe(file === "src/styles.css" ? 1 : 0);
+    }
   });
 
-  it("uses no third-party fonts or remote assets (AC-009.4)", () => {
-    const css = read("src/styles.css");
-    expect(css).not.toMatch(/@font-face|url\(|@import/);
+  it("the scripted motion checks the preference and listens for changes", () => {
+    const motion = read("src/ui/motion.ts");
+    expect(motion).toMatch(/prefers-reduced-motion: reduce/);
+    expect(motion).toMatch(/addEventListener\("change"/);
+    expect(motion).toMatch(/visibilitychange/);
+  });
+});
+
+describe("assets (AC-009.4, NFR-001)", () => {
+  it("the CSP allows fonts from the site only", () => {
+    expect(csp().get("font-src")).toBe("'self'");
+  });
+
+  it("styles load only the two self-hosted fonts and inline SVG grain: no remote URL", () => {
+    for (const file of STYLESHEETS) {
+      const css = read(file);
+      // The SVG namespace inside a data: URI is an identifier, never fetched.
+      const withoutDataUris = css.replace(/url\("data:[^"]*"\)/g, 'url("data:")');
+      expect(withoutDataUris, file).not.toMatch(/@import|https?:\/\//);
+      const urls = [...withoutDataUris.matchAll(/url\(\s*["']?([^"')]+)/g)].map((m) => m[1] ?? "");
+      for (const url of urls) {
+        expect(url, file).toMatch(/^(\/fonts\/[A-Za-z]+-latin\.woff2|data:$|#)/);
+      }
+    }
+  });
+
+  it("ships at most three font files, each with its licence", () => {
+    const files = readdirSync(join(root, "public/fonts"));
+    expect(files.filter((f) => f.endsWith(".woff2")).length).toBeLessThanOrEqual(3);
+    expect(files).toContain("OFL-Gloock.txt");
+    expect(files).toContain("OFL-BricolageGrotesque.txt");
+    expect(files).toContain("README.md");
   });
 });
