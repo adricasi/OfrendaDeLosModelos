@@ -1,0 +1,41 @@
+{
+  "ollamaBaseUrl": "http://127.0.0.1:11434",
+  "offeredQuestionsFile": "public/data/offered-questions.json",
+  "outputFile": "public/data/recorded-voices.json",
+  "generation": { "temperature": 0, "seed": 42, "numPredict": 120 },
+  "ancestors": [
+    {
+      "id": "gemma-1",
+      "name": "Gemma 1",
+      "tag": "gemma:2b",
+      "verified": false,
+      "licence": { "name": "Gemma Terms of Use", "url": "https://ai.google.dev/gemma/terms" }
+    },
+    {
+      "id": "gemma-2",
+      "name": "Gemma 2",
+      "tag": "gemma2:2b",
+      "verified": false,
+      "licence": { "name": "Gemma Terms of Use", "url": "https://ai.google.dev/gemma/terms" }
+    },
+    {
+      "id": "gemma-3",
+      "name": "Gemma 3",
+      "tag": "gemma3:1b",
+      "verified": false,
+      "licence": { "name": "Gemma Terms of Use", "url": "https://ai.google.dev/gemma/terms" }
+    },
+    {
+      "id": "gemma-4-e2b",
+      "name": "Gemma 4 E2B",
+      "tag": "gemma4:e2b",
+      "verified": false,
+      "licence": { "name": "Apache-2.0", "url": "https://www.apache.org/licenses/LICENSE-2.0" }
+    }
+  ],
+  "medium": {
+    "enabled": false,
+    "ancestorId": "gemma-4-e2b",
+    "promptFile": "scripts/medium-prompt.txt"
+  }
+}

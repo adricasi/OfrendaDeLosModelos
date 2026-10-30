@@ -67,7 +67,7 @@ At most 2 tasks in parallel. Marked ⚡ where a task can run beside the previous
     GPT-2 without WebGPU (AC-010.1).
   - Done when: AC-003.1–AC-003.4 and AC-004.1–AC-004.3 unit tests pass (top-k extraction on
     fixed logits; fake-worker UI tests); manual check on the reference laptop; CI green.
-- [ ] T-005: ⚡ Recording tool and recorded voices
+- [~] T-005: ⚡ Recording tool and recorded voices (tool done; medium phase pending T-006, voices pending the founder's recording)
   - Requirements: REQ-013, REQ-005
   - Depends on: T-001 (tags); start the Ollama pulls right after T-001 (they take hours)
   - Scope: `npm run record-voices` (Node, Ollama on 127.0.0.1), metadata per answer,
