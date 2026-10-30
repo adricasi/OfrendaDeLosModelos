@@ -30,7 +30,6 @@ function el<K extends keyof HTMLElementTagNameMap>(
 function link(doc: Document, href: string, text: string): HTMLAnchorElement {
   const anchor = el(doc, "a", undefined, text);
   anchor.href = href;
-  anchor.rel = "noopener noreferrer";
   return anchor;
 }
 
@@ -151,10 +150,15 @@ export function wireAboutPanel(doc: Document): void {
     if (open) {
       panel.tabIndex = -1;
       panel.focus();
+    } else {
+      trigger.focus();
     }
   };
   trigger.addEventListener("click", (event) => {
     event.preventDefault();
     setOpen(panel.hidden);
+  });
+  panel.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !panel.hidden) setOpen(false);
   });
 }

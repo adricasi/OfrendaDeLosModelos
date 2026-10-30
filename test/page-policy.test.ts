@@ -67,9 +67,11 @@ describe("Content Security Policy (NFR-001)", () => {
 });
 
 describe("reduced motion (AC-001.3)", () => {
+  // This is a CSS-text check on purpose: jsdom does not evaluate media queries, so the
+  // reduced-motion behaviour cannot be observed in a DOM test.
   it("disables candle and petal animation under prefers-reduced-motion", () => {
     const css = read("src/styles.css");
-    const block = /@media \(prefers-reduced-motion: reduce\)\s*\{([\s\S]*)\}\s*$/.exec(css)?.[1];
+    const block = /@media \(prefers-reduced-motion: reduce\)\s*\{([\s\S]*?\n\})/.exec(css)?.[1];
     expect(block).toBeDefined();
     expect(block).toMatch(/\.flame,\s*\.petal\s*\{\s*animation:\s*none;/);
   });

@@ -74,6 +74,8 @@ No visitor data is stored (NFR-002). The question lives only in page memory.
   `style-src 'self'`; `object-src 'none'`; `base-uri 'self'`;
   `require-trusted-types-for 'script'`. (`frame-ancestors` has no effect in a meta CSP; accepted.) ONNX Runtime's WebAssembly files
   are served from the site itself, not a CDN.
+  `'self'` on GitHub Pages is the shared `adricasi.github.io` origin (every project site of
+  that account); we accept this.
 - **Data protection:** questions, answers and photos stay in memory; nothing is written to
   storage except model files and the app shell (NFR-002). Photos (REQ-012) are never stored;
   EXIF is irrelevant because nothing leaves the page.

@@ -87,6 +87,23 @@ describe("the statement and the about panel (AC-001.2, REQ-009)", () => {
     expect(link?.getAttribute("aria-expanded")).toBe("false");
   });
 
+  it("closes on Escape and returns focus to the link", () => {
+    const link = document.getElementById("about-link");
+    const panel = document.getElementById("about");
+    link?.click();
+    panel?.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    expect(panel?.hidden).toBe(true);
+    expect(link?.getAttribute("aria-expanded")).toBe("false");
+    expect(document.activeElement).toBe(link);
+  });
+
+  it("returns focus to the link when closed with the link", () => {
+    const link = document.getElementById("about-link");
+    link?.click();
+    link?.click();
+    expect(document.activeElement).toBe(link);
+  });
+
   it("lists every model with licence and model card (AC-009.1)", () => {
     const lines = [...document.querySelectorAll("#about-models > li")];
     expect(lines).toHaveLength(data.ancestors.length);

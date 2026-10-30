@@ -122,8 +122,8 @@ class Reader {
 
   isoDate(key: string): string {
     const v = this.string(key);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(v) || Number.isNaN(Date.parse(v))) {
-      this.fail(key, `must be a date like 2025-07-21, got "${v}"`);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(v) || !isRealDate(v)) {
+      this.fail(key, `must be a real date like 2025-07-21, got "${v}"`);
     }
     return v;
   }
@@ -138,6 +138,12 @@ class Reader {
     const v = this.value[key];
     return v === null || v === undefined ? null : this.record(key);
   }
+}
+
+/** Round-trips the date so impossible ones such as 2025-02-31 are rejected. */
+function isRealDate(value: string): boolean {
+  const parsed = new Date(value);
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
 }
 
 export function isHttpsUrl(value: string): boolean {

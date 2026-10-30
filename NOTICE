@@ -6,13 +6,13 @@ All art on the page is original CSS and SVG and is MIT-licensed with the code.
 Not MIT code: public/data/recorded-voices.json (added in a later task)
 -----------------------------------------------------------------------
 This file will contain model outputs, recorded on the builder's laptop and shown as
-recorded. Each answer is credited to the model that wrote it, with the model tag, licence
-and recording date:
+recorded. Each answer is credited to the model that wrote it, with the model tag, model
+licence and recording date. The model licences are:
 
-  - Gemma 1, Gemma 2 and Gemma 3 outputs are provided under the Gemma Terms of Use
-    (https://ai.google.dev/gemma/terms).
-  - Gemma 4 outputs are provided under the Apache License 2.0
-    (https://www.apache.org/licenses/LICENSE-2.0).
+  - Gemma 4 (model licence Apache-2.0: https://www.apache.org/licenses/LICENSE-2.0).
+  - Gemma 1, Gemma 2 and Gemma 3 (model licence: Gemma Terms of Use,
+    https://ai.google.dev/gemma/terms).
 
-These outputs are data, not part of the MIT-licensed code, and are not relicensed by it.
-No model weights are committed to this repository.
+Outputs are reproduced with attribution. This notice does not claim a licence for the
+outputs themselves; they are data, not part of the MIT-licensed code, and are not
+relicensed by it. No model weights are committed to this repository.

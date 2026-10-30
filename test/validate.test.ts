@@ -107,9 +107,20 @@ describe("validation failures", () => {
     expect(parseDarkFrames({ darkFrames: [validFrame] })).toHaveLength(1);
   });
 
+  it("rejects an impossible retirement date", () => {
+    for (const date of ["2025-02-31", "2025-13-01", "2025-00-10"]) {
+      expect(() => parseDarkFrames({ darkFrames: [{ ...validFrame, date }] })).toThrow(
+        "must be a real date",
+      );
+    }
+    expect(parseDarkFrames({ darkFrames: [{ ...validFrame, date: "2024-02-29" }] })).toHaveLength(
+      1,
+    );
+  });
+
   it("rejects a malformed retirement date", () => {
     expect(() => parseDarkFrames({ darkFrames: [{ ...validFrame, date: "July 2025" }] })).toThrow(
-      "must be a date",
+      "must be a real date",
     );
   });
 });
@@ -132,6 +143,12 @@ describe("https-only links (AC-008.2)", () => {
     const withoutSource: Record<string, unknown> = { ...validFrame };
     delete withoutSource["sourceUrl"];
     expect(() => parseDarkFrames({ darkFrames: [withoutSource] })).toThrow(
+      "sourceUrl must be a non-empty string",
+    );
+  });
+
+  it.each(["", "   "])("rejects a dark frame with an empty source %j", (sourceUrl) => {
+    expect(() => parseDarkFrames({ darkFrames: [{ ...validFrame, sourceUrl }] })).toThrow(
       "sourceUrl must be a non-empty string",
     );
   });
