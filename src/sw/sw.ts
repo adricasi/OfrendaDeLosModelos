@@ -1,4 +1,4 @@
-import { createShell, type CachesLike, type ShellManifest } from "./shell.js";
+import { createShell, type ShellManifest } from "./shell.js";
 
 /**
  * The service worker (T-008, REQ-011): offline after the first visit. Hand-written, no library;
@@ -35,7 +35,7 @@ declare const self: WorkerScope;
 const shell = createShell({
   manifest: __PRECACHE__,
   scope: self.registration.scope,
-  caches: caches as unknown as CachesLike,
+  caches,
   fetch: (url, init) => fetch(url, init),
   log: (message, detail) => {
     console.warn(message, detail);

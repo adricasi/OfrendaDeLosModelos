@@ -193,3 +193,29 @@ The latest entry is shown to Claude at the start of every session.
 - Next (founder): AC-011.1 by hand with the network off on the reference laptop after a live
   ritual incl. Gemma 4 (check that `transformers-cache` holds the models, ORT files load from the
   worker's cache); note the result here; then mark T-008 done.
+
+## 2026-10-30 — T-008: security review fixes (partial)
+- Done: (1) version skew: unhashed same-origin files (`data/*.json`, `ort/*`) are network-first
+  (revalidating, cache only as offline fallback), only content-hashed `assets/*` are cache-first;
+  worker logic moved to `src/sw/shell.ts` (environment injected) and tested with build A then
+  build B (page and data always match, online and offline). A failed install logs the entry,
+  deletes the half cache and throws; the old worker stays correct because it asks the network
+  first. (2) Trusted Types policy compares whole URLs: the built inference worker URL and
+  `<origin><base>sw.js` (tests for `/other-repo/sw.js` and other same-origin URLs). (3) The
+  service worker is registered only after the first completed ritual with `deps.webgpu` true.
+  (4) Each manifest entry has a SHA-256 digest, stored on the cached response; a new build copies
+  unchanged files from the previous cache instead of downloading them again (27 MB wasm).
+  (5) `#offline-note` is a live region that is always in the page, empty until set.
+- Decisions: navigations to `?debug` / `?fake-models` are answered with the cached index.html when
+  offline (routing.ts comment); no `skipWaiting`, so the old shell stays until every tab closes
+  (sw.ts comment). Known edge: network lost mid-session after a deploy can pair the new page with
+  cached old data for unhashed files fetched later.
+- Founder check (NFR-003, AC-011.1) with real models, on the reference laptop in Chrome/Edge:
+  1. Open the deployed site online, run a full ritual with GPT-2 and agree to download Gemma 4;
+     wait for "This altar now works offline on this device." (the service worker installs after
+     the ritual; DevTools, Application, Service workers shows it activated).
+  2. DevTools, Application, Cache storage: `ofrenda-shell-*` (page, assets, data, `ort/`) and
+     `transformers-cache` (GPT-2 and Gemma 4 files) both exist.
+  3. Turn Wi-Fi off (or DevTools Network, Offline), close the tab, open the site again, run a
+     full ritual: GPT-2 live with ghost words, recordings, Gemma 4 live, medium. No request
+     errors in the console. Write the result and timings here, then mark T-008 done.

@@ -20,7 +20,11 @@ test("the altar opens and a full ritual runs with the network off (AC-011.1, REQ
 }) => {
   const origin = new URL(baseURL ?? "http://localhost:4173").origin;
   await page.goto(START);
-  await expect(page.locator("#offline-note")).toBeHidden();
+  await expect(page.locator("#offline-note")).toHaveText("");
+  // Nothing is registered (and so nothing is downloaded) before the first complete ritual.
+  expect(
+    await page.evaluate(async () => (await navigator.serviceWorker.getRegistrations()).length),
+  ).toBe(0);
   await completeRitual(page);
 
   // After one complete ritual the page says so, once the service worker holds the shell.
@@ -61,15 +65,33 @@ test("the altar opens and a full ritual runs with the network off (AC-011.1, REQ
   // The network goes away; the altar still opens and a whole ritual still runs.
   await context.setOffline(true);
   await page.reload();
-  await expect(page.locator("#offline-note")).toBeHidden();
+  await expect(page.locator("#offline-note")).toHaveText("");
   await completeRitual(page);
   // The page itself came from the worker's cache.
   expect(await page.evaluate(() => navigator.serviceWorker.controller !== null)).toBe(true);
 });
 
-test("a new visitor sees no offline note before a complete ritual", async ({ page }) => {
+test("a visitor who has not finished a ritual gets no service worker and no note", async ({
+  page,
+}) => {
   await page.goto(START);
   await expect(page.locator("#places > li")).toHaveCount(5);
-  await page.waitForFunction(() => navigator.serviceWorker.ready.then(() => true));
-  await expect(page.locator("#offline-note")).toBeHidden();
+  await page.waitForTimeout(500);
+  await expect(page.locator("#offline-note")).toHaveText("");
+  expect(
+    await page.evaluate(async () => (await navigator.serviceWorker.getRegistrations()).length),
+  ).toBe(0);
+});
+
+test("a stopped ritual does not start the service worker", async ({ page }) => {
+  await page.goto(START);
+  await expect(page.locator("#places > li")).toHaveCount(5);
+  await page.getByLabel(OFFERED_QUESTION).check();
+  await page.getByRole("button", { name: "Offer it to the altar" }).click();
+  await page.getByRole("button", { name: "Stop the ritual" }).click();
+  await expect(page.locator("#ritual-end")).toHaveText("The ritual was stopped.");
+  await page.waitForTimeout(500);
+  expect(
+    await page.evaluate(async () => (await navigator.serviceWorker.getRegistrations()).length),
+  ).toBe(0);
 });
