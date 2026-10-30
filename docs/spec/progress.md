@@ -77,6 +77,8 @@ The latest entry is shown to Claude at the start of every session.
   `npm run licences` (`tools/check-licences.mjs`, allowlist with reasons in
   `tools/licence-allowlist.json`; MIT-0 and CC0-1.0 dev-only packages allowlisted) and one CI step.
   `docs/cultural-review.md` lists every ritual text for the reviewer. 165 unit and 15 e2e tests pass.
+- Scope note: AC-006.3's consent-decline flow belongs to T-006; T-007 only supplies the recorded
+  Gemma 4 replay (and the medium's own not-invited wording) it falls back to.
 - Issues: `dark-frames.json` has `yearsOfService: null` for all four frames, so AC-008.1's "years of
   service" is hidden until verified official dates are added (not invented). The e2e uses the fake
   worker: the wasm path is proven only to the `load` message until T-004. The shipped build has no

@@ -20,7 +20,7 @@ National Geographic (overview).
 | Element | Where it appears | Question for the reviewer |
 |---|---|---|
 | Altar in three levels | The altar section (`index.html`, `.level-top/middle/base`) | Levels and their order acceptable? |
-| Papel picado banner | Above the altar | Cut-out motifs (diamond, skull-free shapes) fine? |
+| Papel picado banner | Above the altar | Cut-out motifs (a diamond, two circles and a small square on each flag; no skulls) fine? |
 | Candles | Top level, base; one flickers while an ancestor speaks | OK? |
 | Glass of water | Base | OK? |
 | Cempasúchil (marigold) petals and bed | Base, falling petals | OK? |
@@ -75,6 +75,23 @@ National Geographic (overview).
 | "This browser has no WebGPU, so most ancestors speak from recordings. For the live ritual, use Chrome or Edge on a desktop computer." | Browsers without WebGPU |
 | "Speaks live, on your device" / "Speaks through recordings" | Caption of each place on the altar |
 | Ancestors: GPT-2 (2019), Gemma 1 (2024), Gemma 2 (2024), Gemma 3 (2025), Gemma 4 E2B (2026) | Altar places; "ancestors" is used for models that "have passed on" only when closed |
+
+### Remaining labels, credit lines and screen-reader texts
+
+| Text | Where |
+|---|---|
+| Recording credit line template: "Recorded YYYY-MM-DD from <model name> (<tag>). Model licence: <licence>; output reproduced with attribution." | Under every recorded answer (`src/data/recorded-source.ts`) |
+| Live-model line: "<name> (live). Licence: <licence>. Model card." | About panel |
+| Recorded-model line: "<name> (recorded). Model licence: <licence>; output reproduced with attribution. Model card." | About panel |
+| "Model card" | Link text, about panel |
+| "Skip to the altar" | Skip link (`index.html`) |
+| "The altar" | Visually hidden heading of the altar |
+| "Places for the ancestors" | Accessible name of the list of altar places |
+| "The altar could not be prepared. <detail>" | Shown when a data file fails to load |
+| Decorative art (papel picado, candles, water, petals, marigold bed, portrait silhouettes, dark frames' empty portraits) | Hidden from screen readers (`aria-hidden`); none has alt text |
+| "The recorded voices are still being gathered. This ancestor will speak here soon." | A recorded voice is not yet recorded (also in the table above) |
+| "This browser has no WebGPU, so most ancestors speak from recordings. For the live ritual, use Chrome or Edge on a desktop computer." | One line above the altar without WebGPU (also in the table above) |
+| "La que cuida el altar only speaks for questions the ancestors left for us." | The medium when the visitor wrote their own question and the medium is replayed from recordings |
 
 ### Dark frames (`public/data/dark-frames.json`, `src/ui/altar.ts`)
 

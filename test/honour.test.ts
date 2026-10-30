@@ -13,7 +13,11 @@ import { runRitual } from "../src/ritual/sequencer.js";
 import type { RecordedVoiceSource } from "../src/ritual/steps.js";
 import type { Question, RitualView, StepInfo, StepOutcome } from "../src/ritual/types.js";
 import { renderAltar } from "../src/ui/altar.js";
-import { createRitualView, GATHERING_MESSAGE } from "../src/ui/ritual-view.js";
+import {
+  createRitualView,
+  GATHERING_MESSAGE,
+  MEDIUM_NOT_INVITED_MESSAGE,
+} from "../src/ui/ritual-view.js";
 import type { UiToWorkerMessage } from "../src/worker/protocol.js";
 import { loadTestData, mountPage, read, settle } from "./helpers.js";
 
@@ -310,6 +314,21 @@ describe("the ritual without WebGPU (AC-010.1, AC-010.2, AC-006.3, AC-007.5)", (
     const data = await loadTestData();
     startAltar(document, data, createProductionDependencies(data, true));
     expect(document.getElementById("browser-note")?.hidden).toBe(true);
+  });
+
+  it("gives the medium its own not-invited wording", () => {
+    mountPage();
+    const view = createRitualView(document);
+    const info: StepInfo = {
+      id: "medium",
+      name: "La que cuida el altar",
+      ancestorId: null,
+      mode: "recorded",
+    };
+    view.ritualStarted(own);
+    view.stepStarted(info);
+    view.stepFinished(info, { kind: "not-invited" });
+    expect(document.querySelector(".voice-status")?.textContent).toBe(MEDIUM_NOT_INVITED_MESSAGE);
   });
 
   it("renders the gathering outcome as a recorded-voice status line", async () => {
