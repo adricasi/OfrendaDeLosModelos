@@ -1,6 +1,6 @@
 # Product: Ofrenda de los Modelos
 
-- Status: In review <!-- Draft | In review | Approved -->
+- Status: Approved <!-- Draft | In review | Approved -->
 - Last updated: 2026-10-30
 - Input: [docs/discovery/idea-brief.md](../discovery/idea-brief.md) and
   [research-notes.md](../discovery/research-notes.md)
@@ -98,7 +98,12 @@ the Machine"), and a small open-source project people can keep using each 1 Nove
 - [ ] Q-1: The builder's laptop (RAM, GPU/Apple Silicon, browser): confirms the supported-
   machine statement. Until then the medium is Gemma 4 E2B [ASSUMPTION A-4].
 - [ ] Q-2: Exact Week 4 rules (new-project rule, Gemma 4 prize amount and wording).
-- [ ] Q-3: Who reviews the cultural copy (a reader of Mexican background).
+- [ ] Q-3: Who reviews the cultural copy (a reader of Mexican background), available Oct 31
+  12:00–17:00.
+- [ ] Q-5: GitHub Pages on a free plan needs a public repository: make it public at T-002, or
+  confirm a paid plan.
+- [ ] Q-6: Founder approval to add a licence check and the Playwright e2e to CI (`.github/workflows/`
+  is "do not touch without asking"); otherwise run them locally and log the results.
 - [x] Q-4: Display name: "Ofrenda de los Modelos" with the tagline (decided 2026-10-30).
 
 ## Assumptions

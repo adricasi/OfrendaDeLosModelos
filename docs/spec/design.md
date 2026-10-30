@@ -1,6 +1,6 @@
 # Design: Ofrenda de los Modelos
 
-- Status: In review <!-- Draft | In review | Approved -->
+- Status: Approved <!-- Draft | In review | Approved -->
 - Last updated: 2026-10-30
 - Deployment target: **Local / on-device** (static site; inference in the visitor's browser).
   This design applies the "Local / on-device" column of the spec skill: no cloud services,
@@ -71,7 +71,8 @@ No visitor data is stored (NFR-002). The question lives only in page memory.
   `default-src 'self'`; `script-src 'self' 'wasm-unsafe-eval'` (ONNX Runtime WebAssembly);
   `worker-src 'self' blob:`; `connect-src 'self'` plus the model host(s) [VERIFY in T-001: the
   exact Hugging Face download hosts after redirects]; `img-src 'self' data: blob:`;
-  `style-src 'self'`; `object-src 'none'`; `base-uri 'self'`. ONNX Runtime's WebAssembly files
+  `style-src 'self'`; `object-src 'none'`; `base-uri 'self'`;
+  `require-trusted-types-for 'script'`. (`frame-ancestors` has no effect in a meta CSP; accepted.) ONNX Runtime's WebAssembly files
   are served from the site itself, not a CDN.
 - **Data protection:** questions, answers and photos stay in memory; nothing is written to
   storage except model files and the app shell (NFR-002). Photos (REQ-012) are never stored;
@@ -80,7 +81,9 @@ No visitor data is stored (NFR-002). The question lives only in page memory.
   | Threat | Mitigation |
   |---|---|
   | XSS through model output (models can emit HTML/JS-like text) | Render all model and data text with `textContent`, never `innerHTML`; CSP blocks inline scripts |
-  | Tampered or swapped model files | Pin each model to a repository revision (commit hash) in `ancestors.json`; download only from that revision |
+  | Tampered or swapped model files | Pin each model to a repository revision (commit hash) in `ancestors.json` for weights, config and tokenizer files alike; download only from that revision. Residual risk: no per-file hash check, so integrity relies on TLS plus the pinned commit |
+  | Script URLs in data (`javascript:` links) | The data validator accepts only `https:` links for sources, credits and model cards |
+  | GPT-2's unfiltered output on a memorial altar | "Unfiltered 2019 model" label, curated offered questions, blocked-token list where supported (AC-003.4) |
   | Supply-chain risk in npm dependencies | Few dependencies, lockfile, `npm audit` and licence check in CI, Dependabot |
   | Third-party script injection (CDNs) | No third-party scripts; ONNX Runtime assets self-hosted; CSP |
   | The medium saying something hurtful or speaking as a real person | Prompt rules (AC-007.3), offered questions curated, outputs reviewed in the cultural review |
@@ -89,12 +92,14 @@ No visitor data is stored (NFR-002). The question lives only in page memory.
 ## Reliability and operations
 - **Offline:** after one complete ritual the service worker serves the app shell and data,
   and transformers.js serves models from Cache Storage (REQ-011).
+- **No WebGPU:** GPT-2 runs on the WebAssembly backend; Gemma 4 and the medium are replayed from
+  recordings (AC-010.1, AC-007.5).
 - **A model is unavailable:** per-ancestor isolation; the ritual continues with a short
   message (AC-003.3, AC-006.4). No WebGPU: recorded ritual (REQ-010).
 - **Low memory / slow device:** Gemma 4 runs only after the visitor consents to the download
   (AC-006.2); declining falls back to the recorded Gemma 4 voice (AC-006.3).
-- **Observability:** no telemetry (NFR-007). A local debug view (`?debug`) shows load times,
-  tokens/s and errors.
+- **Observability:** no telemetry (NFR-007). With `?debug`, load times, tokens/s and errors go to
+  the browser console.
 - **User data backup/export:** none to back up (nothing is stored).
 
 ## Environments and deployment

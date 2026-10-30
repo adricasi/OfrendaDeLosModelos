@@ -1,6 +1,6 @@
 # Requirements: Ofrenda de los Modelos
 
-- Status: In review <!-- Draft | In review | Approved -->
+- Status: Approved <!-- Draft | In review | Approved -->
 - Last updated: 2026-10-30
 
 IDs are permanent: never renumber or reuse. Deprecate with ~~strikethrough~~ and a note.
@@ -52,6 +52,8 @@ Terms (ancestor, recorded voice, ghost words, dark frame, ...) are defined in th
     answer and pass the turn to the next ancestor.
   - AC-003.3: IF GPT-2 cannot be loaded or fails while answering THEN THE SYSTEM SHALL show a
     short message in its place ("this ancestor could not come tonight") and continue the ritual.
+  - AC-003.4: THE SYSTEM SHALL label GPT-2's answer as coming from an unfiltered 2019 model, and
+    SHALL block a list of offensive tokens from its output where the runtime supports it.
 
 ### REQ-004: Ghost words
 - Story: As a visitor, I want to see the words the model almost said, so that I feel what is
@@ -59,9 +61,10 @@ Terms (ancestor, recorded voice, ghost words, dark frame, ...) are defined in th
 - Priority: Must
 - Goals: G-1
 - Acceptance criteria:
-  - AC-004.1: WHEN GPT-2 produces a word THE SYSTEM SHALL show up to 3 alternative words it
-    almost chose at that step, fainter than the chosen word, with each alternative's
-    probability available on hover and focus.
+  - AC-004.1: WHEN GPT-2 produces a token THE SYSTEM SHALL show up to 3 alternative tokens it
+    almost chose at that step (excluding the chosen one), fainter than the chosen token, with
+    each alternative's probability (softmax of that step's logits at the sampling temperature)
+    available on hover and focus.
   - AC-004.2: THE SYSTEM SHALL make the ghost words available to screen readers as text
     ("almost: X, Y, Z") without interrupting the reading of the answer.
   - AC-004.3: THE SYSTEM SHALL derive the ghost words only from the model's own probabilities at
@@ -77,7 +80,8 @@ Terms (ancestor, recorded voice, ghost words, dark frame, ...) are defined in th
     the recorded answer of each middle ancestor (Gemma 1, Gemma 2, Gemma 3, and Pythia when
     recorded) for that question.
   - AC-005.2: THE SYSTEM SHALL label each recorded voice as recorded, with the model, version,
-    licence and recording date.
+    the model's licence (e.g. "model licence: Gemma Terms of Use; output reproduced with
+    attribution") and the recording date.
   - AC-005.3: WHEN the ritual runs for the visitor's own question THE SYSTEM SHALL show, in place
     of each recorded voice, that these ancestors only answer the questions they left for us,
     and continue the ritual.
@@ -109,12 +113,16 @@ Terms (ancestor, recorded voice, ghost words, dark frame, ...) are defined in th
   - AC-007.1: WHEN every ancestor has answered THE SYSTEM SHALL have Gemma 4, on the device, write
     for each ancestor one or two sentences on what it was trying to say, and a calaverita
     literaria of 4 lines.
-  - AC-007.2: WHEN the question is written in a language Gemma 4 supports THE SYSTEM SHALL have
-    the medium answer in that language.
-  - AC-007.3: THE SYSTEM SHALL keep the medium's words kind: it does not mock a model for its age
-    or size, and it does not speak as a real person, living or dead.
+  - AC-007.2: WHEN the question is written in English or Spanish THE SYSTEM SHALL have the
+    medium answer in the question's language (other languages: best effort).
+  - AC-007.3: THE SYSTEM SHALL give the medium prompt rules R1 (be kind, never mock a model for
+    its age or size), R2 (never speak as a real person, living or dead) and R3 (4-line
+    calaverita per ancestor); in the eval (the offered questions in English and Spanish), 0
+    outputs mock a model or speak as a real person.
   - AC-007.4: IF the medium's output cannot be parsed into one entry per ancestor THEN THE SYSTEM
     SHALL show the text it produced as a single message rather than nothing.
+  - AC-007.5: IF Gemma 4 cannot run in the visitor's browser THEN THE SYSTEM SHALL show the
+    medium's recorded words for offered questions, labelled as recorded.
 
 ### REQ-008: Dark frames
 - Story: As a visitor, I want to see the models that cannot come, so that I understand why open
@@ -125,7 +133,8 @@ Terms (ancestor, recorded voice, ghost words, dark frame, ...) are defined in th
   - AC-008.1: THE SYSTEM SHALL show a dark frame for each listed retired closed model, with its
     name, its years of service and the line that its weights were never released.
   - AC-008.2: THE SYSTEM SHALL link each dark frame's retirement date to an official source; a
-    model without an official source SHALL not be shown.
+    model without an official source SHALL not be shown. Only `https:` links are accepted for
+    sources, credits and model cards.
 
 ### REQ-009: About, credits and licences
 - Story: As a visitor or judge, I want to know what I'm looking at, which models are used under
@@ -138,6 +147,8 @@ Terms (ancestor, recorded voice, ghost words, dark frame, ...) are defined in th
   - AC-009.2: THE SYSTEM SHALL list the cultural sources used for the ofrenda's elements.
   - AC-009.3: THE SYSTEM SHALL state that everything runs on the visitor's device and that no
     question or photo is sent anywhere.
+  - AC-009.4: THE SYSTEM SHALL credit every art and font asset with its licence (or state that it
+    is original and MIT-licensed with the code).
 
 ### REQ-010: Unsupported browsers
 - Story: As a visitor without WebGPU, I want to still see the ritual, so that the link is never a
@@ -146,7 +157,8 @@ Terms (ancestor, recorded voice, ghost words, dark frame, ...) are defined in th
 - Goals: G-2
 - Acceptance criteria:
   - AC-010.1: IF the browser has no WebGPU THEN THE SYSTEM SHALL say so in one line, name the
-    supported browsers, and offer a recorded ritual for the offered questions.
+    supported browsers, run GPT-2 on WebAssembly, and replay the recorded voices, Gemma 4 and
+    the medium for the offered questions.
   - AC-010.2: WHILE showing a recorded ritual THE SYSTEM SHALL label every answer as recorded.
 
 ### REQ-011: Offline after the first visit
@@ -167,9 +179,10 @@ Terms (ancestor, recorded voice, ghost words, dark frame, ...) are defined in th
   - AC-012.1: WHEN the visitor adds a photo of an object THE SYSTEM SHALL have Gemma 4, on the
     device, place it on the altar with one line about it.
   - AC-012.2: IF the photo shows a person THEN THE SYSTEM SHALL not describe the person, and SHALL
-    say gently that the altar receives objects only.
-  - AC-012.3: THE SYSTEM SHALL keep the photo only in the page's memory and discard it when the
-    page closes.
+    say gently that the altar receives objects only (manual check: 3 photos of people → 3/3
+    declined; detection depends on the model).
+  - AC-012.3: THE SYSTEM SHALL keep the photo only in the page's memory, release its object URL
+    when done, and discard it when the page closes.
 
 ### REQ-013: Recording the voices (builder tool)
 - Story: As the builder, I want to record the middle ancestors' answers reproducibly, so that the
@@ -178,7 +191,8 @@ Terms (ancestor, recorded voice, ghost words, dark frame, ...) are defined in th
 - Goals: G-1, G-5
 - Acceptance criteria:
   - AC-013.1: WHEN the builder runs the recording command THE SYSTEM SHALL ask each configured
-    ancestor each offered question through a local model runtime and write the answers to the
+    ancestor (Gemma 1, 2, 3 and Gemma 4) each offered question through a local model runtime,
+    then record the medium's words for each offered question, and write everything to the
     recorded-voices file.
   - AC-013.2: THE SYSTEM SHALL store with each answer the model name, exact model tag and digest,
     licence, generation settings and recording date.
@@ -191,13 +205,13 @@ Terms (ancestor, recorded voice, ghost words, dark frame, ...) are defined in th
 | NFR-001 | Security | Static site with no backend and no secrets in the repo. A Content Security Policy allows scripts only from the site itself, and network requests only to the site and the model host(s) listed in design.md | CSP header/meta review; CI secret scan (gitleaks) passes; browser network log in the e2e test |
 | NFR-002 | Privacy / data classification | No question, answer or photo leaves the device: 0 requests carry visitor input; the only requests are the page's own files and model downloads. No analytics, cookies or local storage of questions | e2e test asserts the request list during a ritual |
 | NFR-003 | Availability | Hosted on GitHub Pages; after one complete ritual the altar works with no network (REQ-011) | Manual offline test before publishing |
-| NFR-004 | Performance | Reference laptop (Q-1), supported browser: altar visible ≤ 3 s; GPT-2 first word ≤ 60 s on first visit (incl. download, ≥ 50 Mbps) and ≤ 5 s on later visits; Gemma 4 answer complete ≤ 90 s once downloaded; medium complete ≤ 120 s | Manual timing, recorded in progress.md |
-| NFR-005 | Download budget | First-visit download ≤ 2.5 GB in total; GPT-2 ≤ 300 MB; the visitor sees each size before it downloads; models are cached for later visits | Network panel; sizes listed in the about panel |
+| NFR-004 | Performance | Reference laptop (Q-1), supported browser, empty cache: altar visible ≤ 3 s (Playwright `load` event); GPT-2 first word ≤ 60 s on first visit (incl. download, ≥ 50 Mbps) and ≤ 5 s on later visits; Gemma 4 answer complete ≤ 90 s once downloaded; medium complete ≤ 120 s | Manual timing, recorded in progress.md |
+| NFR-005 | Download budget | First-visit download ≤ 2.5 GB in total; GPT-2 ≤ 300 MB; the visitor sees Gemma 4's size before consenting and GPT-2's size in its loading line; models are cached for later visits | Network panel; sizes listed in the about panel |
 | NFR-006 | Cost | €0/month to run: static hosting, inference on visitors' devices, no paid APIs | Design review |
-| NFR-007 | Observability | No remote telemetry (privacy). A local debug view shows load times, tokens/s and errors | Manual check |
-| NFR-008 | Compliance / licences | Shipped code and models use permissive licences only (MIT, Apache-2.0, BSD, ISC); Gemma 1–3 appear only as recorded outputs credited under the Gemma Terms of Use; every model's licence is shown (REQ-009) | npm licence check in CI; about panel review |
-| NFR-009 | Accessibility | The core ritual meets WCAG 2.2 AA: keyboard operable, text contrast ≥ 4.5:1, focus visible, animation respects reduced motion, live text announced politely | axe check in e2e (0 serious/critical); keyboard walkthrough |
-| NFR-010 | Cultural accuracy | Every ritual element and Spanish text matches the cited sources and is reviewed by a reader of Mexican background before publishing; no Halloween or sugar-skull costume styling | Review notes in progress.md |
+| NFR-007 | Observability | No remote telemetry (privacy). With `?debug`, load times, tokens/s and errors are written to the browser console | Manual check |
+| NFR-008 | Compliance / licences | Shipped code and models use permissive licences only (MIT, Apache-2.0, BSD, ISC); Gemma 1–3 appear only as recorded outputs credited under the Gemma Terms of Use; every model's licence is shown (REQ-009) | npm licence check (CI if the founder approves the workflow change, else run locally and logged in progress.md); about panel review |
+| NFR-009 | Accessibility | The core ritual meets WCAG 2.2 AA: keyboard operable, text contrast ≥ 4.5:1, focus visible, animation respects reduced motion; each answer announced once to screen readers when it completes (not per token) | axe check in e2e (0 serious/critical); keyboard walkthrough |
+| NFR-010 | Cultural accuracy | Every ritual element and Spanish text matches the cited sources and is reviewed by a reader of Mexican background before publishing (copy sent by Oct 31 12:00); IF no review by 17:00 THEN publish with a visible "cultural review pending" note in the about panel; no Halloween or sugar-skull costume styling | Review notes in progress.md |
 | NFR-011 | Delivery | Published before Oct 31, 23:00 Spain time; code freeze Oct 31, 18:00 Spain time | DEV post timestamp |
 
 ## Out of scope
