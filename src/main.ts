@@ -3,7 +3,7 @@ import { loadAltarData } from "./data/load.js";
 import { debugRequested } from "./debug/debug-log.js";
 import { detectWebGpu } from "./ritual/gpu.js";
 import { registerOfflineShell } from "./sw/register.js";
-import { showLoadError, showOfflineNote, wireAboutPanel } from "./ui/altar.js";
+import { showLoadError, showOfflineNote, startAltarMotion, wireAboutPanel } from "./ui/altar.js";
 
 async function main(): Promise<void> {
   let data = await loadAltarData(import.meta.env.BASE_URL);
@@ -50,6 +50,7 @@ async function main(): Promise<void> {
 }
 
 wireAboutPanel(document);
+startAltarMotion(document);
 main().catch((error: unknown) => {
   showLoadError(document, error);
 });

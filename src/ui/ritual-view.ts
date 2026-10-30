@@ -1,3 +1,4 @@
+import { flare, placeCard, stagger } from "./motion.js";
 import type { Alternative } from "../worker/protocol.js";
 import type {
   ConsentRequest,
@@ -132,6 +133,14 @@ export function createRitualView(doc: Document): RitualView {
     for (const lit of doc.querySelectorAll(".place.speaking")) lit.classList.remove("speaking");
   };
   const nameOf = (info: StepInfo): string => info.name;
+  // The medium's calaveritas are set down one by one, like cards placed on the altar.
+  const addNotes = (voice: VoiceElements, notes: readonly MediumNote[]): void => {
+    const cards = notes.map((note) => renderNote(note, names.get(note.ancestorId)));
+    voice.item.append(...cards);
+    cards.forEach((card, index) => {
+      placeCard(card, index);
+    });
+  };
 
   const appendPlain = (voice: VoiceElements, text: string): void => {
     if (voice.textEl.lastChild !== voice.text) {
@@ -257,6 +266,7 @@ export function createRitualView(doc: Document): RitualView {
       if (info.caveat !== undefined) item.append(make(doc, "p", "voice-caveat", info.caveat));
       item.append(text, status);
       list.append(item);
+      stagger([item], 0);
       const voice: VoiceElements = {
         item,
         label,
@@ -300,7 +310,11 @@ export function createRitualView(doc: Document): RitualView {
           event.target instanceof HTMLElement ? event.target.closest<HTMLElement>(".token") : null;
         if (unit !== null) setRoving(voice, unit);
       });
-      place(info)?.classList.add("speaking");
+      const lit = place(info);
+      if (lit !== null) {
+        lit.classList.add("speaking");
+        flare(lit);
+      }
     },
 
     stepStatus(stepId: string, message: string): void {
@@ -398,7 +412,7 @@ export function createRitualView(doc: Document): RitualView {
           // One block per ancestor, inside the medium's own step (reading order stays linear).
           voice.textEl.textContent = "";
           const notes = outcome.notes;
-          voice.item.append(...notes.map((note) => renderNote(note, names.get(note.ancestorId))));
+          addNotes(voice, notes);
           announce(
             `${name}: ${notes
               .map(
@@ -422,7 +436,7 @@ export function createRitualView(doc: Document): RitualView {
           // The recorded medium's words, one block per ancestor, labelled as recorded.
           voice.textEl.textContent = "";
           const notes = outcome.notes;
-          voice.item.append(...notes.map((note) => renderNote(note, names.get(note.ancestorId))));
+          addNotes(voice, notes);
           announce(
             `${name}, recorded: ${notes
               .map(
