@@ -64,19 +64,22 @@ export function stagger(elements: readonly Element[], step = 140): void {
   });
 }
 
-/** A calaverita card is set down on the altar: it drops, lands slightly crooked and settles. */
+/**
+ * A calaverita card is set down on the altar: it drops, lands slightly crooked and settles.
+ * Transform only: the card is fully opaque from the first frame, so its text keeps its contrast.
+ */
 export function placeCard(card: Element, index: number): void {
   if (!canAnimate(card)) return;
   const tilt = index % 2 === 0 ? -1.2 : 1.1;
   card.animate(
     [
-      { opacity: 0, transform: `translateY(-1.1rem) rotate(${String(tilt * 4)}deg)` },
+      { transform: `translateY(-1.1rem) rotate(${String(tilt * 4)}deg)` },
       {
         opacity: 1,
         transform: `translateY(0.12rem) rotate(${String(tilt * 0.6)}deg)`,
         offset: 0.7,
       },
-      { opacity: 1, transform: `translateY(0) rotate(${String(tilt)}deg)` },
+      { transform: `translateY(0) rotate(${String(tilt)}deg)` },
     ],
     { duration: 720, delay: index * 220, easing: "cubic-bezier(.3,.7,.3,1)", fill: "backwards" },
   );

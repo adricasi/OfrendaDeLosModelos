@@ -1228,6 +1228,15 @@
 
   .offerings {
     min-height: 8rem;
+    gap: 0;
+  }
+
+  .offering-item {
+    margin-inline: 0;
+  }
+
+  .item-candle-d {
+    display: none;
   }
 
   .frame .name {
