@@ -1,6 +1,6 @@
 # Product: Ofrenda de los Modelos
 
-- Status: Draft <!-- Draft | In review | Approved -->
+- Status: In review <!-- Draft | In review | Approved -->
 - Last updated: 2026-10-30
 - Input: [docs/discovery/idea-brief.md](../discovery/idea-brief.md) and
   [research-notes.md](../discovery/research-notes.md)
@@ -69,15 +69,17 @@ the Machine"), and a small open-source project people can keep using each 1 Nove
 
 ## Constraints
 - Deployment target: **Local / on-device** — a static site (GitHub Pages) whose inference runs
-  in the visitor's browser (WebGPU); no backend. [ASSUMPTION A-1]
+  in the visitor's browser (WebGPU); no backend.
 - Deadline: post published by Oct 31, 23:00 Spain time; hard deadline Sun Nov 1, 07:59 Spain
   time (Oct 31, 11:59 PM PDT). One builder, ~12–15 hours.
 - Licences: permissive only for anything shipped (GPT-2 MIT, Pythia Apache-2.0, Gemma 4
   Apache-2.0). Gemma 1–3 (Gemma Terms of Use) appear only as recorded outputs, credited.
 - Public repository from the start: no secrets, no personal data, MIT licence.
-- Browsers: Chrome or Edge with WebGPU on a laptop or desktop. [ASSUMPTION A-2]
+- Browsers: Chrome or Edge with WebGPU on a laptop or desktop; other browsers see the
+  recorded demo.
 - Language: English interface with the ritual's Spanish words; the medium answers in the
-  visitor's language. [ASSUMPTION A-3]
+  visitor's language.
+- Name: **Ofrenda de los Modelos**, tagline "Closed models die. Open weights come home."
 - Must be a new project (challenge rule, to verify on the Week 4 page).
 
 ## Glossary
@@ -93,14 +95,13 @@ the Machine"), and a small open-source project people can keep using each 1 Nove
 | Open-weight | Weights published for anyone to run; not necessarily open source (training data, code) |
 
 ## Open questions
-- [ ] Q-1: The builder's laptop (RAM, GPU/Apple Silicon, browser): decides Gemma 4 E2B vs E4B
-  and the supported-machine statement.
+- [ ] Q-1: The builder's laptop (RAM, GPU/Apple Silicon, browser): confirms the supported-
+  machine statement. Until then the medium is Gemma 4 E2B [ASSUMPTION A-4].
 - [ ] Q-2: Exact Week 4 rules (new-project rule, Gemma 4 prize amount and wording).
 - [ ] Q-3: Who reviews the cultural copy (a reader of Mexican background).
-- [ ] Q-4: Project display name: "Ofrenda de los Modelos" with "Closed models die. Open weights
-  come home." as tagline, or "Pesos Muertos".
+- [x] Q-4: Display name: "Ofrenda de los Modelos" with the tagline (decided 2026-10-30).
 
 ## Assumptions
-- A-1: Deployment target is local / on-device in the browser, hosted as a static site.
-- A-2: Supported browsers are desktop Chrome/Edge with WebGPU; others see the recorded demo.
-- A-3: English interface, Spanish ritual words, medium answers in the visitor's language.
+- A-1, A-2, A-3: confirmed by the founder on 2026-10-30 (deployment target, browsers,
+  language); now constraints above.
+- A-4: The medium runs Gemma 4 E2B (the smaller size) until the laptop is known (Q-1).
