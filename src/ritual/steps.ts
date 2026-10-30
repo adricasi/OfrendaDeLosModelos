@@ -1,4 +1,9 @@
-import type { GenerationSettings, ModelWorkerPort, WorkerToUiMessage } from "../worker/protocol.js";
+import type {
+  GenerationSettings,
+  ModelSource,
+  ModelWorkerPort,
+  WorkerToUiMessage,
+} from "../worker/protocol.js";
 import type {
   Question,
   RecordedAnswer,
@@ -47,6 +52,8 @@ export interface WorkerVoiceOptions {
   readonly modelId: string;
   readonly worker: ModelWorkerPort;
   readonly settings: GenerationSettings | null;
+  /** Where the worker loads the model from; absent for models that are not ready (AC-003.3). */
+  readonly source?: ModelSource;
   readonly endsRitualOnFailure: boolean;
   readonly buildPrompt?: (question: Question) => string;
 }
@@ -124,7 +131,12 @@ export class WorkerVoiceStep implements RitualStep {
             }
             break;
           case "error":
-            if (message.requestId === requestId || message.modelId === modelId) {
+            // An error naming neither a request nor a model is a failure of the worker itself.
+            if (
+              message.requestId === requestId ||
+              message.modelId === modelId ||
+              (message.requestId === undefined && message.modelId === undefined)
+            ) {
               fail(message.message);
             }
             break;
@@ -133,7 +145,10 @@ export class WorkerVoiceStep implements RitualStep {
 
       const unsubscribe = worker.subscribe(onMessage);
       signal.addEventListener("abort", onAbort, { once: true });
-      worker.post({ type: "load", modelId });
+      const { source } = this.options;
+      worker.post(
+        source === undefined ? { type: "load", modelId } : { type: "load", modelId, source },
+      );
     });
   }
 }

@@ -15,8 +15,21 @@ export interface Alternative {
   readonly p: number;
 }
 
+/**
+ * Where a model comes from, copied from ancestors.json. The worker loads a model only from
+ * this repository at this exact revision, and refuses when either is missing (AC-003.3).
+ */
+export interface ModelSource {
+  readonly repositoryId: string | null;
+  readonly revision: string | null;
+  /** ONNX weight precision per runtime (for example "fp16" or "q8"); null uses the worker's default. */
+  readonly dtypes: { readonly webgpu?: string; readonly wasm?: string } | null;
+}
+
+export type ModelDevice = "webgpu" | "wasm";
+
 export type UiToWorkerMessage =
-  | { readonly type: "load"; readonly modelId: string }
+  | { readonly type: "load"; readonly modelId: string; readonly source?: ModelSource }
   | {
       readonly type: "generate";
       readonly requestId: string;
@@ -33,7 +46,13 @@ export type WorkerToUiMessage =
       readonly loaded: number;
       readonly total: number;
     }
-  | { readonly type: "ready"; readonly modelId: string }
+  | {
+      readonly type: "ready";
+      readonly modelId: string;
+      /** What the model runs on; reported for `?debug` and the manual checks. */
+      readonly device?: ModelDevice;
+      readonly dtype?: string;
+    }
   | {
       readonly type: "token";
       readonly requestId: string;

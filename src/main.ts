@@ -1,9 +1,10 @@
 import { createProductionDependencies, startAltar } from "./app.js";
 import { loadAltarData } from "./data/load.js";
+import { debugRequested } from "./debug/debug-log.js";
 import { showLoadError, wireAboutPanel } from "./ui/altar.js";
 
 async function main(): Promise<void> {
-  let deps = createProductionDependencies();
+  let deps = createProductionDependencies(debugRequested(location.search));
   // The fake model worker exists only in builds made with `--mode test`. The comparison below
   // is folded to `false` in the production build, which drops the import and the fake code.
   if (import.meta.env.MODE === "test") {
@@ -13,7 +14,12 @@ async function main(): Promise<void> {
       document.documentElement.dataset["modelWorker"] = "fake";
     }
   }
-  const data = await loadAltarData(import.meta.env.BASE_URL);
+  let data = await loadAltarData(import.meta.env.BASE_URL);
+  // `import.meta.env.DEV` is false in every build, so the override code is dropped from them.
+  if (import.meta.env.DEV) {
+    const override = await import("./dev/model-override.js");
+    data = { ...data, ancestors: override.applyModelOverrides(data.ancestors, location.search) };
+  }
   startAltar(document, data, deps);
 }
 

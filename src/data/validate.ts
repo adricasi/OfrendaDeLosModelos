@@ -26,6 +26,8 @@ export interface Ancestor {
   readonly modelCardUrl: string;
   readonly repositoryId: string | null;
   readonly revision: string | null;
+  /** ONNX weight precision per runtime; null lets the worker choose. */
+  readonly dtypes: { readonly webgpu?: string; readonly wasm?: string } | null;
   readonly settings: { readonly maxTokens: number; readonly temperature: number } | null;
   readonly verify: string | null;
 }
@@ -182,6 +184,15 @@ function items<T>(
   });
 }
 
+function parseDtypes(reader: Reader): { webgpu?: string; wasm?: string } {
+  const webgpu = reader.nullableString("webgpu");
+  const wasm = reader.nullableString("wasm");
+  return {
+    ...(webgpu === null ? {} : { webgpu }),
+    ...(wasm === null ? {} : { wasm }),
+  };
+}
+
 export function parseAncestors(input: unknown): Ancestor[] {
   return items(
     "ancestors.json",
@@ -190,6 +201,7 @@ export function parseAncestors(input: unknown): Ancestor[] {
     (r): Ancestor => {
       const licence = r.record("licence");
       const settings = r.nullableRecord("settings");
+      const dtypes = r.nullableRecord("dtypes");
       return {
         id: r.string("id"),
         name: r.string("name"),
@@ -201,6 +213,7 @@ export function parseAncestors(input: unknown): Ancestor[] {
         modelCardUrl: r.httpsUrl("modelCardUrl"),
         repositoryId: r.nullableString("repositoryId"),
         revision: r.nullableString("revision"),
+        dtypes: dtypes === null ? null : parseDtypes(dtypes),
         settings:
           settings === null
             ? null

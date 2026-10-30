@@ -5,12 +5,22 @@ import { noRecordedVoices } from "./ritual/steps.js";
 import { renderAltar } from "./ui/altar.js";
 import { wireOffering } from "./ui/offering.js";
 import { createRitualView } from "./ui/ritual-view.js";
-import { createUnavailableWorker } from "./worker/unavailable.js";
+import { withDebugLogging } from "./debug/debug-log.js";
+import { lazyPort, portForWorker } from "./worker/worker-port.js";
 
-/** What ships until the real workers (T-004, T-006) and recordings (T-005) are plugged in. */
-export function createProductionDependencies(): RitualDependencies {
+/**
+ * What ships: the real inference worker (GPT-2 now, Gemma 4 with T-006), created on first use.
+ * Recordings (T-005) and the medium (T-006) are not plugged in yet. With `debug`, load times,
+ * tokens per second and errors go to the console (NFR-007).
+ */
+export function createProductionDependencies(debug: boolean): RitualDependencies {
+  const port = lazyPort(() =>
+    portForWorker(
+      new Worker(new URL("./worker/inference.worker.ts", import.meta.url), { type: "module" }),
+    ),
+  );
   return {
-    worker: createUnavailableWorker(),
+    worker: debug ? withDebugLogging(port, console) : port,
     recorded: noRecordedVoices,
     includeMedium: false,
   };
