@@ -125,8 +125,13 @@ export function wireOffering(
       fields.disabled = value;
       offerButton.disabled = value;
       stopButton.hidden = !value;
-      if (value) stopButton.focus();
-      else offerButton.focus();
+      if (value) {
+        stopButton.focus();
+        return;
+      }
+      // Restore focus only if the visitor has not moved it elsewhere in the meantime.
+      const active = doc.activeElement;
+      if (active === null || active === doc.body || active === stopButton) offerButton.focus();
     },
   };
 }

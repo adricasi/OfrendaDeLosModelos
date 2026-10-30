@@ -1,5 +1,5 @@
 import { isAbortError } from "./steps.js";
-import type { Question, RitualEnd, RitualStep, RitualView } from "./types.js";
+import type { CompletedStep, Question, RitualEnd, RitualStep, RitualView } from "./types.js";
 
 /**
  * Runs the steps in their fixed order (design D-4). A failing step is isolated: the view is
@@ -14,6 +14,7 @@ export async function runRitual(
 ): Promise<RitualEnd> {
   view.ritualStarted(question);
   let end: RitualEnd = "completed";
+  const previous: CompletedStep[] = [];
   for (const step of steps) {
     if (signal.aborted) {
       end = "stopped";
@@ -23,6 +24,7 @@ export async function runRitual(
     try {
       const outcome = await step.run({
         question,
+        previous,
         signal,
         emitToken: (token) => {
           if (!signal.aborted) view.token(step.info.id, token);
@@ -31,17 +33,21 @@ export async function runRitual(
           if (!signal.aborted) view.stepProgress(step.info.id, loaded, total);
         },
       });
+      // An answer that completed just before Stop is kept; the ritual still ends as stopped.
+      view.stepFinished(step.info, outcome);
+      previous.push({ info: step.info, outcome });
       if (signal.aborted) {
         end = "stopped";
         break;
       }
-      view.stepFinished(step.info, outcome);
     } catch (error: unknown) {
       if (signal.aborted || isAbortError(error)) {
         end = "stopped";
         break;
       }
-      view.stepFinished(step.info, { kind: "unavailable" });
+      const failed = { kind: "unavailable" } as const;
+      view.stepFinished(step.info, failed);
+      previous.push({ info: step.info, outcome: failed });
       if (step.endsRitualOnFailure) {
         end = "ended-early";
         break;

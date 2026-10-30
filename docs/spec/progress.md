@@ -45,3 +45,7 @@ The latest entry is shown to Claude at the start of every session.
   (not in the permissive list; dev-only, so NFR-008's shipped-code rule is unaffected).
 - Next: T-004 plugs the real GPT-2 worker into `ModelWorkerPort`; T-005 supplies the
   `RecordedVoiceSource`; add `npm run test:e2e` to CI once approved.
+- Review round (2026-10-30): CI runs e2e; privacy test checks UTF-8 bodies and WebSockets and has a
+  negative control; protocol gained `cancel-load`; `StepContext.previous` and
+  `SpokenOutcome.notes` (medium notes, rendered one block per ancestor inside the medium's step)
+  added for T-006.

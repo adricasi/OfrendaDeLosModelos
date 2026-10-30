@@ -28,6 +28,10 @@ export interface ModelSource {
 
 export type ModelDevice = "webgpu" | "wasm";
 
+/**
+ * `load` of a model that is already loaded still answers with `ready` (progress messages are
+ * optional in that case), so callers can always wait for `ready` after sending `load`.
+ */
 export type UiToWorkerMessage =
   | { readonly type: "load"; readonly modelId: string; readonly source?: ModelSource }
   | {
@@ -37,7 +41,14 @@ export type UiToWorkerMessage =
       readonly prompt: string;
       readonly settings: GenerationSettings | null;
     }
-  | { readonly type: "cancel"; readonly requestId: string };
+  /** Stops an in-flight `generate`. No reply is expected. */
+  | { readonly type: "cancel"; readonly requestId: string }
+  /**
+   * Stops an in-flight `load` (the visitor pressed Stop while a model was downloading or
+   * initialising). No reply is expected; after it the model may be unloaded, and a later `load`
+   * starts again. Ignored when the model is already loaded or not loading.
+   */
+  | { readonly type: "cancel-load"; readonly modelId: string };
 
 export type WorkerToUiMessage =
   | {

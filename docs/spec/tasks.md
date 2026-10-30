@@ -54,9 +54,8 @@ At most 2 tasks in parallel. Marked ⚡ where a task can run beside the previous
     list assertion and axe.
   - Done when: AC-002.1–AC-002.4 tests pass; e2e asserts no request carries the question
     (NFR-002) and axe reports 0 serious/critical (NFR-009); CI green.
-  - Status note (2026-10-30): all code and tests are on branch `feat/t-003-ritual`; e2e runs
-    locally (`npm run test:e2e`) until the founder approves the CI change (Q-6), so "CI green"
-    for e2e is pending.
+  - Status note (2026-10-30): code, unit tests, e2e and the CI e2e step (Q-6 approved) are on
+    branch `feat/t-003-ritual`; "CI green" is confirmed once the PR's checks pass.
 - [ ] T-004: GPT-2 speaks, with ghost words
   - Requirements: REQ-003, REQ-004
   - Depends on: T-001, T-003

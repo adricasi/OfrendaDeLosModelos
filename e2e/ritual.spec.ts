@@ -5,34 +5,52 @@ const START = "/OfrendaDeLosModelos/?fake-models";
 const OWN_QUESTION = "¿Por qué brilla la luna sobre la ofrenda de mi abuela Remedios?";
 const OFFERED_QUESTION = "What do you remember?";
 
-/** Collects every request the page makes, with its URL and body. */
-function trackRequests(page: Page): Request[] {
-  const requests: Request[] = [];
-  page.on("request", (request) => requests.push(request));
-  return requests;
+/**
+ * NFR-002 helpers. T-004 and T-006 must re-run these tests with the real workers (the fake
+ * worker proves the wiring, not the model code): the request list there also contains the model
+ * downloads, which must carry no question text either.
+ */
+interface Traffic {
+  readonly requests: Request[];
+  readonly websockets: string[];
 }
 
-function expectNoRequestCarries(requests: readonly Request[], secret: string): void {
+/** Collects every request (and any WebSocket) the page opens. */
+function trackRequests(page: Page): Traffic {
+  const traffic: Traffic = { requests: [], websockets: [] };
+  page.on("request", (request) => traffic.requests.push(request));
+  page.on("websocket", (socket) => traffic.websockets.push(socket.url()));
+  return traffic;
+}
+
+function bodyOf(request: Request): string {
+  return request.postDataBuffer()?.toString("utf8") ?? "";
+}
+
+function safeDecode(text: string): string {
+  try {
+    return decodeURIComponent(text.replaceAll("+", " "));
+  } catch {
+    return text;
+  }
+}
+
+function expectNoRequestCarries(traffic: Traffic, secret: string): void {
   const needles = [secret, encodeURIComponent(secret), secret.replaceAll(" ", "+")];
-  for (const request of requests) {
-    const haystack = `${request.url()} ${request.postData() ?? ""}`;
-    const decoded = (() => {
-      try {
-        return decodeURIComponent(haystack);
-      } catch {
-        return haystack;
-      }
-    })();
+  for (const request of traffic.requests) {
+    const haystack = `${request.url()} ${bodyOf(request)}`;
+    const decoded = safeDecode(haystack);
     for (const needle of needles) {
       expect(haystack, request.url()).not.toContain(needle);
       expect(decoded, request.url()).not.toContain(needle);
     }
   }
+  expect(traffic.websockets, "no WebSocket may be opened").toEqual([]);
 }
 
-function expectOnlySameOrigin(requests: readonly Request[], baseURL: string | undefined): void {
+function expectOnlySameOrigin(traffic: Traffic, baseURL: string | undefined): void {
   const origin = new URL(baseURL ?? "http://localhost:4173").origin;
-  for (const request of requests) {
+  for (const request of traffic.requests) {
     const url = new URL(request.url());
     // data: and blob: URLs never leave the page.
     if (url.protocol === "data:" || url.protocol === "blob:") continue;
@@ -65,7 +83,7 @@ test("a full ritual for an offered question sends nothing anywhere (AC-002.1, NF
   page,
   baseURL,
 }) => {
-  const requests = trackRequests(page);
+  const traffic = trackRequests(page);
   await page.goto(START);
   await waitForAltar(page);
 
@@ -90,9 +108,9 @@ test("a full ritual for an offered question sends nothing anywhere (AC-002.1, NF
   );
   await expect(page.locator(".voice").nth(1).locator(".voice-label")).toHaveText("Recorded voice");
 
-  expect(requests.length).toBeGreaterThan(0);
-  expectOnlySameOrigin(requests, baseURL);
-  expectNoRequestCarries(requests, OFFERED_QUESTION);
+  expect(traffic.requests.length).toBeGreaterThan(0);
+  expectOnlySameOrigin(traffic, baseURL);
+  expectNoRequestCarries(traffic, OFFERED_QUESTION);
 
   expect(await page.evaluate(() => localStorage.length + sessionStorage.length)).toBe(0);
   expect(await page.evaluate(() => document.cookie)).toBe("");
@@ -103,7 +121,7 @@ test("a full ritual for an own question: recorded ancestors rest (AC-002.2, AC-0
   page,
   baseURL,
 }) => {
-  const requests = trackRequests(page);
+  const traffic = trackRequests(page);
   await page.goto(START);
   await waitForAltar(page);
 
@@ -119,8 +137,8 @@ test("a full ritual for an own question: recorded ancestors rest (AC-002.2, AC-0
   );
   await expect(page.locator('.voice[data-state="spoken"]')).toHaveCount(3);
 
-  expectOnlySameOrigin(requests, baseURL);
-  expectNoRequestCarries(requests, OWN_QUESTION);
+  expectOnlySameOrigin(traffic, baseURL);
+  expectNoRequestCarries(traffic, OWN_QUESTION);
   expect(await page.evaluate(() => localStorage.length + sessionStorage.length)).toBe(0);
   await expectNoSeriousViolations(page);
 });
@@ -223,4 +241,37 @@ test("the page without ?fake-models in a test build uses no fake worker", async 
   await page.goto("/OfrendaDeLosModelos/");
   await expect(page.locator("#places > li")).toHaveCount(5);
   await expect(page.locator("html")).not.toHaveAttribute("data-model-worker", "fake");
+});
+
+test("negative control: the privacy assertion catches a leaking fetch and beacon (NFR-002)", async ({
+  page,
+}) => {
+  const traffic = trackRequests(page);
+  await page.goto(START);
+  await waitForAltar(page);
+  expectNoRequestCarries(traffic, OWN_QUESTION);
+
+  const beacon = page.waitForRequest((r) => r.method() === "POST");
+  await page.evaluate((question) => {
+    void fetch(`/OfrendaDeLosModelos/?q=${encodeURIComponent(question)}`).catch(() => undefined);
+    navigator.sendBeacon("/OfrendaDeLosModelos/beacon", question);
+  }, OWN_QUESTION);
+  await beacon;
+  await expect
+    .poll(() => traffic.requests.filter((r) => r.url().includes("?q=")).length)
+    .toBeGreaterThan(0);
+
+  expect(() => expectNoRequestCarries(traffic, OWN_QUESTION)).toThrow();
+  // Each channel is detected on its own.
+  const urlOnly: Traffic = {
+    requests: traffic.requests.filter((r) => r.url().includes("?q=")),
+    websockets: [],
+  };
+  const bodyOnly: Traffic = {
+    requests: traffic.requests.filter((r) => r.method() === "POST"),
+    websockets: [],
+  };
+  expect(() => expectNoRequestCarries(urlOnly, OWN_QUESTION)).toThrow();
+  expect(() => expectNoRequestCarries(bodyOnly, OWN_QUESTION)).toThrow();
+  expect(() => expectNoRequestCarries({ requests: [], websockets: ["ws://x"] }, "q")).toThrow();
 });

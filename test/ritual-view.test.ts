@@ -4,7 +4,11 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { startAltar } from "../src/app.js";
 import { createFakeWorker } from "../src/fake/fake-worker.js";
 import type { RitualDependencies } from "../src/ritual/plan.js";
-import { NOT_INVITED_MESSAGE, UNAVAILABLE_MESSAGE } from "../src/ui/ritual-view.js";
+import {
+  NOT_INVITED_MESSAGE,
+  UNAVAILABLE_MESSAGE,
+  createRitualView,
+} from "../src/ui/ritual-view.js";
 import { loadTestData, mountPage, settle } from "./helpers.js";
 
 const recorded = { lookup: () => ({ text: "<b>recorded</b>", credit: "credit line" }) };
@@ -116,6 +120,69 @@ describe("the ritual on the page", () => {
     await untilIdle();
     expect(document.getElementById("ritual-end")?.textContent).toMatch(/stopped/);
     expect(document.getElementById("offer-button")).toHaveProperty("disabled", false);
+  });
+});
+
+describe("the medium's notes (T-006 data shape)", () => {
+  const notes = [
+    {
+      ancestorId: "gpt-2",
+      meaning: "Quería hablar.",
+      calaverita: ["uno", "dos", "tres", "cuatro"],
+    },
+    { ancestorId: "gemma-1", meaning: "Ya estaba aquí.", calaverita: ["a", "b", "c", "d"] },
+  ];
+  it("renders one block per ancestor inside the medium's step and announces it once, in Spanish", async () => {
+    mountPage();
+    await loadTestData();
+    const view = createRitualView(document);
+    const gpt = { id: "gpt-2", name: "GPT-2", ancestorId: "gpt-2", mode: "live" } as const;
+    const gemma = {
+      id: "gemma-1",
+      name: "Gemma 1",
+      ancestorId: "gemma-1",
+      mode: "recorded",
+    } as const;
+    const medium = {
+      id: "medium",
+      name: "La que cuida el altar",
+      nameLang: "es",
+      ancestorId: null,
+      mode: "medium",
+    } as const;
+    view.ritualStarted({ text: "¿Qué recuerdas?", offeredId: "remember", lang: "es" });
+    view.stepStarted(gpt);
+    view.stepFinished(gpt, { kind: "spoken", text: "x" });
+    view.stepStarted(gemma);
+    view.stepFinished(gemma, { kind: "spoken", text: "y" });
+    view.stepStarted(medium);
+    view.stepFinished(medium, { kind: "spoken", text: "raw", notes });
+    const mediumVoice = document.querySelector('.voice[data-step-id="medium"]');
+    const blocks = mediumVoice?.querySelectorAll(".medium-note") ?? [];
+    expect([...blocks].map((b) => b.querySelector("h4")?.textContent)).toEqual([
+      "GPT-2",
+      "Gemma 1",
+    ]);
+    expect(blocks[0]?.querySelector(".medium-calaverita")?.textContent).toBe(
+      "uno\ndos\ntres\ncuatro",
+    );
+    const announced = [...document.querySelectorAll("#ritual-announcer p")].filter((p) =>
+      p.textContent?.startsWith("La que cuida el altar"),
+    );
+    expect(announced).toHaveLength(1);
+    expect(announced[0]?.getAttribute("lang")).toBe("es");
+  });
+});
+
+describe("focus after the ritual", () => {
+  it("does not steal focus the visitor moved elsewhere", async () => {
+    mountPage();
+    startAltar(document, await loadTestData(), deps());
+    submitOffered("remember");
+    const link = document.getElementById("about-link");
+    link?.focus();
+    await untilIdle();
+    expect(document.activeElement).toBe(link);
   });
 });
 

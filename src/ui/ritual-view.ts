@@ -1,5 +1,6 @@
 import type { Alternative } from "../worker/protocol.js";
 import type {
+  MediumNote,
   Question,
   RitualEnd,
   RitualView,
@@ -60,6 +61,22 @@ function formatBytes(bytes: number): string {
   return `${(bytes / 1_000_000).toFixed(1)} MB`;
 }
 
+function renderNote(note: MediumNote, ancestorName: string | undefined): HTMLElement {
+  const block = document.createElement("section");
+  block.className = "medium-note";
+  block.dataset["ancestorId"] = note.ancestorId;
+  const heading = document.createElement("h4");
+  heading.textContent = ancestorName ?? note.ancestorId;
+  const meaning = document.createElement("p");
+  meaning.className = "medium-meaning";
+  meaning.textContent = note.meaning;
+  const poem = document.createElement("p");
+  poem.className = "medium-calaverita";
+  poem.textContent = note.calaverita.join("\n");
+  block.append(heading, meaning, poem);
+  return block;
+}
+
 interface VoiceElements {
   readonly item: HTMLLIElement;
   readonly textEl: HTMLElement;
@@ -85,9 +102,13 @@ export function createRitualView(doc: Document): RitualView {
   const announcer = byId(doc, "ritual-announcer");
   const voices = new Map<string, VoiceElements>();
 
-  const announce = (message: string): void => {
-    announcer.append(make(doc, "p", "", message));
+  const announce = (message: string, lang?: string | null): void => {
+    const line = make(doc, "p", "", message);
+    if (lang !== undefined && lang !== null) line.lang = lang;
+    announcer.append(line);
   };
+  const names = new Map<string, string>();
+  let questionLang: Question["lang"] = null;
   const place = (info: StepInfo): HTMLElement | null =>
     info.ancestorId === null
       ? null
@@ -183,6 +204,8 @@ export function createRitualView(doc: Document): RitualView {
   return {
     ritualStarted(question: Question): void {
       voices.clear();
+      names.clear();
+      questionLang = question.lang;
       list.replaceChildren();
       announcer.replaceChildren();
       endLine.textContent = "";
@@ -190,10 +213,11 @@ export function createRitualView(doc: Document): RitualView {
       if (question.lang === null) questionLine.removeAttribute("lang");
       else questionLine.lang = question.lang;
       section.hidden = false;
-      announce(`The ritual begins. Your question: ${question.text}`);
+      announce(`The ritual begins. Your question: ${question.text}`, question.lang);
     },
 
     stepStarted(info: StepInfo): void {
+      if (info.ancestorId !== null) names.set(info.ancestorId, info.name);
       const item = doc.createElement("li");
       item.className = "voice";
       item.dataset["stepId"] = info.id;
@@ -263,11 +287,31 @@ export function createRitualView(doc: Document): RitualView {
       voice.item.dataset["state"] = outcome.kind;
       const name = nameOf(info);
       switch (outcome.kind) {
-        case "spoken":
+        case "spoken": {
           // Ghost words stay as they were streamed; plain answers are set to the final text.
           if (voice.units.length === 0) voice.textEl.textContent = outcome.text;
-          announce(`${name}: ${outcome.text}`);
+          // The medium answers in the question's language (AC-007.2), so its announcement is
+          // tagged with it; the other ancestors' language is not known.
+          const lang = info.mode === "medium" ? questionLang : null;
+          if (outcome.notes === undefined) {
+            announce(`${name}: ${outcome.text}`, lang);
+            break;
+          }
+          // One block per ancestor, inside the medium's own step (reading order stays linear).
+          voice.textEl.textContent = "";
+          const notes = outcome.notes;
+          voice.item.append(...notes.map((note) => renderNote(note, names.get(note.ancestorId))));
+          announce(
+            `${name}: ${notes
+              .map(
+                (n) =>
+                  `${names.get(n.ancestorId) ?? n.ancestorId}. ${n.meaning} ${n.calaverita.join(" ")}`,
+              )
+              .join(" ")}`,
+            lang,
+          );
           break;
+        }
         case "recorded":
           voice.textEl.textContent = outcome.text;
           voice.status.textContent = outcome.credit;
@@ -278,6 +322,8 @@ export function createRitualView(doc: Document): RitualView {
           announce(`${name}. ${NOT_INVITED_MESSAGE}`);
           break;
         case "unavailable":
+          // Tokens that arrived before the failure stay visible: what the ancestor managed to
+          // say is kept, and the message below says it could not finish.
           voice.status.textContent = UNAVAILABLE_MESSAGE;
           announce(`${name}. ${UNAVAILABLE_MESSAGE}`);
           break;
