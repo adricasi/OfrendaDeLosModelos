@@ -46,7 +46,7 @@ At most 2 tasks in parallel. Marked ⚡ where a task can run beside the previous
     and the founder setting Pages Source to "GitHub Actions" (repository public, Q-5).
 
 ## Milestone 2: The ritual (Thu night – Fri Oct 31 morning)
-- [ ] T-003: Offering and ritual sequencer with a fake model worker
+- [~] T-003: Offering and ritual sequencer with a fake model worker
   - Requirements: REQ-002; NFR-002, NFR-009
   - Depends on: T-002
   - Scope: offering form (offered and own questions), sequencer (fixed order, one ritual at a
@@ -54,6 +54,9 @@ At most 2 tasks in parallel. Marked ⚡ where a task can run beside the previous
     list assertion and axe.
   - Done when: AC-002.1–AC-002.4 tests pass; e2e asserts no request carries the question
     (NFR-002) and axe reports 0 serious/critical (NFR-009); CI green.
+  - Status note (2026-10-30): all code and tests are on branch `feat/t-003-ritual`; e2e runs
+    locally (`npm run test:e2e`) until the founder approves the CI change (Q-6), so "CI green"
+    for e2e is pending.
 - [ ] T-004: GPT-2 speaks, with ghost words
   - Requirements: REQ-003, REQ-004
   - Depends on: T-001, T-003
