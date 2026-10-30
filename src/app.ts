@@ -19,7 +19,7 @@ import { lazyPort, portForWorker } from "./worker/worker-port.js";
 export function createProductionDependencies(
   data: AltarData,
   webgpu: boolean,
-  debug: boolean,
+  debug = false,
 ): RitualDependencies {
   const port = lazyPort(() =>
     portForWorker(

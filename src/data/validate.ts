@@ -147,6 +147,15 @@ class Reader {
     return v;
   }
 
+  /** A pinned model revision: a full 40-character commit hash, never a branch or tag name. */
+  nullableCommitHash(key: string): string | null {
+    const v = this.nullableString(key);
+    if (v !== null && !/^[0-9a-f]{40}$/.test(v)) {
+      this.fail(key, `must be a full 40-character lowercase commit hash, got "${v}"`);
+    }
+    return v;
+  }
+
   oneOf<T extends string>(key: string, allowed: readonly T[]): T {
     const v = this.value[key];
     const match = allowed.find((candidate) => candidate === v);
@@ -251,7 +260,7 @@ export function parseAncestors(input: unknown): Ancestor[] {
         licence: { name: licence.string("name"), url: licence.httpsUrl("url") },
         modelCardUrl: r.httpsUrl("modelCardUrl"),
         repositoryId: r.nullableString("repositoryId"),
-        revision: r.nullableString("revision"),
+        revision: r.nullableCommitHash("revision"),
         dtypes: dtypes === null ? null : parseDtypes(dtypes),
         downloadBytes: r.nullablePositiveInteger("downloadBytes"),
         settings:

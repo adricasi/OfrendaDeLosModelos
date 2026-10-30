@@ -69,12 +69,23 @@ No visitor data is stored (NFR-002). The question lives only in page memory.
   secrets. The repo is public and holds no credentials (CI secret scan).
 - **Network exposure:** a Content Security Policy (meta tag; GitHub Pages can't set headers):
   `default-src 'self'`; `script-src 'self' 'wasm-unsafe-eval'` (ONNX Runtime WebAssembly);
-  `worker-src 'self' blob:`; `connect-src 'self' https://huggingface.co` plus the
+  `worker-src 'self'` (no blob workers); `connect-src 'self' https://huggingface.co` plus the
   model download host(s) [TODO: T-001's report confirms the exact CDN hosts Hugging Face
   redirects model files to; add them then]; `img-src 'self' data: blob:`;
   `style-src 'self'`; `object-src 'none'`; `base-uri 'self'`;
-  `require-trusted-types-for 'script'`. (`frame-ancestors` has no effect in a meta CSP; accepted.) ONNX Runtime's WebAssembly files
-  are served from the site itself, not a CDN.
+  `require-trusted-types-for 'script'; trusted-types ofrenda-worker` (the one policy, which
+  vouches only for the inference worker's URL). (`frame-ancestors` has no effect in a meta CSP;
+  accepted.) ONNX Runtime's WebAssembly files are served from the site itself, not a CDN.
+- **The meta CSP does not cover the worker.** A module worker loaded over http(s) takes its CSP
+  from its own response headers, and GitHub Pages sends none, so `connect-src` does not limit
+  what the worker fetches; the page-level policy still limits the page itself. Network
+  exposure of the worker is therefore bounded by other means: its code loads only the
+  repository and revision pinned in `ancestors.json` from the fixed host
+  `https://huggingface.co` (`env.allowLocalModels = false`; unpinned or malformed sources are
+  refused); the build fails if the bundle contains an `https://` host outside an allowlist
+  (`vite.config.ts`); and an e2e test records all requests of the page and the worker
+  (Playwright sees worker requests) and allows only this site and the model host(s). If the
+  site moves to a host that can send headers, the same policy should be sent as a header.
   `'self'` on GitHub Pages is the shared `adricasi.github.io` origin (every project site of
   that account); we accept this.
 - **Data protection:** questions, answers and photos stay in memory; nothing is written to

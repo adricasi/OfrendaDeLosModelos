@@ -87,8 +87,11 @@ export interface InferenceHost {
 }
 
 interface LoadEntry {
+  /** The UI stopped waiting for this load; a new `load` reuses the entry and clears this. */
   cancelled: boolean;
   settled: boolean;
+  /** Dispose and forget the model as soon as the load settles (an `unload` arrived meanwhile). */
+  unloadWhenSettled: boolean;
   promise: Promise<LoadedModel>;
 }
 
@@ -97,18 +100,22 @@ function describe(error: unknown): string {
 }
 
 /**
- * The message handling of the inference worker: `load`, `generate`, `cancel` of the typed
- * protocol (design.md, Interfaces), independent of `self` and of transformers.js so it is
- * testable with a fake runtime. One generation at a time: the ritual is sequential.
+ * The message handling of the inference worker: `load`, `cancel-load`, `unload`, `generate`
+ * and `cancel` of the typed protocol (design.md, Interfaces), independent of `self` and of
+ * transformers.js so it is testable with a fake runtime. Generations run one at a time, in
+ * the order they arrive: a `generate` sent right after a `cancel` waits for the cancelled
+ * one to stop instead of being refused.
  */
 export function createInferenceHost({ runtime, send }: InferenceHostOptions): InferenceHost {
   const loading = new Map<string, LoadEntry>();
-  const running = new Map<string, AbortController>();
+  const running = new Map<string, { modelId: string; controller: AbortController }>();
+  let queueTail: Promise<void> = Promise.resolve();
 
   /**
    * Starts (or joins) the load of a model. transformers.js 4.3.1 cannot abort a download, so
-   * `cancel-load` stops listening instead: the entry is dropped (a later `load` starts afresh),
-   * nothing more is sent for it, and the model is disposed if the load still finishes.
+   * `cancel-load` only stops listening: the entry stays until it settles, nothing more is sent
+   * for it meanwhile, and a later `load` reuses it (no second download). A model whose load
+   * finishes after a cancel stays loaded, ready for the next `load`; `unload` frees it.
    */
   function load(
     modelId: string,
@@ -116,36 +123,46 @@ export function createInferenceHost({ runtime, send }: InferenceHostOptions): In
     backend: ModelDevice | undefined,
   ): LoadEntry {
     const existing = loading.get(modelId);
-    if (existing !== undefined) return existing;
-    const entry: LoadEntry = { cancelled: false, settled: false, promise: null as never };
+    if (existing !== undefined) {
+      existing.cancelled = false;
+      existing.unloadWhenSettled = false;
+      return existing;
+    }
+    const entry: LoadEntry = {
+      cancelled: false,
+      settled: false,
+      unloadWhenSettled: false,
+      promise: null as never,
+    };
     entry.promise = (async (): Promise<LoadedModel> => {
       if (!runtime.supports(modelId)) {
         throw new Error(`No runtime for ${modelId} yet.`);
       }
       const pinned = pinnedSource(source);
-      const model = await runtime.load(
+      return runtime.load(
         modelId,
         pinned,
         (loaded, total) => {
-          if (!entry.cancelled) send({ type: "progress", modelId, loaded, total });
+          if (!entry.cancelled && !entry.unloadWhenSettled) {
+            send({ type: "progress", modelId, loaded, total });
+          }
         },
         backend,
       );
-      if (entry.cancelled) await model.dispose();
-      return model;
     })();
     loading.set(modelId, entry);
-    const settle = (failed: boolean): void => {
-      entry.settled = true;
-      // A failed load is forgotten so that a later attempt can try again.
-      if (failed && loading.get(modelId) === entry) loading.delete(modelId);
-    };
     entry.promise.then(
-      () => {
-        settle(false);
+      async (model) => {
+        entry.settled = true;
+        if (entry.unloadWhenSettled) {
+          if (loading.get(modelId) === entry) loading.delete(modelId);
+          await model.dispose();
+        }
       },
       () => {
-        settle(true);
+        entry.settled = true;
+        // A failed load is forgotten so that a later attempt can try again.
+        if (loading.get(modelId) === entry) loading.delete(modelId);
       },
     );
     return entry;
@@ -159,8 +176,8 @@ export function createInferenceHost({ runtime, send }: InferenceHostOptions): In
     const entry = load(modelId, source, backend);
     try {
       const model = await entry.promise;
-      // A load that was cancelled while it ran has no listener any more.
-      if (entry.cancelled) return;
+      // A load whose listener left (and did not come back) has nobody to tell.
+      if (entry.cancelled || entry.unloadWhenSettled) return;
       send({ type: "ready", modelId, device: model.device, dtype: model.dtype });
     } catch (error: unknown) {
       if (!entry.cancelled) send({ type: "error", modelId, message: describe(error) });
@@ -192,7 +209,29 @@ export function createInferenceHost({ runtime, send }: InferenceHostOptions): In
     const entry = loading.get(modelId);
     if (entry === undefined || entry.settled) return;
     entry.cancelled = true;
+  }
+
+  /** Frees a model's memory: stops its answers, then disposes it (after its load, if running). */
+  function unload(modelId: string): void {
+    for (const { modelId: runningModel, controller } of running.values()) {
+      if (runningModel === modelId) controller.abort();
+    }
+    const entry = loading.get(modelId);
+    if (entry === undefined) return;
+    if (!entry.settled) {
+      entry.unloadWhenSettled = true;
+      return;
+    }
     loading.delete(modelId);
+    // Wait for the answers that were aborted above before releasing the weights.
+    const afterAnswers = queueTail;
+    void entry.promise.then(
+      async (model) => {
+        await afterAnswers;
+        await model.dispose();
+      },
+      () => undefined,
+    );
   }
 
   async function handleGenerate(
@@ -206,13 +245,17 @@ export function createInferenceHost({ runtime, send }: InferenceHostOptions): In
       send({ type: "error", requestId, message: `${modelId} is not loaded.` });
       return;
     }
-    if (running.size > 0) {
-      send({ type: "error", requestId, message: "The model is busy with another answer." });
-      return;
-    }
     const controller = new AbortController();
-    running.set(requestId, controller);
+    running.set(requestId, { modelId, controller });
+    const previous = queueTail;
+    let release: () => void = () => undefined;
+    queueTail = new Promise<void>((resolve) => {
+      release = resolve;
+    });
     try {
+      // The one before us (possibly just cancelled) must have stopped first.
+      await previous;
+      if (controller.signal.aborted) return;
       const model = await pending;
       await model.generate({
         prompt,
@@ -233,6 +276,7 @@ export function createInferenceHost({ runtime, send }: InferenceHostOptions): In
       if (!controller.signal.aborted) send({ type: "error", requestId, message: describe(error) });
     } finally {
       running.delete(requestId);
+      release();
     }
   }
 
@@ -246,13 +290,16 @@ export function createInferenceHost({ runtime, send }: InferenceHostOptions): In
           void handleGenerate(message.requestId, message.modelId, message.prompt, message.settings);
           break;
         case "cancel":
-          running.get(message.requestId)?.abort();
+          running.get(message.requestId)?.controller.abort();
           break;
         case "cancel-load":
           cancelLoad(message.modelId);
           break;
         case "probe":
           void handleProbe(message.modelId, message.source);
+          break;
+        case "unload":
+          unload(message.modelId);
           break;
       }
     },

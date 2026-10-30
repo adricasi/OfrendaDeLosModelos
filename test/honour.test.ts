@@ -246,8 +246,13 @@ describe("the ritual without WebGPU (AC-010.1, AC-010.2, AC-006.3, AC-007.5)", (
 
   it("runs GPT-2 on WebAssembly, replays Gemma 4 and the medium, all labelled recorded", async () => {
     const { view, posted } = await runWithoutWebGpu(offered, source);
-    expect(posted.filter((m) => m.type === "load")).toMatchObject([
-      { type: "load", modelId: "gpt-2", backend: "wasm" },
+    expect(posted.filter((m) => m.type === "load")).toEqual([
+      {
+        type: "load",
+        modelId: "gpt-2",
+        backend: "wasm",
+        source: expect.objectContaining({ repositoryId: null, revision: null }) as unknown,
+      },
     ]);
     expect(view.started).toEqual([
       "gpt-2",

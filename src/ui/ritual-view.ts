@@ -108,7 +108,7 @@ interface VoiceElements {
   /** Token units with ghost words, in order; one of them is the roving tab stop. */
   readonly units: HTMLElement[];
   /** Screen-reader list of what the model almost said, outside the answer text. */
-  notes: HTMLOListElement | null;
+  notes: HTMLElement | null;
 }
 
 /**
@@ -150,9 +150,12 @@ export function createRitualView(doc: Document): RitualView {
 
   /**
    * One token with its ghost words (AC-004.1, AC-004.2). The visible ghosts are decoration
-   * (aria-hidden); screen readers get "almost: X, Y, Z" from the list after the answer, which
-   * is not a live region, so the answer itself is never interrupted. Probabilities show on
-   * hover and keyboard focus; the units form one tab stop moved with the arrow keys.
+   * (aria-hidden). The text "almost: X, Y, Z" sits in a hidden block and is the accessible
+   * description of the token (aria-describedby), so a screen reader reads the answer straight
+   * through, and says what the model almost said when focus reaches a word. One visually hidden
+   * line per answer explains this; nothing is repeated 60 times. Probabilities show on hover,
+   * focus and tap, can be dismissed with Escape and stay while the pointer is over them
+   * (WCAG 1.4.13); the units form one tab stop moved with the arrow keys.
    */
   const appendGhostToken = (
     voice: VoiceElements,
@@ -191,12 +194,18 @@ export function createRitualView(doc: Document): RitualView {
     if (trail !== "") voice.text.appendData(trail);
 
     if (voice.notes === null) {
-      voice.notes = doc.createElement("ol");
-      voice.notes.className = "ghost-notes visually-hidden";
-      voice.notes.setAttribute("aria-label", "Ghost words: what the model almost said");
+      const summary = make(
+        doc,
+        "p",
+        "ghost-summary visually-hidden",
+        "Each word has ghost words: use the arrow keys on the answer to hear what the model almost said at that word.",
+      );
+      voice.textEl.before(summary);
+      voice.notes = make(doc, "div", "ghost-notes");
+      voice.notes.hidden = true;
       voice.item.append(voice.notes);
     }
-    const note = doc.createElement("li");
+    const note = doc.createElement("p");
     note.id = noteId;
     note.textContent = `${shown}: almost: ${alternatives.map((a) => visibleToken(a.text)).join(", ")}`;
     voice.notes.append(note);
@@ -269,11 +278,29 @@ export function createRitualView(doc: Document): RitualView {
         const from =
           event.target instanceof HTMLElement ? event.target.closest<HTMLElement>(".token") : null;
         if (from === null) return;
+        if (event.key === "Escape") {
+          // WCAG 1.4.13: the probabilities can be dismissed without moving focus or pointer.
+          from.dataset["dismissed"] = "";
+          return;
+        }
         const next = moveFocus(voice, from, event.key);
         if (next === null) return;
         event.preventDefault();
         setRoving(voice, next);
         next.focus();
+      });
+      const forget = (event: Event): void => {
+        const unit =
+          event.target instanceof HTMLElement ? event.target.closest<HTMLElement>(".token") : null;
+        if (unit !== null) delete unit.dataset["dismissed"];
+      };
+      text.addEventListener("focusout", forget);
+      text.addEventListener("pointerout", forget);
+      // A tap focuses the word (not every mobile browser focuses a span on its own).
+      text.addEventListener("click", (event) => {
+        const unit =
+          event.target instanceof HTMLElement ? event.target.closest<HTMLElement>(".token") : null;
+        unit?.focus();
       });
       text.addEventListener("focusin", (event) => {
         const unit =
