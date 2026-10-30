@@ -42,6 +42,7 @@ function configureEnvironment(): void {
   if (configured) return;
   configured = true;
   const base = new URL(import.meta.env.BASE_URL, self.location.origin);
+  env.remoteHost = "https://huggingface.co/";
   env.allowLocalModels = false;
   env.allowRemoteModels = true;
   env.useWasmCache = false;
