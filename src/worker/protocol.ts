@@ -33,7 +33,13 @@ export type ModelDevice = "webgpu" | "wasm";
  * optional in that case), so callers can always wait for `ready` after sending `load`.
  */
 export type UiToWorkerMessage =
-  | { readonly type: "load"; readonly modelId: string; readonly source?: ModelSource }
+  | {
+      readonly type: "load";
+      readonly modelId: string;
+      readonly source?: ModelSource;
+      /** Browsers without WebGPU ask for "wasm" (AC-010.1); without it WebGPU is tried first. */
+      readonly backend?: "webgpu" | "wasm";
+    }
   | {
       readonly type: "generate";
       readonly requestId: string;

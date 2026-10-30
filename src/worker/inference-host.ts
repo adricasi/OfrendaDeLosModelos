@@ -50,6 +50,7 @@ export interface ModelRuntime {
     modelId: string,
     source: PinnedSource,
     onProgress: (loaded: number, total: number) => void,
+    backend?: ModelDevice,
   ): Promise<LoadedModel>;
 }
 
@@ -107,7 +108,11 @@ export function createInferenceHost({ runtime, send }: InferenceHostOptions): In
    * `cancel-load` stops listening instead: the entry is dropped (a later `load` starts afresh),
    * nothing more is sent for it, and the model is disposed if the load still finishes.
    */
-  function load(modelId: string, source: ModelSource | undefined): LoadEntry {
+  function load(
+    modelId: string,
+    source: ModelSource | undefined,
+    backend: ModelDevice | undefined,
+  ): LoadEntry {
     const existing = loading.get(modelId);
     if (existing !== undefined) return existing;
     const entry: LoadEntry = { cancelled: false, settled: false, promise: null as never };
@@ -116,9 +121,14 @@ export function createInferenceHost({ runtime, send }: InferenceHostOptions): In
         throw new Error(`No runtime for ${modelId} yet.`);
       }
       const pinned = pinnedSource(source);
-      const model = await runtime.load(modelId, pinned, (loaded, total) => {
-        if (!entry.cancelled) send({ type: "progress", modelId, loaded, total });
-      });
+      const model = await runtime.load(
+        modelId,
+        pinned,
+        (loaded, total) => {
+          if (!entry.cancelled) send({ type: "progress", modelId, loaded, total });
+        },
+        backend,
+      );
       if (entry.cancelled) await model.dispose();
       return model;
     })();
@@ -139,8 +149,12 @@ export function createInferenceHost({ runtime, send }: InferenceHostOptions): In
     return entry;
   }
 
-  async function handleLoad(modelId: string, source: ModelSource | undefined): Promise<void> {
-    const entry = load(modelId, source);
+  async function handleLoad(
+    modelId: string,
+    source: ModelSource | undefined,
+    backend: ModelDevice | undefined,
+  ): Promise<void> {
+    const entry = load(modelId, source, backend);
     try {
       const model = await entry.promise;
       // A load that was cancelled while it ran has no listener any more.
@@ -203,7 +217,7 @@ export function createInferenceHost({ runtime, send }: InferenceHostOptions): In
     handle(message: UiToWorkerMessage): void {
       switch (message.type) {
         case "load":
-          void handleLoad(message.modelId, message.source);
+          void handleLoad(message.modelId, message.source, message.backend);
           break;
         case "generate":
           void handleGenerate(message.requestId, message.modelId, message.prompt, message.settings);

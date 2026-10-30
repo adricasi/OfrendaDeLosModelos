@@ -22,6 +22,7 @@ const SOURCE: ModelSource = {
 interface Harness {
   readonly sent: WorkerToUiMessage[];
   readonly loads: PinnedSource[];
+  readonly backends: (string | undefined)[];
   readonly disposed: string[];
   readonly generations: GenerateParams[];
   releaseLoad(): void;
@@ -31,13 +32,15 @@ interface Harness {
 function harness(options: { holdLoad?: boolean; failGenerate?: boolean } = {}): Harness {
   const sent: WorkerToUiMessage[] = [];
   const loads: PinnedSource[] = [];
+  const backends: (string | undefined)[] = [];
   const disposed: string[] = [];
   const generations: GenerateParams[] = [];
   let release: () => void = () => undefined;
   const runtime: ModelRuntime = {
     supports: (id) => id === "gpt-2",
-    async load(modelId, source, onProgress): Promise<LoadedModel> {
+    async load(modelId, source, onProgress, backend): Promise<LoadedModel> {
       loads.push(source);
+      backends.push(backend);
       onProgress(10, 100);
       if (options.holdLoad === true) {
         await new Promise<void>((resolve) => {
@@ -67,7 +70,7 @@ function harness(options: { holdLoad?: boolean; failGenerate?: boolean } = {}): 
     runtime,
     send: (message) => sent.push(message),
   });
-  return { sent, loads, disposed, generations, releaseLoad: () => release(), host };
+  return { sent, loads, backends, disposed, generations, releaseLoad: () => release(), host };
 }
 
 const types = (h: Harness): string[] => h.sent.map((m) => m.type);
@@ -228,6 +231,22 @@ describe("inference worker message handling", () => {
     expect(types(h)).not.toContain("done");
     expect(types(h)).not.toContain("error");
     expect(h.sent.filter((m) => m.type === "token").length).toBeLessThanOrEqual(1);
+  });
+});
+
+describe("backend choice (AC-010.1)", () => {
+  it("passes the requested backend on to the runtime", async () => {
+    const h = harness();
+    h.host.handle({ type: "load", modelId: "gpt-2", source: SOURCE, backend: "wasm" });
+    await settle(2);
+    expect(h.backends).toEqual(["wasm"]);
+  });
+
+  it("leaves the choice to the runtime when none is requested", async () => {
+    const h = harness();
+    h.host.handle({ type: "load", modelId: "gpt-2", source: SOURCE });
+    await settle(2);
+    expect(h.backends).toEqual([undefined]);
   });
 });
 

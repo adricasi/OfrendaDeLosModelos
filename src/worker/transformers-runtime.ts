@@ -110,7 +110,7 @@ export function createTransformersRuntime(): ModelRuntime {
   return {
     supports: (modelId) => SUPPORTED_MODEL_IDS.has(modelId),
 
-    async load(_modelId, source, onProgress): Promise<LoadedModel> {
+    async load(_modelId, source, onProgress, backend): Promise<LoadedModel> {
       configureEnvironment();
       const tokenizer = await AutoTokenizer.from_pretrained(source.repositoryId, {
         revision: source.revision,
@@ -118,7 +118,10 @@ export function createTransformersRuntime(): ModelRuntime {
       const blocked = blockedTokenSequences(BLOCKED_WORDS, (text) =>
         tokenizer.encode(text, { add_special_tokens: false }),
       );
-      const attempts: ModelDevice[] = (await webGpuAvailable()) ? ["webgpu", "wasm"] : ["wasm"];
+      // AC-010.1: WebAssembly when asked, or when there is no WebGPU adapter; otherwise WebGPU
+      // first, with WebAssembly as the fallback if WebGPU cannot initialise.
+      const attempts: ModelDevice[] =
+        backend !== "wasm" && (await webGpuAvailable()) ? ["webgpu", "wasm"] : ["wasm"];
       let lastError: unknown = new Error("No runtime could load the model.");
       for (const device of attempts) {
         const dtype = source.dtypes?.[device] ?? DEFAULT_DTYPE[device];
