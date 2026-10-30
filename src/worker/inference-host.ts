@@ -23,7 +23,7 @@ export interface GenerateParams {
   readonly prompt: string;
   readonly settings: GenerationSettings;
   readonly signal: AbortSignal;
-  onToken(event: TokenEvent): void;
+  readonly onToken: (event: TokenEvent) => void;
 }
 
 /** A model that is loaded and ready to generate. */

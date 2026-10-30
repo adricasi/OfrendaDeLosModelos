@@ -15,8 +15,9 @@ async function main(): Promise<void> {
     }
   }
   let data = await loadAltarData(import.meta.env.BASE_URL);
-  // `import.meta.env.DEV` is false in every build, so the override code is dropped from them.
-  if (import.meta.env.DEV) {
+  // Only the dev server runs in mode "development"; the comparison is folded to `false` in
+  // builds made with any other mode, which drops the override code from them.
+  if (import.meta.env.MODE === "development") {
     const override = await import("./dev/model-override.js");
     data = { ...data, ancestors: override.applyModelOverrides(data.ancestors, location.search) };
   }

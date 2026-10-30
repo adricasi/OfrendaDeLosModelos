@@ -16,7 +16,7 @@ export class RecordingProcessor extends LogitsProcessor {
 
   override _call(_inputIds: bigint[][], logits: Tensor): Tensor {
     if (logits.dims[0] !== 1) throw new Error("Ghost words support a batch size of 1 only.");
-    const data = logits.data;
+    const data: unknown = logits.data;
     if (!(data instanceof Float32Array)) throw new Error("Expected float32 logits.");
     this.recorder.apply(data);
     return logits;

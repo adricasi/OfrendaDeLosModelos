@@ -35,7 +35,7 @@ describe("Content Security Policy (NFR-001)", () => {
     expect(policy.get("default-src")).toBe("'self'");
     expect(policy.get("script-src")).toBe("'self' 'wasm-unsafe-eval'");
     expect(policy.get("worker-src")).toBe("'self' blob:");
-    expect(policy.get("connect-src")).toBe("'self'");
+    expect(policy.get("connect-src")).toBe("'self' https://huggingface.co");
     expect(policy.get("img-src")).toBe("'self' data: blob:");
     expect(policy.get("style-src")).toBe("'self'");
     expect(policy.get("object-src")).toBe("'none'");

@@ -69,8 +69,9 @@ No visitor data is stored (NFR-002). The question lives only in page memory.
   secrets. The repo is public and holds no credentials (CI secret scan).
 - **Network exposure:** a Content Security Policy (meta tag; GitHub Pages can't set headers):
   `default-src 'self'`; `script-src 'self' 'wasm-unsafe-eval'` (ONNX Runtime WebAssembly);
-  `worker-src 'self' blob:`; `connect-src 'self'` plus the model host(s) [VERIFY in T-001: the
-  exact Hugging Face download hosts after redirects]; `img-src 'self' data: blob:`;
+  `worker-src 'self' blob:`; `connect-src 'self' https://huggingface.co` plus the
+  model download host(s) [TODO: T-001's report confirms the exact CDN hosts Hugging Face
+  redirects model files to; add them then]; `img-src 'self' data: blob:`;
   `style-src 'self'`; `object-src 'none'`; `base-uri 'self'`;
   `require-trusted-types-for 'script'`. (`frame-ancestors` has no effect in a meta CSP; accepted.) ONNX Runtime's WebAssembly files
   are served from the site itself, not a CDN.

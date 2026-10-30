@@ -10,7 +10,7 @@ import {
 import { BLOCKED_WORDS } from "../data/blocked-words.js";
 import { blockedTokenSequences } from "./blocked-tokens.js";
 import { StepRecorder, ghostAlternatives } from "./ghost-words.js";
-import type { GenerateParams, LoadedModel, ModelRuntime, PinnedSource } from "./inference-host.js";
+import type { GenerateParams, LoadedModel, ModelRuntime } from "./inference-host.js";
 import type { ModelDevice } from "./protocol.js";
 import { RecordingProcessor } from "./recording-processor.js";
 import { TokenTextAssembler } from "./token-text.js";
@@ -202,7 +202,7 @@ async function generateWith(
       logits_processor: [new RecordingProcessor(recorder)],
       stopping_criteria: [stop],
     };
-    await model.generate(options as Parameters<typeof model.generate>[0]);
+    await model.generate(options);
   } finally {
     signal.removeEventListener("abort", onAbort);
   }

@@ -13,6 +13,9 @@ export interface ModelOverride {
 
 const OVERRIDE = /^([A-Za-z0-9][A-Za-z0-9._-]*\/[A-Za-z0-9][A-Za-z0-9._-]*)@([0-9a-f]{40})$/;
 
+/** Present only in builds that include the override; the production-bundle test looks for it. */
+export const MODEL_OVERRIDE_MARKER = "dev-model-override-v1";
+
 /** The parameter name for an ancestor: `gpt-2` is `model-gpt2`. */
 export function overrideParameter(ancestorId: string): string {
   return `model-${ancestorId.replaceAll("-", "")}`;
@@ -31,6 +34,10 @@ export function parseModelOverride(search: string, ancestorId: string): ModelOve
 export function applyModelOverrides(ancestors: readonly Ancestor[], search: string): Ancestor[] {
   return ancestors.map((ancestor) => {
     const override = parseModelOverride(search, ancestor.id);
-    return override === null ? ancestor : { ...ancestor, ...override };
+    if (override === null) return ancestor;
+    console.info(
+      `[ofrenda] ${MODEL_OVERRIDE_MARKER}: ${ancestor.id} uses ${override.repositoryId}@${override.revision}`,
+    );
+    return { ...ancestor, ...override };
   });
 }
