@@ -645,7 +645,12 @@ textarea:focus-visible {
   font-size: 0.85rem;
 }
 
-/* Ghost words: what the model almost said, fainter, under each token (AC-004.1). */
+/*
+ * Ghost words: what the model almost said, fainter, under each token (AC-004.1).
+ * Contrast (WCAG AA 4.5:1, checked by test/ghost-contrast.test.ts): resting ghosts are
+ * --text-muted at 0.8 opacity on --night-soft (6.5:1), full strength on hover and focus
+ * (9.5:1); the probability is --text on --night (15.8:1).
+ */
 .token {
   display: inline-block;
   position: relative;
@@ -680,15 +685,14 @@ textarea:focus-visible {
 .ghost-p {
   position: absolute;
   left: 100%;
-  margin-left: var(--space-1);
+  /* No gap between the word and the probability: the pointer can travel onto it (WCAG 1.4.13). */
   padding: 0 var(--space-1);
   background: var(--night);
   border: 1px solid var(--text-muted);
   border-radius: 0.25rem;
   color: var(--text);
   font-size: 0.75rem;
-  opacity: 0;
-  pointer-events: none;
+  visibility: hidden;
   z-index: 1;
 }
 
@@ -699,5 +703,10 @@ textarea:focus-visible {
 
 .token:hover .ghost-p,
 .token:focus .ghost-p {
-  opacity: 1;
+  visibility: visible;
+}
+
+/* Escape dismisses the probabilities (WCAG 1.4.13). */
+.token[data-dismissed] .ghost-p {
+  visibility: hidden;
 }

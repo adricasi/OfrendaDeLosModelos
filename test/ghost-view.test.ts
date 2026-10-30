@@ -81,21 +81,48 @@ describe("ghost words on the page (AC-004.1, AC-004.2)", () => {
     }
   });
 
-  it("gives screen readers 'almost: X, Y, Z' in a list outside the answer and outside any live region", () => {
-    const notes = gpt2().querySelector(".ghost-notes");
+  it("gives screen readers 'almost: X, Y, Z' as each word's description, outside any live region", () => {
+    const notes = gpt2().querySelector<HTMLElement>(".ghost-notes");
     expect(notes).not.toBeNull();
+    // Hidden from the reading order: referenced by aria-describedby only, so nothing floods.
+    expect(notes?.hidden).toBe(true);
     expect(notes?.closest("[aria-live], [role='status'], [role='alert']")).toBeNull();
     expect(
       gpt2()
         .querySelector(".voice-text")
         ?.contains(notes ?? null),
     ).toBe(false);
-    const first = notes?.querySelector("li");
+    const first = notes?.querySelector("p");
     expect(first?.textContent).toBe("The: almost: maybe0, perhaps0, almost0");
-    // Every token points to its note, so focusing it reads what it almost said.
     const token = gpt2().querySelector(".token");
     const describedBy = token?.getAttribute("aria-describedby") ?? "";
     expect(document.getElementById(describedBy)).toBe(first);
+    expect(notes?.querySelectorAll("p").length).toBe(gpt2().querySelectorAll(".token").length);
+  });
+
+  it("adds one summary line per answer for screen readers, not one per word", () => {
+    const summaries = gpt2().querySelectorAll(".ghost-summary");
+    expect(summaries).toHaveLength(1);
+    expect(summaries[0]?.classList.contains("visually-hidden")).toBe(true);
+    expect(summaries[0]?.textContent).toMatch(/arrow keys/);
+    expect(gpt2().querySelectorAll("li")).toHaveLength(0);
+  });
+
+  it("Escape dismisses the probabilities of the focused word, and leaving it restores them", () => {
+    const token = gpt2().querySelector<HTMLElement>(".token");
+    if (token === null) throw new Error("no token");
+    token.focus();
+    press(token, "Escape");
+    expect(token.dataset["dismissed"]).toBe("");
+    expect(document.activeElement).toBe(token);
+    token.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+    expect(token.dataset["dismissed"]).toBeUndefined();
+  });
+
+  it("a tap or click focuses the word, so the probabilities show without a keyboard", () => {
+    const tokens = [...gpt2().querySelectorAll<HTMLElement>(".token")];
+    tokens[1]?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(document.activeElement).toBe(tokens[1]);
   });
 
   it("renders model text as text, never as HTML", () => {

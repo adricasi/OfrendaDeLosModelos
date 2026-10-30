@@ -111,10 +111,13 @@ test("a full ritual for an offered question sends nothing anywhere (AC-002.1, NF
   ]);
   // The probability is hidden until hover or keyboard focus.
   const firstProbability = gpt2.locator(".token").first().locator(".ghost-p").first();
-  await expect(firstProbability).toHaveCSS("opacity", "0");
+  await expect(firstProbability).toHaveCSS("visibility", "hidden");
   await gpt2.locator(".token").first().focus();
-  await expect(firstProbability).toHaveCSS("opacity", "1");
+  await expect(firstProbability).toHaveCSS("visibility", "visible");
   await expect(firstProbability).toHaveText("20%");
+  // Escape dismisses it without moving focus (WCAG 1.4.13).
+  await page.keyboard.press("Escape");
+  await expect(firstProbability).toHaveCSS("visibility", "hidden");
   await page.mouse.move(0, 0);
   await expect(page.locator(".voice").nth(1).locator(".voice-text")).toContainText(
     "Fake recording of gemma-1",
