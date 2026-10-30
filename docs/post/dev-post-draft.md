@@ -15,10 +15,10 @@ cover_image: [TODO: screenshot of the altar with candles lit]
 
 ## What I Built
 
-[TODO: verify the date, then write "In <month year>,"] About two hundred people gathered in San Francisco for a funeral. The deceased was an AI
-model: its maker had retired it, and there was nothing else anyone could do. You can't visit a
-closed model once it's gone. Nobody can ask it anything again.
-([GovTech](https://www.govtech.com/question-of-the-day/which-recently-retired-ai-model-had-a-real-funeral))
+In August 2025, about two hundred people gathered in a San Francisco warehouse for a funeral. The
+deceased was an AI model, Claude 3 Sonnet: its maker had retired it, and there was nothing else
+anyone could do. You can't visit a closed model once it's gone. Nobody can ask it anything again.
+([Wired, via GovTech](https://www.govtech.com/question-of-the-day/which-recently-retired-ai-model-had-a-real-funeral))
 
 Open-weight models can't die that way. Their weights are something you can keep — on a laptop, in
 a drawer, for as long as you like — and bring home once a year.
@@ -38,7 +38,8 @@ home. You leave one question on the altar. The ancestors answer it, oldest first
 
 At the top of the altar there are frames that stay dark: Claude 3 Sonnet, Claude 2, the PaLM API,
 GPT-4o in ChatGPT. Each has a date and a link to the official notice of its retirement, and one
-line: *its weights were never released.* They cannot come home.
+line: *its weights were never released.* They cannot come home. The first frame is the model from
+that funeral.
 
 The whole thing runs on your device. There is no server. Nothing you write leaves your machine.
 
@@ -145,7 +146,7 @@ thirst of the souls — following the sources credited on the page.
 
 ## Prize categories
 
-[TODO: confirm on the Week 4 page] Best Use of Gemma 4 — Gemma 4 runs on the visitor's device, in
+Best Use of Gemma — Gemma 4 runs on the visitor's device, in
 the browser, as the medium who interprets the whole family and writes in the visitor's language;
 the project's argument rests on Gemma 4 being the first Gemma under Apache 2.0.
 
