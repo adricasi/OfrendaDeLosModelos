@@ -141,6 +141,11 @@ function refreshReport() {
   setText("report-out", JSON.stringify(report, null, 2));
 }
 
+// CSP violations show which host the CSP of this page blocked (add it deliberately, then retry).
+document.addEventListener("securitypolicyviolation", (e) => {
+  recordError("csp", new Error(`blocked ${e.blockedURI} by ${e.violatedDirective}`));
+});
+
 // ---- section 0: library ---------------------------------------------------------------------
 async function loadLibrary() {
   if (state.tjs) return state.tjs;

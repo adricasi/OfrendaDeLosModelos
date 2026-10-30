@@ -3,78 +3,13 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' blob: https://cdn.jsdelivr.net; worker-src 'self' blob:; connect-src 'self' blob: https://cdn.jsdelivr.net https://huggingface.co https://*.huggingface.co https://*.hf.co; style-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'"
+    />
     <meta name="robots" content="noindex" />
     <title>T-001 spike: live models in the browser</title>
-    <style>
-      body {
-        font:
-          15px/1.45 system-ui,
-          sans-serif;
-        max-width: 60rem;
-        margin: 1rem auto;
-        padding: 0 1rem;
-        color: #1b1b1b;
-        background: #fafafa;
-      }
-      h1 {
-        font-size: 1.4rem;
-      }
-      h2 {
-        font-size: 1.1rem;
-        margin-top: 2rem;
-        border-bottom: 1px solid #ccc;
-      }
-      section {
-        margin-bottom: 1rem;
-      }
-      select,
-      button,
-      input {
-        font: inherit;
-        padding: 0.25rem 0.5rem;
-        margin: 0.15rem 0;
-      }
-      select {
-        max-width: 100%;
-      }
-      pre,
-      .out {
-        background: #fff;
-        border: 1px solid #ddd;
-        padding: 0.5rem;
-        white-space: pre-wrap;
-        word-break: break-word;
-        overflow-x: auto;
-        max-height: 22rem;
-        overflow-y: auto;
-      }
-      table {
-        border-collapse: collapse;
-        background: #fff;
-        font-size: 0.85rem;
-      }
-      td,
-      th {
-        border: 1px solid #ddd;
-        padding: 0.15rem 0.4rem;
-        text-align: left;
-        vertical-align: top;
-      }
-      progress {
-        width: 100%;
-      }
-      .err {
-        color: #8a0000;
-      }
-      .note {
-        color: #555;
-        font-size: 0.85rem;
-      }
-      label {
-        display: block;
-        margin-top: 0.4rem;
-      }
-    </style>
+    <link rel="stylesheet" href="./spike.css" />
   </head>
   <body>
     <h1>T-001 spike: live models in the browser</h1>
