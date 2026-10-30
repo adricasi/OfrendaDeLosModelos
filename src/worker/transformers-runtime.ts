@@ -135,6 +135,9 @@ export function createTransformersRuntime(): ModelRuntime {
             async generate(params: GenerateParams): Promise<void> {
               await generateWith(model, tokenizer, blocked, params);
             },
+            async dispose(): Promise<void> {
+              await model.dispose();
+            },
           };
         } catch (error: unknown) {
           // Typically WebGPU without shader-f16, or a device that cannot hold the weights.

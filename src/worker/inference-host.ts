@@ -32,6 +32,8 @@ export interface LoadedModel {
   readonly dtype: string;
   /** Resolves when generation ended (end-of-text, token limit or abort); rejects when it failed. */
   generate(params: GenerateParams): Promise<void>;
+  /** Releases the model's memory. */
+  dispose(): Promise<void>;
 }
 
 export interface PinnedSource {
@@ -81,6 +83,12 @@ export interface InferenceHost {
   handle(message: UiToWorkerMessage): void;
 }
 
+interface LoadEntry {
+  cancelled: boolean;
+  settled: boolean;
+  promise: Promise<LoadedModel>;
+}
+
 function describe(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
@@ -91,36 +99,63 @@ function describe(error: unknown): string {
  * testable with a fake runtime. One generation at a time: the ritual is sequential.
  */
 export function createInferenceHost({ runtime, send }: InferenceHostOptions): InferenceHost {
-  const loading = new Map<string, Promise<LoadedModel>>();
+  const loading = new Map<string, LoadEntry>();
   const running = new Map<string, AbortController>();
 
-  function load(modelId: string, source: ModelSource | undefined): Promise<LoadedModel> {
+  /**
+   * Starts (or joins) the load of a model. transformers.js 4.3.1 cannot abort a download, so
+   * `cancel-load` stops listening instead: the entry is dropped (a later `load` starts afresh),
+   * nothing more is sent for it, and the model is disposed if the load still finishes.
+   */
+  function load(modelId: string, source: ModelSource | undefined): LoadEntry {
     const existing = loading.get(modelId);
     if (existing !== undefined) return existing;
-    const pending = (async (): Promise<LoadedModel> => {
+    const entry: LoadEntry = { cancelled: false, settled: false, promise: null as never };
+    entry.promise = (async (): Promise<LoadedModel> => {
       if (!runtime.supports(modelId)) {
         throw new Error(`No runtime for ${modelId} yet.`);
       }
       const pinned = pinnedSource(source);
-      return runtime.load(modelId, pinned, (loaded, total) => {
-        send({ type: "progress", modelId, loaded, total });
+      const model = await runtime.load(modelId, pinned, (loaded, total) => {
+        if (!entry.cancelled) send({ type: "progress", modelId, loaded, total });
       });
+      if (entry.cancelled) await model.dispose();
+      return model;
     })();
-    loading.set(modelId, pending);
-    // A failed load is forgotten so that a later attempt can try again.
-    pending.catch(() => {
-      if (loading.get(modelId) === pending) loading.delete(modelId);
-    });
-    return pending;
+    loading.set(modelId, entry);
+    const settle = (failed: boolean): void => {
+      entry.settled = true;
+      // A failed load is forgotten so that a later attempt can try again.
+      if (failed && loading.get(modelId) === entry) loading.delete(modelId);
+    };
+    entry.promise.then(
+      () => {
+        settle(false);
+      },
+      () => {
+        settle(true);
+      },
+    );
+    return entry;
   }
 
   async function handleLoad(modelId: string, source: ModelSource | undefined): Promise<void> {
+    const entry = load(modelId, source);
     try {
-      const model = await load(modelId, source);
+      const model = await entry.promise;
+      // A load that was cancelled while it ran has no listener any more.
+      if (entry.cancelled) return;
       send({ type: "ready", modelId, device: model.device, dtype: model.dtype });
     } catch (error: unknown) {
-      send({ type: "error", modelId, message: describe(error) });
+      if (!entry.cancelled) send({ type: "error", modelId, message: describe(error) });
     }
+  }
+
+  function cancelLoad(modelId: string): void {
+    const entry = loading.get(modelId);
+    if (entry === undefined || entry.settled) return;
+    entry.cancelled = true;
+    loading.delete(modelId);
   }
 
   async function handleGenerate(
@@ -129,7 +164,7 @@ export function createInferenceHost({ runtime, send }: InferenceHostOptions): In
     prompt: string,
     settings: GenerationSettings | null,
   ): Promise<void> {
-    const pending = loading.get(modelId);
+    const pending = loading.get(modelId)?.promise;
     if (pending === undefined) {
       send({ type: "error", requestId, message: `${modelId} is not loaded.` });
       return;
@@ -175,6 +210,9 @@ export function createInferenceHost({ runtime, send }: InferenceHostOptions): In
           break;
         case "cancel":
           running.get(message.requestId)?.abort();
+          break;
+        case "cancel-load":
+          cancelLoad(message.modelId);
           break;
       }
     },
