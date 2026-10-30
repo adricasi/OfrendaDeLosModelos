@@ -55,6 +55,7 @@ function renderPlace(doc: Document, ancestor: Ancestor, index: number): HTMLLIEl
   const tends = ancestor.id === MEDIUM_MODEL_ID;
   const item = el(doc, "li", `place place-${ancestor.kind}${tends ? " place-medium" : ""}`);
   item.dataset["ancestorId"] = ancestor.id;
+  item.dataset["family"] = ancestor.family.toLowerCase();
   const figure = el(doc, "figure", "frame");
   const portrait = el(doc, "div", "portrait");
   portrait.append(emblemSvg(doc, ancestor.family, ancestor.id));
@@ -154,6 +155,9 @@ function renderScene(doc: Document): void {
   renderOfferings(doc, byId(doc, "offerings"));
   renderMarigoldBed(doc, byId(doc, "marigold-bed"));
   renderPetalPath(doc, byId(doc, "petals"), PETAL_COUNT);
+  byId(doc, "unlit-candle").replaceChildren(
+    veladora(doc, { height: 2.6, tint: 3, glow: 0.1, phase: 0 }),
+  );
 }
 
 /** Starts the drifting petals. Called once by the page, not by tests (no canvas in jsdom). */

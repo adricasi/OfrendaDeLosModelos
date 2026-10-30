@@ -35,8 +35,8 @@ function canAnimate(element: Element): boolean {
 }
 
 /** The candle of the speaking ancestor flares up once, then settles into its flicker. */
-export function flare(place: Element): void {
-  const flame = place.querySelector(".place-candle .flame");
+export function flare(root: Element, selector = ".place-candle .flame"): void {
+  const flame = root.querySelector(selector);
   if (flame === null || !canAnimate(flame)) return;
   flame.animate(
     [
@@ -46,7 +46,7 @@ export function flare(place: Element): void {
     ],
     { duration: 1100, easing: "cubic-bezier(.2,.7,.3,1)" },
   );
-  const light = place.querySelector(".portrait");
+  const light = root.querySelector(".portrait");
   light?.animate([{ opacity: 0.55 }, { opacity: 1 }], { duration: 1400, easing: "ease-out" });
 }
 
@@ -168,7 +168,9 @@ export function startPetalDrift(canvas: HTMLCanvasElement, win: Window = window)
   const draw = (now: number): void => {
     frame = 0;
     if (!running) return;
-    const seconds = Math.min(0.1, (now - last) / 1000);
+    // While an answer is being read the petals slow right down, so nothing pulls the eye.
+    const calm = win.document.documentElement.hasAttribute("data-reading") ? 0.15 : 1;
+    const seconds = Math.min(0.1, (now - last) / 1000) * calm;
     last = now;
     clock += seconds;
     ctx.clearRect(0, 0, width, height);

@@ -63,6 +63,25 @@ describe("text on the room's surfaces (4.5:1)", () => {
   });
 });
 
+describe("small muted text: the colour that is really drawn (no opacity tricks)", () => {
+  it("--ghost on --night-soft and --night-raised", () => {
+    expect(contrast("ghost", "night-soft")).toBeGreaterThanOrEqual(4.5);
+    expect(contrast("ghost", "night-raised")).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it("no rule sets opacity on a rule that draws small text", () => {
+    const art = read("src/altar-art.css");
+    const rules = [...(css + art).matchAll(/([^{}]+)\{([^{}]*)\}/g)];
+    const textRules =
+      /^(\.ghosts|\.hint|\.voice-label|\.voice-status|\.frame figcaption|\.frame \.(role|year|kind|maker|name)|\.statement|\.about li|\.medium-[a-z]+)$/;
+    for (const [, selector = "", body = ""] of rules) {
+      for (const single of selector.split(",").map((part) => part.trim())) {
+        if (textRules.test(single)) expect(body, single).not.toMatch(/(^|[;\s])opacity:/);
+      }
+    }
+  });
+});
+
 describe("focus and borders against the surfaces (3:1)", () => {
   for (const surface of ["night", "night-soft", "night-raised"]) {
     it(`the focus outline --marigold-light on --${surface}`, () => {
