@@ -81,6 +81,64 @@
         </div>
       </section>
 
+      <section id="offering" class="offering" aria-labelledby="offering-title">
+        <h2 id="offering-title">Leave an offering</h2>
+        <p>
+          Leave one question on the altar. The ancestors will answer it, oldest first. Nothing you
+          write leaves your device.
+        </p>
+        <form id="offering-form" novalidate>
+          <fieldset id="offering-fields">
+            <legend>Which question will you leave?</legend>
+            <div class="language-choice" role="radiogroup" aria-labelledby="language-label">
+              <span id="language-label">Language of the offered questions:</span>
+              <label><input type="radio" name="language" value="en" checked /> English</label>
+              <label
+                ><input type="radio" name="language" value="es" />
+                <span lang="es">Español</span></label
+              >
+            </div>
+            <div id="offered-questions" class="offered-questions"></div>
+            <div class="own-question">
+              <label class="choice">
+                <input type="radio" name="question" value="own" id="own-choice" />
+                Write your own question
+              </label>
+              <label for="own-question" class="visually-hidden">Your own question</label>
+              <textarea
+                id="own-question"
+                name="own-question"
+                rows="3"
+                autocomplete="off"
+                aria-describedby="own-hint own-error"
+              ></textarea>
+              <p id="own-hint" class="hint">1 to 280 characters.</p>
+              <p id="own-error" class="field-error" role="alert" hidden></p>
+            </div>
+            <p id="choice-error" class="field-error" role="alert" hidden></p>
+          </fieldset>
+          <div class="offering-actions">
+            <button type="submit" id="offer-button">Offer it to the altar</button>
+            <button type="button" id="stop-button" class="secondary" hidden>Stop the ritual</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="ritual" class="ritual" aria-labelledby="ritual-title" hidden>
+        <h2 id="ritual-title">The ritual</h2>
+        <p id="ritual-question" class="ritual-question"></p>
+        <ol id="ritual-voices" class="ritual-voices"></ol>
+        <p id="ritual-end" class="ritual-end"></p>
+      </section>
+
+      <div
+        id="ritual-announcer"
+        class="visually-hidden"
+        role="status"
+        aria-live="polite"
+        aria-relevant="additions"
+      ></div>
+
       <section id="dark-frames-section" class="dark-frames-section" hidden>
         <h2>The ones who cannot come</h2>
         <p>Closed models whose weights were never released. They cannot be brought home.</p>
