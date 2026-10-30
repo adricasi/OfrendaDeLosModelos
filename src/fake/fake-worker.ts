@@ -131,6 +131,9 @@ export function createFakeWorker(options: FakeWorkerOptions = {}): ModelWorkerPo
         case "cancel-load":
           loading.delete(message.modelId);
           break;
+        case "unload":
+          loaded.delete(message.modelId);
+          break;
       }
     },
     subscribe(listener): () => void {

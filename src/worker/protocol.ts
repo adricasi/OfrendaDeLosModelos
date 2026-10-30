@@ -54,7 +54,12 @@ export type UiToWorkerMessage =
    * initialising). No reply is expected; after it the model may be unloaded, and a later `load`
    * starts again. Ignored when the model is already loaded or not loading.
    */
-  | { readonly type: "cancel-load"; readonly modelId: string };
+  | { readonly type: "cancel-load"; readonly modelId: string }
+  /**
+   * Frees a model's memory (stops its answers, then disposes it). No reply is expected; a later
+   * `load` starts afresh. For Gemma 4 to take GPT-2's place when memory is tight (T-006).
+   */
+  | { readonly type: "unload"; readonly modelId: string };
 
 export type WorkerToUiMessage =
   | {

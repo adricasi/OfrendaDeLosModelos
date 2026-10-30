@@ -29,7 +29,9 @@ interface Harness {
   host: ReturnType<typeof createInferenceHost>;
 }
 
-function harness(options: { holdLoad?: boolean; failGenerate?: boolean } = {}): Harness {
+function harness(
+  options: { holdLoad?: boolean; failGenerate?: boolean; untilAborted?: boolean } = {},
+): Harness {
   const sent: WorkerToUiMessage[] = [];
   const loads: PinnedSource[] = [];
   const backends: (string | undefined)[] = [];
@@ -54,6 +56,14 @@ function harness(options: { holdLoad?: boolean; failGenerate?: boolean } = {}): 
         async generate(params): Promise<void> {
           generations.push(params);
           if (options.failGenerate === true) throw new Error("boom");
+          if (options.untilAborted === true) {
+            // Runs until cancelled, then takes a moment to wind down.
+            await new Promise<void>((resolve) => {
+              params.signal.addEventListener("abort", () => resolve(), { once: true });
+            });
+            await settle(2);
+            return;
+          }
           params.onToken({ text: "Hi", alternatives: [{ text: " Hello", p: 0.2 }] });
           await settle();
           params.onToken({ text: " there" });
@@ -250,8 +260,68 @@ describe("backend choice (AC-010.1)", () => {
   });
 });
 
+describe("generations in sequence", () => {
+  it("a generate right after a cancel waits for the cancelled answer to stop, and is not refused", async () => {
+    const h = harness({ untilAborted: true });
+    h.host.handle({ type: "load", modelId: "gpt-2", source: SOURCE });
+    await settle(2);
+    h.sent.length = 0;
+    const request = (requestId: string): void =>
+      h.host.handle({
+        type: "generate",
+        requestId,
+        modelId: "gpt-2",
+        prompt: "Q",
+        settings: null,
+      });
+    request("r1");
+    await settle();
+    h.host.handle({ type: "cancel", requestId: "r1" });
+    request("r2");
+    await settle();
+    // r2 has not started while r1 is still winding down.
+    expect(h.generations.map((g) => g.prompt)).toHaveLength(1);
+    await settle(6);
+    expect(h.generations).toHaveLength(2);
+    expect(types(h)).not.toContain("error");
+    h.host.handle({ type: "cancel", requestId: "r2" });
+    await settle(4);
+  });
+
+  it("a request cancelled while it waits never starts", async () => {
+    const h = harness({ untilAborted: true });
+    h.host.handle({ type: "load", modelId: "gpt-2", source: SOURCE });
+    await settle(2);
+    const request = (requestId: string): void =>
+      h.host.handle({ type: "generate", requestId, modelId: "gpt-2", prompt: "Q", settings: null });
+    request("r1");
+    await settle();
+    request("r2");
+    h.host.handle({ type: "cancel", requestId: "r2" });
+    h.host.handle({ type: "cancel", requestId: "r1" });
+    await settle(8);
+    expect(h.generations).toHaveLength(1);
+    expect(types(h)).not.toContain("error");
+  });
+});
+
 describe("cancel-load", () => {
-  it("stops reporting, disposes the model when it finishes, and a later load starts afresh", async () => {
+  it("stops reporting; the load carries on, and a later load reuses it (no second download)", async () => {
+    const h = harness({ holdLoad: true });
+    h.host.handle({ type: "load", modelId: "gpt-2", source: SOURCE });
+    await settle();
+    h.host.handle({ type: "cancel-load", modelId: "gpt-2" });
+    h.sent.length = 0;
+    h.host.handle({ type: "load", modelId: "gpt-2", source: SOURCE });
+    await settle();
+    expect(h.loads).toHaveLength(1);
+    h.releaseLoad();
+    await settle(3);
+    expect(types(h)).toContain("ready");
+    expect(h.disposed).toEqual([]);
+  });
+
+  it("stays silent when nobody loads again, and keeps the finished model for later", async () => {
     const h = harness({ holdLoad: true });
     h.host.handle({ type: "load", modelId: "gpt-2", source: SOURCE });
     await settle();
@@ -260,14 +330,10 @@ describe("cancel-load", () => {
     h.releaseLoad();
     await settle(3);
     expect(h.sent).toEqual([]);
-    expect(h.disposed).toEqual(["gpt-2"]);
-
     h.host.handle({ type: "load", modelId: "gpt-2", source: SOURCE });
-    await settle();
-    expect(h.loads).toHaveLength(2);
-    h.releaseLoad();
-    await settle(3);
-    expect(types(h)).toContain("ready");
+    await settle(2);
+    expect(types(h)).toEqual(["ready"]);
+    expect(h.loads).toHaveLength(1);
   });
 
   it("is ignored for a model that is not loading or already loaded", async () => {
@@ -280,6 +346,57 @@ describe("cancel-load", () => {
     h.host.handle({ type: "load", modelId: "gpt-2", source: SOURCE });
     await settle(2);
     expect(types(h)).toEqual(["ready"]);
+    expect(h.disposed).toEqual([]);
+  });
+});
+
+describe("unload", () => {
+  it("disposes a loaded model, and a later load starts afresh", async () => {
+    const h = harness();
+    h.host.handle({ type: "load", modelId: "gpt-2", source: SOURCE });
+    await settle(2);
+    h.host.handle({ type: "unload", modelId: "gpt-2" });
+    await settle(3);
+    expect(h.disposed).toEqual(["gpt-2"]);
+    h.host.handle({ type: "load", modelId: "gpt-2", source: SOURCE });
+    await settle(2);
+    expect(h.loads).toHaveLength(2);
+  });
+
+  it("stops a running answer first, then disposes", async () => {
+    const h = harness({ untilAborted: true });
+    h.host.handle({ type: "load", modelId: "gpt-2", source: SOURCE });
+    await settle(2);
+    h.host.handle({
+      type: "generate",
+      requestId: "r1",
+      modelId: "gpt-2",
+      prompt: "Q",
+      settings: null,
+    });
+    await settle();
+    h.host.handle({ type: "unload", modelId: "gpt-2" });
+    expect(h.generations[0]?.signal.aborted).toBe(true);
+    await settle(8);
+    expect(h.disposed).toEqual(["gpt-2"]);
+  });
+
+  it("disposes a model whose load is still running as soon as it finishes", async () => {
+    const h = harness({ holdLoad: true });
+    h.host.handle({ type: "load", modelId: "gpt-2", source: SOURCE });
+    await settle();
+    h.host.handle({ type: "unload", modelId: "gpt-2" });
+    h.sent.length = 0;
+    h.releaseLoad();
+    await settle(4);
+    expect(h.disposed).toEqual(["gpt-2"]);
+    expect(h.sent).toEqual([]);
+  });
+
+  it("does nothing for a model that was never loaded", async () => {
+    const h = harness();
+    h.host.handle({ type: "unload", modelId: "gpt-2" });
+    await settle();
     expect(h.disposed).toEqual([]);
   });
 });
