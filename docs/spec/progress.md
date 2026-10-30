@@ -163,3 +163,33 @@ The latest entry is shown to Claude at the start of every session.
   R1 stems (accent/case-insensitive), `a`/`he` out of the English list; `escapeData` escapes `& " < >`;
   `eval:medium` fails with a language at 0; one size formatter. Founder: `downloadBytes` in
   `ancestors.json` must be set (with the pin) or Gemma 4 is never offered live.
+
+## 2026-10-30 — T-008: Offline after the first visit (partial)
+- Done: hand-written service worker (`src/sw/sw.ts`, pure parts in `routing.ts`, `precache.ts`),
+  built by Vite as the second entry `sw.js` at the base path (scope = base). The `offlineShell`
+  plugin in `vite.config.ts` lists every output file plus `public/` and writes the manifest and a
+  content-derived cache name (`ofrenda-shell-<hash>`) into the worker; old `ofrenda-shell-*` caches
+  are deleted on activate (`transformers-cache` is never touched). Page loads: network first,
+  cached page as fallback, nothing stored from them; manifest files: cache first; everything else
+  (cross-origin, non-GET, any query string, paths outside the manifest) is not intercepted, so
+  nothing that could hold visitor input is ever cached. No `skipWaiting`: an open tab keeps its
+  hashed files. Registration (`src/sw/register.ts`, from `main.ts`) runs after page load, in
+  production and test builds only, on secure contexts. Note "This altar now works offline on this
+  device." after a complete ritual (textContent; in `docs/cultural-review.md`). Tests: unit
+  (manifest, routing, registration, Trusted Types policy), e2e `e2e/offline.spec.ts` (ritual,
+  network off, reload, ritual again with fakes; cache holds only same-origin files; a
+  cross-origin fetch is not answered by the worker).
+- Decisions: `serviceWorker.register` is a TrustedScriptURL sink (Chromium; the e2e passes under
+  the real CSP), so the one policy `ofrenda-worker` now vouches for the inference worker URL and
+  `sw.js` only; `worker-src 'self'` covers the service worker. transformers.js (4.3.1,
+  `utils/cache.js`) caches model files in Cache Storage `transformers-cache` when
+  `env.useBrowserCache` (default true where `caches` exists); `transformers-runtime.ts` does not
+  turn it off. `useWasmCache = false` (kept for the CSP) means transformers.js does NOT cache the
+  ONNX Runtime `.mjs`/`.wasm`; the service worker precaches them (27 MB, so the first visit
+  downloads them once more in the background after page load).
+- Issues: not verified with real models (GPT-2 / Gemma 4 offline) or on the reference laptop.
+  The note appears after any complete ritual even if Gemma 4 was declined (then offline replays
+  its recording).
+- Next (founder): AC-011.1 by hand with the network off on the reference laptop after a live
+  ritual incl. Gemma 4 (check that `transformers-cache` holds the models, ORT files load from the
+  worker's cache); note the result here; then mark T-008 done.
