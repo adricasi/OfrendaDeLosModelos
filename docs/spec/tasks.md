@@ -1,15 +1,103 @@
-# Tasks: ofrenda-de-los-modelos
+# Tasks: Ofrenda de los Modelos
 
 - Status: Draft <!-- Draft | In review | Approved -->
-- Last updated: 2026-10-29
+- Last updated: 2026-10-30
 
 Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked.
-Order = implementation order. Each task is a small vertical slice (≤ ~1 day), references
-the requirements it serves, and has an objective "Done when".
+Order = implementation order, riskiest first. Each task is a small vertical slice, references
+the requirements it serves, and has an objective "Done when". Times are Spain time; the plan
+fits NFR-011 (code freeze Oct 31 18:00, post by 23:00).
 
-## Milestone 1: Walking skeleton
-- [ ] T-001: <title>
-  - Requirements: REQ-001
+At most 2 tasks in parallel. Marked ⚡ where a task can run beside the previous one.
+
+## Milestone 1: Walking skeleton (Thu Oct 30)
+- [ ] T-001: Spike — live models in the browser
+  - Requirements: REQ-003, REQ-004, REQ-006; NFR-001, NFR-004, NFR-005
   - Depends on: —
-  - Scope: <!-- areas/files expected to change -->
-  - Done when: <!-- tests/commands that prove it, e.g. AC-001.1 test passes; CI green -->
+  - Scope: a throwaway spike page (not shipped) that loads GPT-2 and Gemma 4 E2B with
+    transformers.js on WebGPU in a worker; prints GPT-2's top-3 alternatives per step; asks
+    Gemma 4 for one calaverita; logs load time, download size and tokens/s. Finds the model
+    repository ids and revisions, the download hosts (for the CSP) and the Ollama tags for
+    Gemma 1, 2, 3 and Gemma 4 E2B.
+  - Done when: on the founder's laptop (Q-1) GPT-2 streams with alternatives and Gemma 4 E2B
+    answers; timings and sizes recorded in progress.md; pinned ids/revisions and hosts written
+    into design.md (the "VERIFY in T-001" items closed); go/fallback decision recorded
+    (ADR-0003 consequences).
+- [ ] T-002: ⚡ Walking skeleton — the altar online
+  - Requirements: REQ-001, REQ-009 (skeleton); NFR-001, NFR-003, NFR-006
+  - Depends on: —
+  - Scope: Vite + TypeScript page with the static altar (levels, cempasúchil, papel picado,
+    candles, water), reduced-motion handling, data loading with validation (`ancestors.json`,
+    `offered-questions.json`, `dark-frames.json`, `credits.json` stubs), CSP meta tag, minimal
+    GitHub Pages deploy workflow (approved by the founder 2026-10-30).
+  - Done when: AC-001.1–AC-001.3 tests pass; data validation unit tests pass; CI green; the
+    page is live on GitHub Pages.
+
+## Milestone 2: The ritual (Thu night – Fri Oct 31 morning)
+- [ ] T-003: Offering and ritual sequencer with a fake model worker
+  - Requirements: REQ-002; NFR-002, NFR-009
+  - Depends on: T-002
+  - Scope: offering form (offered and own questions), sequencer (fixed order, one ritual at a
+    time, stop), typed worker messages, a fake worker for tests, Playwright e2e with request
+    list assertion and axe.
+  - Done when: AC-002.1–AC-002.4 tests pass; e2e asserts no request carries the question
+    (NFR-002) and axe reports 0 serious/critical (NFR-009); CI green.
+- [ ] T-004: GPT-2 speaks, with ghost words
+  - Requirements: REQ-003, REQ-004
+  - Depends on: T-001, T-003
+  - Scope: real inference worker for GPT-2 (pinned revision), token streaming, top-3
+    alternatives from the logits, ghost words UI with hover/focus and screen-reader text,
+    per-ancestor failure message.
+  - Done when: AC-003.1–AC-003.3 and AC-004.1–AC-004.3 unit tests pass (top-k extraction on
+    fixed logits; fake-worker UI tests); manual check on the reference laptop; CI green.
+- [ ] T-005: ⚡ Recording tool and recorded voices
+  - Requirements: REQ-013, REQ-005
+  - Depends on: T-001 (tags), T-003
+  - Scope: `npm run record-voices` (Node, Ollama on 127.0.0.1), metadata per answer,
+    skip-missing; the builder records Gemma 1, 2, 3 and Gemma 4 E2B (for AC-006.3/REQ-010)
+    answers to the offered questions; replay in the ritual with labels; "only the questions
+    they left" for own questions.
+  - Done when: AC-013.1–AC-013.3 tests pass with a fake Ollama; AC-005.1–AC-005.4 tests pass;
+    `recorded-voices.json` committed with metadata; CI green.
+- [ ] T-006: Gemma 4 speaks and tends the altar
+  - Requirements: REQ-006, REQ-007
+  - Depends on: T-004
+  - Scope: Gemma 4 E2B in the worker with consent and progress; its own answer; the medium
+    prompt (versioned file) and JSON parser with plain-text fallback; language follows the
+    question; small eval of the offered questions.
+  - Done when: AC-006.1–AC-006.4 and AC-007.1–AC-007.4 tests pass (parser and sequencing with
+    fakes); eval results for the offered questions recorded in progress.md (≥ 4 of 6 usable
+    calaveritas, kind, in the question's language); CI green.
+
+## Milestone 3: Honour and reach (Fri Oct 31, until 18:00 freeze)
+- [ ] T-007: Dark frames, about panel, unsupported browsers
+  - Requirements: REQ-008, REQ-009, REQ-010
+  - Depends on: T-003, T-005
+  - Scope: `dark-frames.json` with official sources only; about panel with every model's
+    licence and the cultural sources; no-WebGPU path with the recorded ritual.
+  - Done when: AC-008.1–AC-008.2, AC-009.1–AC-009.3, AC-010.1–AC-010.2 tests pass; licence check
+    passes (NFR-008); CI green.
+- [ ] T-008: ⚡ Offline after the first visit
+  - Requirements: REQ-011; NFR-003
+  - Depends on: T-006
+  - Scope: service worker for the app shell and data; models served from the browser cache.
+  - Done when: AC-011.1 checked manually with the network off on the reference laptop; result
+    in progress.md; CI green.
+- [ ] T-009: Stretch — photo offering (only if T-001..T-007 are done by Oct 31 12:00)
+  - Requirements: REQ-012
+  - Depends on: T-006
+  - Scope: add a photo (file or camera), Gemma 4 vision places the object on the altar; objects
+    only; photo kept in memory only.
+  - Done when: AC-012.1–AC-012.3 checked (unit tests for the flow with fakes; manual check with
+    a real photo); CI green.
+
+## Milestone 4: Publish (Fri Oct 31, 18:00 – 23:00)
+- [ ] T-010: Release and post
+  - Requirements: NFR-004, NFR-005, NFR-010, NFR-011; G-5
+  - Depends on: T-007 (T-008, T-009 if done)
+  - Scope: code freeze at 18:00; final timings and sizes; cultural review of every ritual text
+    by a reader of Mexican background; README (what, how to run, models and licences); 60 s
+    video with Wi-Fi off; DEV post ("The only AI that can come back from the dead"), drafted
+    from Thu night; repository made public by the founder.
+  - Done when: review notes and timings in progress.md; README complete; post published on DEV
+    before 23:00; repository public.

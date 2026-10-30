@@ -1,6 +1,6 @@
 # 0002. Static site with in-browser inference
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-10-30
 
 ## Context

@@ -1,6 +1,6 @@
 # Design: Ofrenda de los Modelos
 
-- Status: Draft <!-- Draft | In review | Approved -->
+- Status: In review <!-- Draft | In review | Approved -->
 - Last updated: 2026-10-30
 - Deployment target: **Local / on-device** (static site; inference in the visitor's browser).
   This design applies the "Local / on-device" column of the spec skill: no cloud services,
@@ -102,7 +102,8 @@ No visitor data is stored (NFR-002). The question lives only in page memory.
   the model cache [ASSUMPTION A-4: Gemma 4 E2B until the reference laptop is known, Q-1].
 - **Dev:** `npm run dev` (Vite) on localhost.
 - **Prod:** GitHub Pages, built and published by a GitHub Actions workflow (a new workflow:
-  needs the founder's approval, as `.github/workflows/` is "do not touch without asking").
+  approved by the founder on 2026-10-30; `.github/workflows/` is otherwise "do not touch
+  without asking").
 - **Models:** downloaded by the visitor's browser from the pinned revisions; never committed
   (`.gitignore` already excludes model files).
 - **Recorded voices:** the builder runs Ollama locally, pulls the pinned tags

@@ -1,6 +1,6 @@
 # 0003. transformers.js for live models, Ollama for recording
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-10-30
 
 ## Context

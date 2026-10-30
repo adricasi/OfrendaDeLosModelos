@@ -1,6 +1,6 @@
 # Requirements: Ofrenda de los Modelos
 
-- Status: Draft <!-- Draft | In review | Approved -->
+- Status: In review <!-- Draft | In review | Approved -->
 - Last updated: 2026-10-30
 
 IDs are permanent: never renumber or reuse. Deprecate with ~~strikethrough~~ and a note.
