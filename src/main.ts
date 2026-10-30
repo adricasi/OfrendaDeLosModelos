@@ -1,19 +1,10 @@
 import { createProductionDependencies, startAltar } from "./app.js";
 import { loadAltarData } from "./data/load.js";
 import { debugRequested } from "./debug/debug-log.js";
+import { detectWebGpu } from "./ritual/gpu.js";
 import { showLoadError, wireAboutPanel } from "./ui/altar.js";
 
 async function main(): Promise<void> {
-  let deps = createProductionDependencies(debugRequested(location.search));
-  // The fake model worker exists only in builds made with `--mode test`. The comparison below
-  // is folded to `false` in the production build, which drops the import and the fake code.
-  if (import.meta.env.MODE === "test") {
-    const fake = await import("./fake/bootstrap.js");
-    if (fake.fakeModelsRequested(location.search)) {
-      deps = fake.createFakeDependencies(location.search);
-      document.documentElement.dataset["modelWorker"] = "fake";
-    }
-  }
   let data = await loadAltarData(import.meta.env.BASE_URL);
   // `import.meta.env.DEV` is true only when the dev server runs (and in a build only if
   // NODE_ENV is set to something other than production); requiring the "development" mode as
@@ -22,6 +13,17 @@ async function main(): Promise<void> {
   if (import.meta.env.DEV && import.meta.env.MODE === "development") {
     const override = await import("./dev/model-override.js");
     data = { ...data, ancestors: override.applyModelOverrides(data.ancestors, location.search) };
+  }
+  const webgpu = await detectWebGpu(navigator);
+  let deps = createProductionDependencies(data, webgpu, debugRequested(location.search));
+  // The fake model worker exists only in builds made with `--mode test`. The comparison below
+  // is folded to `false` in the production build, which drops the import and the fake code.
+  if (import.meta.env.MODE === "test") {
+    const fake = await import("./fake/bootstrap.js");
+    if (fake.fakeModelsRequested(location.search)) {
+      deps = fake.createFakeDependencies(location.search, webgpu);
+      document.documentElement.dataset["modelWorker"] = "fake";
+    }
   }
   startAltar(document, data, deps);
 }

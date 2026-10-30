@@ -1,8 +1,9 @@
 import type { AltarData } from "./data/load.js";
 import { buildRitualPlan, type RitualDependencies } from "./ritual/plan.js";
 import { RitualRunner } from "./ritual/sequencer.js";
-import { noRecordedVoices } from "./ritual/steps.js";
-import { renderAltar, showLoadError } from "./ui/altar.js";
+import { createRecordedSource } from "./data/recorded-source.js";
+import { NO_WEBGPU_MESSAGE } from "./ritual/gpu.js";
+import { renderAltar, showBrowserNote, showLoadError } from "./ui/altar.js";
 import { wireOffering } from "./ui/offering.js";
 import { createRitualView } from "./ui/ritual-view.js";
 import { withDebugLogging } from "./debug/debug-log.js";
@@ -12,10 +13,14 @@ import { lazyPort, portForWorker } from "./worker/worker-port.js";
 
 /**
  * What ships: the real inference worker (GPT-2 now, Gemma 4 with T-006), created on first use.
- * Recordings (T-005) and the medium (T-006) are not plugged in yet. With `debug`, load times,
- * tokens per second and errors go to the console (NFR-007).
+ * The medium (T-006) is not plugged in yet. With `debug`, load times, tokens per second and
+ * errors go to the console (NFR-007).
  */
-export function createProductionDependencies(debug: boolean): RitualDependencies {
+export function createProductionDependencies(
+  data: AltarData,
+  webgpu: boolean,
+  debug = false,
+): RitualDependencies {
   const port = lazyPort(() =>
     portForWorker(
       // Trusted Types (CSP) require the script URL to pass through the worker policy.
@@ -26,14 +31,16 @@ export function createProductionDependencies(debug: boolean): RitualDependencies
   );
   return {
     worker: debug ? withDebugLogging(port, console) : port,
-    recorded: noRecordedVoices,
+    recorded: createRecordedSource(data.recordedVoices),
     includeMedium: false,
+    webgpu,
   };
 }
 
 /** Renders the altar and connects the offering form to the ritual sequencer. */
 export function startAltar(doc: Document, data: AltarData, deps: RitualDependencies): void {
   renderAltar(doc, data);
+  if (deps.webgpu === false) showBrowserNote(doc, NO_WEBGPU_MESSAGE);
   const runner = new RitualRunner(buildRitualPlan(data.ancestors, deps), createRitualView(doc));
   const form = wireOffering(doc, data.questions, {
     onOffer(question) {

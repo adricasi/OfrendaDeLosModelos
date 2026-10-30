@@ -1,5 +1,6 @@
 import type { AltarData } from "../data/load.js";
 import type { Ancestor, CreditSource, DarkFrame } from "../data/validate.js";
+import { MEDIUM_MODEL_ID } from "../ritual/plan.js";
 
 /**
  * Renders the static altar from validated data. Every data string goes in through
@@ -103,10 +104,36 @@ function renderDarkFrame(doc: Document, frame: DarkFrame): HTMLLIElement {
 
 function renderModelLine(doc: Document, ancestor: Ancestor): HTMLLIElement {
   const item = el(doc, "li");
-  const how = ancestor.kind === "live" ? "live" : "recorded";
+  item.dataset["ancestorId"] = ancestor.id;
+  if (ancestor.kind === "live") {
+    item.append(
+      el(doc, "strong", undefined, ancestor.name),
+      " (live). Licence: ",
+      link(doc, ancestor.licence.url, ancestor.licence.name),
+      ". ",
+    );
+  } else {
+    // AC-009.1: recorded voices are credited under the model's own licence.
+    item.append(
+      el(doc, "strong", undefined, ancestor.name),
+      " (recorded). Model licence: ",
+      link(doc, ancestor.licence.url, ancestor.licence.name),
+      "; output reproduced with attribution. ",
+    );
+  }
+  item.append(link(doc, ancestor.modelCardUrl, "Model card"), ".");
+  return item;
+}
+
+/** The medium is Gemma 4 E2B speaking in its own role; it is listed with that model's licence. */
+function renderMediumLine(doc: Document, ancestor: Ancestor): HTMLLIElement {
+  const item = el(doc, "li");
+  item.dataset["role"] = "medium";
+  const name = el(doc, "strong", undefined, "La que cuida el altar");
+  name.lang = "es";
   item.append(
-    el(doc, "strong", undefined, ancestor.name),
-    ` (${how}). Licence: `,
+    name,
+    ` is ${ancestor.name}, live on your device or, in browsers without WebGPU, recorded. Licence: `,
     link(doc, ancestor.licence.url, ancestor.licence.name),
     ". ",
     link(doc, ancestor.modelCardUrl, "Model card"),
@@ -130,11 +157,23 @@ export function renderAltar(doc: Document, data: AltarData): void {
   byId(doc, "dark-frames").replaceChildren(...data.darkFrames.map((f) => renderDarkFrame(doc, f)));
   darkSection.hidden = data.darkFrames.length === 0;
 
-  byId(doc, "about-models").replaceChildren(...data.ancestors.map((a) => renderModelLine(doc, a)));
+  const medium = data.ancestors.find((a) => a.id === MEDIUM_MODEL_ID);
+  byId(doc, "about-models").replaceChildren(
+    ...data.ancestors.map((a) => renderModelLine(doc, a)),
+    ...(medium === undefined ? [] : [renderMediumLine(doc, medium)]),
+  );
+  byId(doc, "cultural-review").hidden = !data.credits.culturalReviewPending;
   byId(doc, "about-sources").replaceChildren(
     ...data.credits.sources.map((s) => renderSourceLine(doc, s)),
   );
   byId(doc, "about-assets").textContent = data.credits.assets;
+}
+
+/** REQ-010: the one line shown when the browser has no WebGPU. */
+export function showBrowserNote(doc: Document, message: string): void {
+  const note = byId(doc, "browser-note");
+  note.textContent = message;
+  note.hidden = false;
 }
 
 export function showLoadError(doc: Document, error: unknown): void {

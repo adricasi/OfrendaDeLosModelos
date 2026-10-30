@@ -38,3 +38,5 @@ jobs:
         run: npm run test:e2e
       - name: Dependency audit
         run: npm audit --audit-level=high
+      - name: Licence check (NFR-008)
+        run: npm run licences

@@ -44,7 +44,9 @@ export type SpokenOutcome =
     }
   | { readonly kind: "recorded"; readonly text: string; readonly credit: string }
   /** AC-005.3: recorded ancestors only answer the questions they left for us. */
-  | { readonly kind: "not-invited" };
+  | { readonly kind: "not-invited" }
+  /** AC-010: the recordings have not been made yet (recorded-voices.json is still empty). */
+  | { readonly kind: "gathering" };
 
 /** One per-ancestor piece of the medium's words (design.md, Interfaces: medium output). */
 export interface MediumNote {

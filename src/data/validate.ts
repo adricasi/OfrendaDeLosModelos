@@ -58,6 +58,8 @@ export interface CreditSource {
 
 export interface Credits {
   readonly assets: string;
+  /** NFR-010: true until the cultural reviewer has approved the ritual's texts. */
+  readonly culturalReviewPending: boolean;
   readonly sources: readonly CreditSource[];
 }
 
@@ -105,6 +107,12 @@ class Reader {
     if (typeof v !== "number" || !Number.isFinite(v) || v <= 0) {
       this.fail(key, "must be a positive number");
     }
+    return v;
+  }
+
+  boolean(key: string): boolean {
+    const v = this.value[key];
+    if (typeof v !== "boolean") this.fail(key, "must be true or false");
     return v;
   }
 
@@ -281,5 +289,9 @@ export function parseCredits(input: unknown): Credits {
     }),
     (s) => s.id,
   );
-  return { assets: top.string("assets"), sources };
+  return {
+    assets: top.string("assets"),
+    culturalReviewPending: top.boolean("culturalReviewPending"),
+    sources,
+  };
 }

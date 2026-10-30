@@ -1,5 +1,6 @@
 import type {
   GenerationSettings,
+  InferenceBackend,
   ModelSource,
   ModelWorkerPort,
   WorkerToUiMessage,
@@ -23,7 +24,16 @@ export function isAbortError(error: unknown): boolean {
 
 /** Where recorded answers come from; the real source (T-005) reads recorded-voices.json. */
 export interface RecordedVoiceSource {
-  lookup(ancestorId: string, questionId: string): RecordedAnswer | null;
+  /** `language` is the offered question's language; a source may fall back to another. */
+  lookup(
+    ancestorId: string,
+    questionId: string,
+    language?: "en" | "es" | null,
+  ): RecordedAnswer | null;
+  /** The medium's recorded words for an offered question (AC-007.5). */
+  lookupMedium?(questionId: string, language?: "en" | "es" | null): RecordedAnswer | null;
+  /** False when nothing has been recorded yet: steps then say so instead of failing. */
+  readonly hasRecordings?: boolean;
 }
 
 export const noRecordedVoices: RecordedVoiceSource = { lookup: () => null };
@@ -41,9 +51,16 @@ export class RecordedVoiceStep implements RitualStep {
     if (context.signal.aborted) return Promise.reject(abortError());
     const { offeredId } = context.question;
     if (offeredId === null) return Promise.resolve({ kind: "not-invited" });
-    const answer = this.source.lookup(this.info.ancestorId ?? this.info.id, offeredId);
-    // A missing recording is a failure of this ancestor, isolated like any other.
-    if (answer === null) return Promise.reject(new Error("No recording for this question."));
+    const { lang } = context.question;
+    const answer =
+      this.info.ancestorId === null
+        ? (this.source.lookupMedium?.(offeredId, lang) ?? null)
+        : this.source.lookup(this.info.ancestorId, offeredId, lang);
+    if (answer === null) {
+      if (this.source.hasRecordings === false) return Promise.resolve({ kind: "gathering" });
+      // A missing recording is a failure of this ancestor, isolated like any other.
+      return Promise.reject(new Error("No recording for this question."));
+    }
     return Promise.resolve({ kind: "recorded", text: answer.text, credit: answer.credit });
   }
 }
@@ -55,6 +72,8 @@ export interface WorkerVoiceOptions {
   /** Where the worker loads the model from; absent for models that are not ready (AC-003.3). */
   readonly source?: ModelSource;
   readonly endsRitualOnFailure: boolean;
+  /** Set to "wasm" when the browser has no WebGPU (REQ-010). */
+  readonly backend?: InferenceBackend;
   readonly buildPrompt?: (question: Question) => string;
 }
 
@@ -145,10 +164,13 @@ export class WorkerVoiceStep implements RitualStep {
 
       const unsubscribe = worker.subscribe(onMessage);
       signal.addEventListener("abort", onAbort, { once: true });
-      const { source } = this.options;
-      worker.post(
-        source === undefined ? { type: "load", modelId } : { type: "load", modelId, source },
-      );
+      const { source, backend } = this.options;
+      worker.post({
+        type: "load",
+        modelId,
+        ...(source === undefined ? {} : { source }),
+        ...(backend === undefined ? {} : { backend }),
+      });
     });
   }
 }

@@ -10,6 +10,10 @@ import type {
 } from "../ritual/types.js";
 
 export const UNAVAILABLE_MESSAGE = "This ancestor could not come tonight.";
+export const GATHERING_MESSAGE =
+  "The recorded voices are still being gathered. This ancestor will speak here soon.";
+export const MEDIUM_NOT_INVITED_MESSAGE =
+  "La que cuida el altar only speaks for questions the ancestors left for us.";
 export const NOT_INVITED_MESSAGE =
   "These ancestors only answer the questions they left for us. Their voices rest tonight.";
 
@@ -345,8 +349,17 @@ export function createRitualView(doc: Document): RitualView {
           announce(`${name}, recorded: ${outcome.text}`);
           break;
         case "not-invited":
-          voice.status.textContent = NOT_INVITED_MESSAGE;
-          announce(`${name}. ${NOT_INVITED_MESSAGE}`);
+          {
+            // The medium has no altar place (ancestorId null); it gets its own wording.
+            const message =
+              info.ancestorId === null ? MEDIUM_NOT_INVITED_MESSAGE : NOT_INVITED_MESSAGE;
+            voice.status.textContent = message;
+            announce(`${name}. ${message}`);
+          }
+          break;
+        case "gathering":
+          voice.status.textContent = GATHERING_MESSAGE;
+          announce(`${name}. ${GATHERING_MESSAGE}`);
           break;
         case "unavailable":
           // Tokens that arrived before the failure stay visible: what the ancestor managed to

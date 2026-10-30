@@ -65,6 +65,27 @@ The latest entry is shown to Claude at the start of every session.
   (closes T-005 "Done when"); UI replay (AC-005.1-AC-005.4) is T-003.
 - Review fixes (2026-10-30): redirect refused and timeouts in the client; loopback bypass tests; one timestamp per run and unchanged entries reused; per-ancestor failure isolation with non-zero exit; stale ids dropped and checked; --allow-unverified required for unverified tags; T-005 marked [~].
 
+## 2026-10-30 — T-007: Dark frames, about panel, unsupported browsers (partial: cultural review pending)
+- Done: WebGPU detection (`src/ritual/gpu.ts`, `navigator.gpu` + `requestAdapter`); without it one line
+  naming Chrome or Edge on desktop, GPT-2 asks for `backend: "wasm"` (optional field on the worker
+  `load` message; T-004 must honour it), Gemma 4 and the medium are replayed from
+  `recorded-voices.json` (`src/data/recorded-source.ts`), every answer labelled recorded, own
+  questions get "waiting to be invited", empty recordings get "still being gathered" (new outcome
+  `gathering`, no error). About panel: recorded voices worded "Model licence: …; output reproduced
+  with attribution", medium line, "Cultural review pending" note driven by `culturalReviewPending`
+  in `credits.json` (true until the founder's review). Dark frame rendering tests. Licence check
+  `npm run licences` (`tools/check-licences.mjs`, allowlist with reasons in
+  `tools/licence-allowlist.json`; MIT-0 and CC0-1.0 dev-only packages allowlisted) and one CI step.
+  `docs/cultural-review.md` lists every ritual text for the reviewer. 165 unit and 15 e2e tests pass.
+- Scope note: AC-006.3's consent-decline flow belongs to T-006; T-007 only supplies the recorded
+  Gemma 4 replay (and the medium's own not-invited wording) it falls back to.
+- Issues: `dark-frames.json` has `yearsOfService: null` for all four frames, so AC-008.1's "years of
+  service" is hidden until verified official dates are added (not invented). The e2e uses the fake
+  worker: the wasm path is proven only to the `load` message until T-004. The shipped build has no
+  recordings until the founder runs `npm run record-voices`.
+- Next: founder sends `docs/cultural-review.md` and sample medium outputs by Oct 31 12:00; set
+  `culturalReviewPending` to false after approval; T-004 handles `backend: "wasm"`.
+
 ## 2026-10-30 — T-004: GPT-2 speaks, with ghost words (partial: real-model check pending)
 - Done: real inference worker (`src/worker/`: module worker, message host with `load`,
   `cancel-load`, `generate`, `cancel`; transformers.js 4.3.1 adapter; ghost-word top-k from the

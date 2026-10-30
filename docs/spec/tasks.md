@@ -88,9 +88,11 @@ At most 2 tasks in parallel. Marked ⚡ where a task can run beside the previous
     progress.md (≥ 4 of 6 usable calaveritas per language, 0 breaking R1–R2); CI green.
 
 ## Milestone 3: Honour and reach (Fri Oct 31, until 18:00 freeze)
-- [ ] T-007: Dark frames, about panel, unsupported browsers
+- [~] T-007: Dark frames, about panel, unsupported browsers (code done; cultural review pending, copy due Oct 31 12:00)
   - Requirements: REQ-008, REQ-009, REQ-010
   - Depends on: T-003, T-005
+  - Note: the consent-decline flow of AC-006.3 (the visitor declines the Gemma 4 download) belongs to
+    T-006; T-007 only provides the recorded Gemma 4 replay it falls back to (no-WebGPU path).
   - Scope: `dark-frames.json` with official sources only; about panel with every model's
     licence and the cultural sources; no-WebGPU path with the recorded ritual.
   - Done when: AC-008.1–AC-008.2, AC-009.1–AC-009.4, AC-010.1–AC-010.2 tests pass; licence check
