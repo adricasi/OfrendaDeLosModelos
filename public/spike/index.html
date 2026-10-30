@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>T-001 spike: live models in the browser</title>
+    <style>
+      body {
+        font:
+          15px/1.45 system-ui,
+          sans-serif;
+        max-width: 60rem;
+        margin: 1rem auto;
+        padding: 0 1rem;
+        color: #1b1b1b;
+        background: #fafafa;
+      }
+      h1 {
+        font-size: 1.4rem;
+      }
+      h2 {
+        font-size: 1.1rem;
+        margin-top: 2rem;
+        border-bottom: 1px solid #ccc;
+      }
+      section {
+        margin-bottom: 1rem;
+      }
+      select,
+      button,
+      input {
+        font: inherit;
+        padding: 0.25rem 0.5rem;
+        margin: 0.15rem 0;
+      }
+      select {
+        max-width: 100%;
+      }
+      pre,
+      .out {
+        background: #fff;
+        border: 1px solid #ddd;
+        padding: 0.5rem;
+        white-space: pre-wrap;
+        word-break: break-word;
+        overflow-x: auto;
+        max-height: 22rem;
+        overflow-y: auto;
+      }
+      table {
+        border-collapse: collapse;
+        background: #fff;
+        font-size: 0.85rem;
+      }
+      td,
+      th {
+        border: 1px solid #ddd;
+        padding: 0.15rem 0.4rem;
+        text-align: left;
+        vertical-align: top;
+      }
+      progress {
+        width: 100%;
+      }
+      .err {
+        color: #8a0000;
+      }
+      .note {
+        color: #555;
+        font-size: 0.85rem;
+      }
+      label {
+        display: block;
+        margin-top: 0.4rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>T-001 spike: live models in the browser</h1>
+    <p class="note">
+      Throwaway diagnostic page, not the product. Use desktop Chrome or Edge with WebGPU. Nothing is
+      sent anywhere except the Hugging Face API, model downloads and the transformers.js library
+      from jsDelivr. Work through the sections in order, then press "Copy report" and paste the JSON
+      back.
+    </p>
+
+    <section id="s0">
+      <h2>0. Library</h2>
+      <button id="btn-lib" type="button">Load transformers.js 4.3.1 from jsDelivr</button>
+      <div id="lib-status" class="out" role="status"></div>
+    </section>
+
+    <section id="s1">
+      <h2>1. Environment</h2>
+      <button id="btn-env" type="button">Check environment</button>
+      <pre id="env-out"></pre>
+    </section>
+
+    <section id="s2">
+      <h2>2. Find models (Hugging Face API)</h2>
+      <p class="note">
+        Results are searched live; the preselected entries are only suggestions (candidates), pick
+        and verify yourself.
+      </p>
+      <button id="btn-find" type="button">Search GPT-2 and Gemma 4 candidates</button>
+      <label>
+        GPT-2 ONNX candidate
+        <select id="gpt2-id"></select>
+      </label>
+      <label>
+        Gemma 4 E2B ONNX candidate
+        <select id="gemma-id"></select>
+      </label>
+      <button id="btn-inspect" type="button">Inspect picked models (commit, license, files)</button>
+      <pre id="find-out"></pre>
+    </section>
+
+    <section id="s3">
+      <h2>3. GPT-2 with top-3 alternatives</h2>
+      <label>
+        Prompt
+        <input id="gpt2-prompt" type="text" size="50" />
+      </label>
+      <label>
+        dtype (tried first; the others are fallbacks in order fp32, fp16, q8, q4)
+        <select id="gpt2-dtype"></select>
+      </label>
+      <button id="btn-gpt2" type="button">Load GPT-2 on WebGPU and generate</button>
+      <button id="btn-gpt2-clear" type="button">Clear cached GPT-2 files</button>
+      <progress id="gpt2-progress" max="100" value="0"></progress>
+      <div id="gpt2-progress-text" class="note"></div>
+      <div id="gpt2-stream" class="out" aria-live="polite"></div>
+      <div id="gpt2-timings" class="note"></div>
+      <div id="gpt2-table"></div>
+    </section>
+
+    <section id="s4">
+      <h2>4. Gemma 4 E2B calaverita</h2>
+      <label>
+        decoder_model_merged dtype (default: smallest 4-bit)
+        <select id="gemma-dtype-decoder"></select>
+      </label>
+      <label>
+        embed_tokens dtype
+        <select id="gemma-dtype-embed"></select>
+      </label>
+      <div id="gemma-files" class="note"></div>
+      <button id="btn-gemma" type="button">Load Gemma 4 E2B on WebGPU and ask</button>
+      <button id="btn-gemma-clear" type="button">Clear cached Gemma files</button>
+      <progress id="gemma-progress" max="100" value="0"></progress>
+      <div id="gemma-progress-text" class="note"></div>
+      <div id="gemma-stream" class="out" aria-live="polite"></div>
+      <div id="gemma-timings" class="note"></div>
+    </section>
+
+    <section id="s5">
+      <h2>5. Ollama tags (run on the laptop)</h2>
+      <p class="note">Candidate tags, verify. Paste in a terminal where Ollama is installed.</p>
+      <pre id="ollama-snippet"></pre>
+    </section>
+
+    <section id="s6">
+      <h2>6. Network hosts and report</h2>
+      <button id="btn-hosts" type="button">Refresh hosts</button>
+      <pre id="hosts-out"></pre>
+      <h3>Errors</h3>
+      <pre id="errors-out" class="err"></pre>
+      <button id="btn-copy" type="button">Copy report</button>
+      <span id="copy-status" class="note" role="status"></span>
+      <label>
+        Report (select all and copy if the button fails)
+        <pre id="report-out"></pre>
+      </label>
+    </section>
+
+    <script type="module" src="./spike.js"></script>
+  </body>
+</html>
