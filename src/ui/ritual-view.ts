@@ -62,10 +62,6 @@ function visibleToken(text: string): string {
   return text.includes("\n") ? "↵" : "␣";
 }
 
-function formatBytes(bytes: number): string {
-  return `${(bytes / 1_000_000).toFixed(1)} MB`;
-}
-
 /** The size the visitor consents to: "1.9 GB", or "480 MB" for smaller downloads. */
 export function formatDownloadSize(bytes: number): string {
   return bytes >= 1_000_000_000
@@ -75,10 +71,7 @@ export function formatDownloadSize(bytes: number): string {
 
 /** AC-006.2: what the visitor reads before Gemma 4 is downloaded. */
 export function consentMessage(request: ConsentRequest): string {
-  const size =
-    request.bytes === null
-      ? "Its download size has not been verified yet."
-      : `It is a download of about ${formatDownloadSize(request.bytes)}.`;
+  const size = `It is a download of about ${formatDownloadSize(request.bytes)}.`;
   return `${request.modelName} is not stored on this device yet. ${size} It stays in your browser for later visits, and nothing you write leaves your device.`;
 }
 
@@ -322,6 +315,7 @@ export function createRitualView(doc: Document): RitualView {
         const message = consentMessage(request);
         const box = make(doc, "div", "consent");
         box.setAttribute("role", "group");
+        box.tabIndex = -1;
         const text = make(doc, "p", "consent-text", message);
         text.id = `${stepId}-consent-text`;
         box.setAttribute("aria-labelledby", text.id);
@@ -331,10 +325,17 @@ export function createRitualView(doc: Document): RitualView {
         decline.type = "button";
         box.append(text, accept, decline);
         voice.item.append(box);
-        announce(`${request.modelName} asks to download. ${message}`);
+        // Read once: focus moves to the group, whose name is the question (no announcer copy).
         const close = (action: () => void): void => {
           signal.removeEventListener("abort", onAbort);
           box.remove();
+          // Focus must not fall back to <body>: the Stop button is the next control in the ritual.
+          const stop = doc.getElementById("stop-button");
+          if (stop !== null && !stop.hidden) stop.focus();
+          else {
+            voice.item.tabIndex = -1;
+            voice.item.focus();
+          }
           action();
         };
         const onAbort = (): void => {
@@ -353,7 +354,7 @@ export function createRitualView(doc: Document): RitualView {
           });
         });
         signal.addEventListener("abort", onAbort, { once: true });
-        accept.focus();
+        box.focus();
       });
     },
 
@@ -362,7 +363,7 @@ export function createRitualView(doc: Document): RitualView {
       if (voice === undefined || total <= 0) return;
       const percent = String(Math.round((loaded / total) * 100));
       // The size is the real download total, so the visitor sees what is being fetched (NFR-005).
-      voice.status.textContent = `Preparing… ${percent}% (${formatBytes(loaded)} of ${formatBytes(total)})`;
+      voice.status.textContent = `Preparing… ${percent}% (${formatDownloadSize(loaded)} of ${formatDownloadSize(total)})`;
     },
 
     token(stepId: string, token: Token): void {

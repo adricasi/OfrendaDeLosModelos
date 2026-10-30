@@ -21,14 +21,11 @@ const gemma: StepInfo = {
 };
 
 describe("the download question (AC-006.2)", () => {
-  it("states the size in GB or MB, or says it is not verified", () => {
+  it("states the size in GB or MB, the same way as the progress line", () => {
     expect(formatDownloadSize(1_900_000_000)).toBe("1.9 GB");
     expect(formatDownloadSize(480_000_000)).toBe("480 MB");
     expect(consentMessage({ modelName: "Gemma 4 E2B", bytes: 1_900_000_000 })).toContain(
       "download of about 1.9 GB",
-    );
-    expect(consentMessage({ modelName: "Gemma 4 E2B", bytes: null })).toContain(
-      "size has not been verified",
     );
   });
 
@@ -48,17 +45,27 @@ describe("the download question (AC-006.2)", () => {
       );
       const group = document.querySelector('.consent[role="group"]');
       expect(group?.textContent).toContain("about 1.9 GB");
-      expect(document.activeElement?.textContent).toBe("Download and continue");
+      // Focus goes to the group (named by the question), never to the Download button.
+      expect(document.activeElement).toBe(group);
+      expect(group?.getAttribute("tabindex")).toBe("-1");
+      expect(group?.getAttribute("aria-labelledby")).toBe(
+        document.querySelector(".consent-text")?.id,
+      );
+      expect(document.getElementById("ritual-announcer")?.textContent).not.toContain("download");
+      const stop = document.getElementById("stop-button");
+      if (stop !== null) stop.hidden = false;
       const button = [...document.querySelectorAll<HTMLButtonElement>(".consent button")].find(
         (b) => b.textContent === label,
       );
       button?.click();
       expect(await answer).toBe(expected);
       expect(document.querySelector(".consent")).toBeNull();
+      // Focus is not lost to <body> once the question closes.
+      expect(document.activeElement).toBe(document.getElementById("stop-button"));
     }
   });
 
-  it("is announced once through the status region, and removed when the ritual is stopped", async () => {
+  it("is removed when the ritual is stopped", async () => {
     mountPage();
     const view = createRitualView(document);
     view.ritualStarted({ text: "q", offeredId: null, lang: "en" });
@@ -66,10 +73,9 @@ describe("the download question (AC-006.2)", () => {
     const controller = new AbortController();
     const answer = view.askConsent?.(
       gemma.id,
-      { modelName: "Gemma 4 E2B", bytes: null },
+      { modelName: "Gemma 4 E2B", bytes: 1_900_000_000 },
       controller.signal,
     );
-    expect(document.getElementById("ritual-announcer")?.textContent).toContain("asks to download");
     controller.abort();
     await expect(answer).rejects.toMatchObject({ name: "AbortError" });
     expect(document.querySelector(".consent")).toBeNull();

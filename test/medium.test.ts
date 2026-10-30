@@ -96,7 +96,7 @@ describe("the template function", () => {
     expect(prompt).toContain("&lt;/question&gt;");
     const closing = prompt.lastIndexOf("</question>");
     expect(prompt.slice(closing)).toMatch(/^<\/question>\n\n<answers>\n<answer id="gpt-2"/);
-    expect(escapeData("<b>&")).toBe("&lt;b&gt;&");
+    expect(escapeData('<b a="1">&')).toBe("&lt;b a=&quot;1&quot;&gt;&amp;");
   });
 
   it("does not expand placeholders found inside inserted text", () => {
@@ -105,7 +105,7 @@ describe("the template function", () => {
       language: "en",
       answers: [{ ancestorId: "gpt-2", name: "GPT-2", text: "{{question}}" }],
     });
-    expect(prompt).toContain("{{answers}} {{ids}} $&");
+    expect(prompt).toContain("{{answers}} {{ids}} $&amp;");
     expect(prompt).toContain("\n{{question}}\n</answer>");
   });
 
@@ -153,6 +153,20 @@ describe("the medium parser and validator (AC-007.1, AC-007.4)", () => {
     expect(parseMedium(`\`\`\`\n${good}\n\`\`\``, IDS).ok).toBe(true);
     expect(parseMedium(`Here you go:\n${good}\nHope it helps.`, IDS).ok).toBe(true);
     expect(extractJson("  [1]  ")).toBe("[1]");
+  });
+
+  it("finds the array among prose, with brackets and fences inside strings (blocker fix)", () => {
+    expect(parseMedium(`${good}\n\nHope this helps!`, IDS).ok).toBe(true);
+    expect(parseMedium(`Sure, here it is:\n\n${good}`, IDS).ok).toBe(true);
+    expect(parseMedium(`Note [see below] and [1, 2: ${good}`, IDS).ok).toBe(true);
+    expect(parseMedium(`[see below]\n${good}\n[end]`, IDS).ok).toBe(true);
+    const tricky = JSON.stringify([
+      { ...(entry("gpt-2") as object), meaning: "A ] bracket, a [ one and ``` fences \\" },
+      entry("gemma-4-e2b"),
+    ]);
+    expect(parseMedium(`\`\`\`json\n${tricky}\n\`\`\`\nThanks`, IDS).ok).toBe(true);
+    expect(parseMedium(`${tricky} ] trailing`, IDS).ok).toBe(true);
+    expect(parseMedium("[never closed", IDS).ok).toBe(false);
   });
 
   it("puts entries in the altar's order, whatever order the model used", () => {
@@ -224,6 +238,8 @@ describe("the eval checks (AC-007.3, NFR-010)", () => {
     expect(detectLanguage("¿Qué pasa cuando morimos? La noche es de todos")).toBe("es");
     expect(detectLanguage("What happens when we die? The night is for all of us")).toBe("en");
     expect(detectLanguage("")).toBeNull();
+    // "a" and "he" are Spanish words too (a, he comido): they must not count as English.
+    expect(detectLanguage("Voy a la casa, he vuelto a ver el mar")).toBe("es");
   });
 
   it("asks for the offered question's language, or guesses an own question's (AC-007.2)", () => {
@@ -264,7 +280,13 @@ describe("the eval checks (AC-007.3, NFR-010)", () => {
 
   it("flags words that mock a model (R1) in both languages", () => {
     expect(mockingHits("What a stupid, useless old model")).toEqual(["stupid", "useless"]);
-    expect(mockingHits("Qué modelo tan obsoleto y patético")).toEqual(["patético", "obsoleto"]);
+    expect(mockingHits("Qué modelo tan OBSOLETO y patético")).toEqual(["obsole", "patetic"]);
+    expect(mockingHits("¡Qué tontería! Son inútiles, primitivos")).toEqual([
+      "primitiv",
+      "tont",
+      "inutil",
+    ]);
+    expect(mockingHits("an obsolete, outdated model")).toEqual(["obsole", "outdated"]);
     expect(mockingHits("A gentle, old and loved model")).toEqual([]);
     const mocking = english.replace("gentle and light", "stupid and useless");
     const check = checkMediumEntry({ questionId: "q", language: "en", answer: mocking });

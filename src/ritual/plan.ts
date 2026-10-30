@@ -23,6 +23,8 @@ export interface RitualDependencies {
   readonly recorded: RecordedVoiceSource;
   /** False until the medium exists (T-006): the ritual then ends after Gemma 4. */
   readonly includeMedium: boolean;
+  /** `?debug`: where the ritual says why a model was not offered. */
+  readonly log?: (message: string) => void;
   /**
    * False when the browser has no WebGPU (REQ-010): GPT-2 runs on WebAssembly, Gemma 4 and the
    * medium are replayed from the recordings. Defaults to true.
@@ -35,6 +37,10 @@ const MEDIUM_NAME = "La que cuida el altar";
 /** AC-006.3: said in Gemma 4's place when the visitor declines the download for their own question. */
 export const GEMMA4_WAITING_MESSAGE =
   "Gemma 4 is waiting to be invited: it answers your own question on your device once you allow the download.";
+
+/** Said in Gemma 4's place for an own question when it cannot be offered tonight (AC-006.3). */
+export const GEMMA4_UNAVAILABLE_MESSAGE =
+  "Gemma 4 cannot come tonight, so it cannot answer your own question.";
 
 /**
  * The medium writes up to six entries as JSON, so it gets a larger budget than an answer.
@@ -81,6 +87,8 @@ export function buildRitualPlan(
       source: sourceOf(ancestor),
       endsRitualOnFailure: ancestor.id === lastLiveId && webgpu,
       ...(webgpu ? {} : { backend: "wasm" as const }),
+      // Free GPT-2's memory once it has spoken, before Gemma 4 loads.
+      ...(ancestor.id === GPT2_ID ? { unloadWhenDone: true } : {}),
       ...(ancestor.id === MEDIUM_MODEL_ID
         ? {
             // AC-006.1, AC-006.2, AC-006.3: its own answer, with consent before a download.
@@ -94,6 +102,8 @@ export function buildRitualPlan(
               bytes: ancestor.downloadBytes,
               declined: new RecordedVoiceStep({ ...info, mode: "recorded" }, deps.recorded),
               waitingMessage: GEMMA4_WAITING_MESSAGE,
+              unavailableMessage: GEMMA4_UNAVAILABLE_MESSAGE,
+              ...(deps.log === undefined ? {} : { log: deps.log }),
             },
           }
         : {}),

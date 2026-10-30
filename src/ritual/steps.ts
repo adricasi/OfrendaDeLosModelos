@@ -84,6 +84,10 @@ export interface ConsentOptions {
   readonly declined: RitualStep;
   /** Said for a declined own question, which has no recording (AC-006.3). */
   readonly waitingMessage: string;
+  /** Said for an own question when the model cannot be offered at all (not pinned, no size). */
+  readonly unavailableMessage: string;
+  /** For `?debug`: why the model was not offered (NFR-007). */
+  readonly log?: (message: string) => void;
 }
 
 export interface GenerationTarget {
@@ -102,6 +106,16 @@ export interface WorkerVoiceOptions extends GenerationTarget {
   readonly consent?: ConsentOptions;
   /** The text sent to the model; defaults to the question as typed. */
   readonly buildPrompt?: (context: StepContext) => string;
+  /** Frees this model's memory once its answer is complete (GPT-2 before Gemma 4 loads). */
+  readonly unloadWhenDone?: boolean;
+}
+
+/** The worker will not load the model at all (for example no pinned revision). */
+export class ModelRefusedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ModelRefusedError";
+  }
 }
 
 let requestCounter = 0;
@@ -136,7 +150,7 @@ export function probeCached(
       if (message.type === "probed" && message.modelId === modelId) {
         end(() => {
           if (message.refused === undefined) resolve(message.cached);
-          else reject(new Error(message.refused));
+          else reject(new ModelRefusedError(message.refused));
         });
       }
     });
@@ -268,10 +282,26 @@ export class WorkerVoiceStep implements RitualStep {
     const { consent, buildPrompt } = this.options;
     if (context.signal.aborted) throw abortError();
     if (consent !== undefined) {
-      // A model that cannot be loaded (no pinned revision) is never offered for download: the
-      // probe rejects with the worker's reason.
-      const cached = await probeCached(this.options, context.signal);
+      // AC-006.3, AC-007.5: a model that is not offered (cannot be loaded, or its download size is
+      // unknown so the visitor could not be told) is treated like a declined download: the
+      // recordings stand in, and an own question gets the not-invited line.
+      const unavailable = async (reason: string): Promise<SpokenOutcome> => {
+        consent.log?.(`[ofrenda] ${this.info.id} is not offered: ${reason}`);
+        const outcome = await consent.declined.run(context);
+        return outcome.kind === "not-invited"
+          ? { kind: "not-invited", message: consent.unavailableMessage }
+          : outcome;
+      };
+      let cached: boolean;
+      try {
+        cached = await probeCached(this.options, context.signal);
+      } catch (error: unknown) {
+        if (error instanceof ModelRefusedError) return unavailable(error.message);
+        throw error;
+      }
       if (!cached) {
+        // AC-006.2: the visitor is never asked without being told the size.
+        if (consent.bytes === null) return unavailable("its download size is not known");
         const agreed = await context.askConsent({
           modelName: consent.modelName,
           bytes: consent.bytes,
@@ -286,6 +316,9 @@ export class WorkerVoiceStep implements RitualStep {
     }
     const prompt = buildPrompt === undefined ? context.question.text : buildPrompt(context);
     const text = await generateText(this.options, this.info.id, context, prompt, true);
+    if (this.options.unloadWhenDone === true) {
+      this.options.worker.post({ type: "unload", modelId: this.options.modelId });
+    }
     return { kind: "spoken", text };
   }
 }

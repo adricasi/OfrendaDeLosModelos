@@ -7,15 +7,49 @@ export type MediumParse =
   | { readonly ok: true; readonly notes: readonly MediumNote[] }
   | { readonly ok: false; readonly problem: string };
 
-/** The JSON text of a reply: tolerates a ```json fence and prose around the array. */
+/**
+ * The end of the balanced top-level array that starts at `start`, or -1. Brackets inside JSON
+ * strings (and escaped quotes) do not count, so a "]" or a literal ``` inside a string is safe.
+ */
+function balancedArrayEnd(text: string, start: number): number {
+  let depth = 0;
+  let inString = false;
+  for (let i = start; i < text.length; i += 1) {
+    const char = text[i];
+    if (inString) {
+      if (char === "\\") i += 1;
+      else if (char === '"') inString = false;
+    } else if (char === '"') {
+      inString = true;
+    } else if (char === "[" || char === "{") {
+      depth += 1;
+    } else if (char === "]" || char === "}") {
+      depth -= 1;
+      if (depth === 0) return char === "]" ? i : -1;
+      if (depth < 0) return -1;
+    }
+  }
+  return -1;
+}
+
+/**
+ * The JSON text of a reply: the first complete top-level array that parses, wherever it sits
+ * (alone, in a ```json fence, after or before prose, even when the prose has a "[" of its own).
+ * When there is none the trimmed reply is returned and parsing it reports the problem.
+ */
 export function extractJson(reply: string): string {
   const text = reply.trim();
-  const fenced = /```(?:json)?\s*\n?([\s\S]*?)```/i.exec(text);
-  const inner = (fenced?.[1] ?? text).trim();
-  if (inner.startsWith("[")) return inner;
-  const start = inner.indexOf("[");
-  const end = inner.lastIndexOf("]");
-  return start !== -1 && end > start ? inner.slice(start, end + 1) : inner;
+  for (let start = text.indexOf("["); start !== -1; start = text.indexOf("[", start + 1)) {
+    const end = balancedArrayEnd(text, start);
+    if (end === -1) continue;
+    const candidate = text.slice(start, end + 1);
+    try {
+      if (Array.isArray(JSON.parse(candidate))) return candidate;
+    } catch {
+      // Not JSON (for example "[see below]"): try the next "[".
+    }
+  }
+  return text;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

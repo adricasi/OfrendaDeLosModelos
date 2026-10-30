@@ -48,9 +48,13 @@ export function parsePromptFile(text: string): PromptFile {
   return { id, version, body: normalised.slice(match[0].length).trim() };
 }
 
-/** Data never closes or opens a delimiter: angle brackets become entities. */
+/** Data never closes or opens a delimiter or an attribute: & < > and " become entities. */
 export function escapeData(text: string): string {
-  return text.replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+  return text
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
 }
 
 function clip(text: string, max: number): string {

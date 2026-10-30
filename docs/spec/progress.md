@@ -155,3 +155,11 @@ The latest entry is shown to Claude at the start of every session.
   (or try `?model-gemma4=` with `?debug`); run `npm run record-voices` then `npm run eval:medium`; read the
   words and note the verdict here (>= 4 of 6 usable per language, 0 breaking R1/R2; NFR-010); if JSON
   fails often, lower the temperature or shorten the prompt.
+- Review fixes (2026-10-30): `extractJson` finds the first complete array (string-aware, prose and
+  brackets around it); Gemma 4 not offered (refused probe, or no `downloadBytes`: the visitor is never asked
+  without a size) falls back to the recorded Gemma 4 and medium like a decline, own questions get the
+  not-invited lines, `?debug` logs why; only a live generation or load failure ends the ritual; GPT-2 is
+  unloaded once it has spoken; consent focus on the group, then the Stop button, text read once;
+  R1 stems (accent/case-insensitive), `a`/`he` out of the English list; `escapeData` escapes `& " < >`;
+  `eval:medium` fails with a language at 0; one size formatter. Founder: `downloadBytes` in
+  `ancestors.json` must be set (with the pin) or Gemma 4 is never offered live.

@@ -29,7 +29,7 @@ const SPANISH_WORDS = new Set(
   ),
 );
 const ENGLISH_WORDS = new Set(
-  "the a an and or of to in is are was were it its that this with for not as but be by on at from they their we you your my our i he she his her there when what who how all each tonight have has had will would".split(
+  "the an and or of to in is are was were it its that this with for not as but be by on at from they their we you your my our i she his her there when what who how all each tonight have has had will would".split(
     " ",
   ),
 );
@@ -59,34 +59,36 @@ export function questionLanguage(question: {
   return question.lang ?? detectLanguage(question.text);
 }
 
-/** R1: words that mock a model (checked as whole words, case-insensitive). */
-export const MOCKING_WORDS: readonly string[] = [
+/**
+ * R1: stems of words that mock a model, matched anywhere in a word, ignoring case and accents
+ * ("tonto", "tontería", "atontado" all match "tont"). Heuristic: it can flag a harmless use and
+ * cannot catch every insult, so a person still reads the words.
+ */
+export const MOCKING_STEMS: readonly string[] = [
   "stupid",
   "dumb",
   "idiot",
   "useless",
   "pathetic",
-  "primitive",
-  "ridiculous",
-  "obsolete",
+  "primitiv",
+  "ridicul",
+  "obsole",
+  "outdated",
+  "decrepit",
+  "senile",
   "junk",
   "trash",
   "fossil",
   "dinosaur",
-  "tonto",
-  "tonta",
-  "estúpido",
-  "estúpida",
-  "idiota",
-  "inútil",
-  "patético",
-  "patética",
-  "primitivo",
-  "primitiva",
-  "ridículo",
-  "ridícula",
-  "obsoleto",
-  "obsoleta",
+  "clunky",
+  "tont",
+  "estupid",
+  "imbecil",
+  "inutil",
+  "patetic",
+  "anticuad",
+  "chocho",
+  "senil",
   "basura",
   "chatarra",
   "dinosaurio",
@@ -102,13 +104,13 @@ const PERSON_PATTERNS: readonly RegExp[] = [
   /\bcomo (?:un humano|una persona|ser humano)\b/i,
 ];
 
-function words(text: string): string[] {
-  return text.toLowerCase().match(/[\p{L}]+/gu) ?? [];
+function plain(text: string): string {
+  return text.normalize("NFD").replaceAll(/\p{M}/gu, "").toLowerCase();
 }
 
 export function mockingHits(text: string): string[] {
-  const present = new Set(words(text));
-  return MOCKING_WORDS.filter((w) => present.has(w));
+  const haystack = plain(text);
+  return MOCKING_STEMS.filter((stem) => haystack.includes(stem));
 }
 
 export function personHits(text: string): string[] {
@@ -184,8 +186,8 @@ export function formatTable(checks: readonly MediumCheck[]): string {
       mark(c.schemaValid),
       mark(c.fourLines),
       mark(c.languageMatches),
-      c.r1Hits.length === 0 ? "ok" : c.r1Hits.join("/"),
-      c.r2Hits.length === 0 ? "ok" : "FAIL",
+      c.r1Hits.length === 0 ? "none known" : c.r1Hits.join("/"),
+      c.r2Hits.length === 0 ? "none known" : "FAIL",
       c.usable ? "yes" : "no",
     ]),
   ];

@@ -33,6 +33,7 @@ export function createProductionDependencies(
     worker: debug ? withDebugLogging(port, console) : port,
     recorded: createRecordedSource(data.recordedVoices),
     includeMedium: true,
+    ...(debug ? { log: (message: string) => console.info(message) } : {}),
     webgpu,
   };
 }

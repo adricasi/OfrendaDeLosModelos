@@ -1,3 +1,4 @@
+import type { AltarData } from "../data/load.js";
 import type { RitualDependencies } from "../ritual/plan.js";
 import type { RecordedVoiceSource } from "../ritual/steps.js";
 import { createFakeWorker } from "./fake-worker.js";
@@ -26,6 +27,20 @@ const noFakeRecordings: RecordedVoiceSource = {
   lookup: () => null,
   lookupMedium: () => null,
 };
+
+/** The fake Gemma 4 download is announced as 1.9 GB, so the consent question can be tested. */
+export const FAKE_DOWNLOAD_BYTES = 1_900_000_000;
+
+export function withFakeDownloadSize(data: AltarData): AltarData {
+  return {
+    ...data,
+    ancestors: data.ancestors.map((a) =>
+      a.kind === "live" && a.downloadBytes === null
+        ? { ...a, downloadBytes: FAKE_DOWNLOAD_BYTES }
+        : a,
+    ),
+  };
+}
 
 /**
  * Optional URL knobs for e2e: `fake-delay=<ms>` slows the tokens, `fake-fail=<id,id>` makes

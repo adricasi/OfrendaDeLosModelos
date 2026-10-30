@@ -16,6 +16,7 @@ function main(): void {
   const recorded = parseRecordedVoices(JSON.parse(readFileSync(file, "utf8")));
   if (recorded.medium.length === 0) {
     console.log(`No medium entries in ${file} yet: run npm run record-voices first.`);
+    process.exitCode = 1;
     return;
   }
   const checks = recorded.medium.map((entry) => checkMediumEntry(entry));
@@ -27,9 +28,11 @@ function main(): void {
       `${s.language}: ${String(s.usable)} of ${String(s.total)} usable (need at least ${String(REQUIRED_USABLE)})`,
     );
   }
-  console.log(`Breaking R1/R2: ${String(summary.breaking)} (need 0)`);
-  console.log("Heuristics only: read the words yourself and note the verdict in progress.md.");
-  const short = summary.byLanguage.some((s) => s.total > 0 && s.usable < REQUIRED_USABLE);
+  console.log(
+    `R1/R2: ${String(summary.breaking)} entries with known hits (need 0). "None known" is not "none": a person must still read it.`,
+  );
+  console.log("Note the verdict in progress.md.");
+  const short = summary.byLanguage.some((s) => s.usable < REQUIRED_USABLE);
   if (summary.breaking > 0 || short) process.exitCode = 1;
 }
 

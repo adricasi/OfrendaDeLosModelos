@@ -93,8 +93,8 @@ export interface StepContext {
 
 export interface ConsentRequest {
   readonly modelName: string;
-  /** The whole download, or null when the size has not been verified yet. */
-  readonly bytes: number | null;
+  /** The whole download in bytes (a download of unknown size is never offered). */
+  readonly bytes: number;
 }
 
 export interface RitualStep {

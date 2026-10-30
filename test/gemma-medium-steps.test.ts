@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import { createFakeWorker, type FakeWorkerOptions } from "../src/fake/fake-worker.js";
-import { GEMMA4_WAITING_MESSAGE, buildRitualPlan } from "../src/ritual/plan.js";
+import {
+  GEMMA4_UNAVAILABLE_MESSAGE,
+  GEMMA4_WAITING_MESSAGE,
+  buildRitualPlan,
+} from "../src/ritual/plan.js";
 import { runRitual } from "../src/ritual/sequencer.js";
 import { MediumStep, collectAncestorWords, type RecordedVoiceSource } from "../src/ritual/steps.js";
 import type {
@@ -22,6 +26,7 @@ import type {
   UiToWorkerMessage,
   WorkerToUiMessage,
 } from "../src/worker/protocol.js";
+import { withFakeDownloadSize } from "../src/fake/bootstrap.js";
 import { loadTestData, settle } from "./helpers.js";
 
 const offered: Question = { text: "What do you remember?", offeredId: "remember", lang: "en" };
@@ -93,8 +98,10 @@ async function run(
   view: View,
   workerOptions: FakeWorkerOptions = {},
   signal = new AbortController().signal,
+  { sized = true, log }: { sized?: boolean; log?: (message: string) => void } = {},
 ) {
-  const data = await loadTestData();
+  const loaded = await loadTestData();
+  const data = sized ? withFakeDownloadSize(loaded) : loaded;
   const worker = createFakeWorker(workerOptions);
   const posted: UiToWorkerMessage[] = [];
   const spy: ModelWorkerPort = {
@@ -104,7 +111,12 @@ async function run(
     },
     subscribe: (l) => worker.subscribe(l),
   };
-  const steps = buildRitualPlan(data.ancestors, { worker: spy, recorded, includeMedium: true });
+  const steps = buildRitualPlan(data.ancestors, {
+    worker: spy,
+    recorded,
+    includeMedium: true,
+    ...(log === undefined ? {} : { log }),
+  });
   const end = await runRitual(steps, question, view, signal);
   return { end, posted };
 }
@@ -117,7 +129,7 @@ describe("Gemma 4 speaks with consent (AC-006.1, AC-006.2)", () => {
     expect(view.consents).toHaveLength(1);
     expect(view.consents[0]).toMatchObject({
       stepId: "gemma-4-e2b",
-      request: { modelName: "Gemma 4 E2B" },
+      request: { modelName: "Gemma 4 E2B", bytes: 1_900_000_000 },
     });
   });
 
@@ -223,8 +235,8 @@ describe("Gemma 4 fails (AC-006.4)", () => {
     expect(view.begun).not.toContain("medium");
   });
 
-  it("refuses without a pinned revision, and does not ask about a download first", async () => {
-    // The real host with a runtime that would load: the unpinned source is refused by the probe.
+  function realHost(): ModelWorkerPort {
+    // The real host with a runtime that would load: an unpinned source is refused by the probe.
     const runtime: ModelRuntime = {
       supports: () => true,
       isCached: () => Promise.resolve(false),
@@ -237,7 +249,7 @@ describe("Gemma 4 fails (AC-006.4)", () => {
         for (const l of [...listeners]) l(m);
       },
     });
-    const port: ModelWorkerPort = {
+    return {
       post: (m) => {
         host.handle(m);
       },
@@ -246,13 +258,81 @@ describe("Gemma 4 fails (AC-006.4)", () => {
         return () => listeners.delete(l);
       },
     };
-    const data = await loadTestData();
-    const steps = buildRitualPlan(data.ancestors, { worker: port, recorded, includeMedium: true });
+  }
+
+  it("falls back to the recordings, without asking, when Gemma 4 is not pinned (AC-006.3, AC-007.5)", async () => {
+    const data = withFakeDownloadSize(await loadTestData());
+    const logs: string[] = [];
+    const steps = buildRitualPlan(data.ancestors, {
+      worker: realHost(),
+      recorded,
+      includeMedium: true,
+      log: (m) => logs.push(m),
+    });
     const view = new View(true);
     const end = await runRitual(steps, offered, view, new AbortController().signal);
+    expect(end).toBe("completed");
     expect(view.consents).toEqual([]);
-    expect(view.outcomes.get("gemma-4-e2b")?.kind).toBe("unavailable");
-    expect(end).toBe("ended-early");
+    expect(view.outcomes.get("gemma-4-e2b")?.kind).toBe("recorded");
+    expect(view.outcomes.get("medium")).toMatchObject({
+      kind: "recorded",
+      credit: "medium credit",
+    });
+    expect(logs.join("\n")).toContain("gemma-4-e2b is not offered");
+  });
+
+  it("an own question gets the unavailable line for Gemma 4 and the medium's not-invited line", async () => {
+    const data = withFakeDownloadSize(await loadTestData());
+    const steps = buildRitualPlan(data.ancestors, {
+      worker: realHost(),
+      recorded,
+      includeMedium: true,
+    });
+    const view = new View(true);
+    const end = await runRitual(steps, own, view, new AbortController().signal);
+    expect(end).toBe("completed");
+    expect(view.outcomes.get("gemma-4-e2b")).toEqual({
+      kind: "not-invited",
+      message: GEMMA4_UNAVAILABLE_MESSAGE,
+    });
+    expect(view.outcomes.get("medium")).toEqual({ kind: "not-invited" });
+  });
+
+  it("never asks without a known download size: the recordings stand in and ?debug says why (AC-006.2)", async () => {
+    const view = new View(true);
+    const logs: string[] = [];
+    const { end, posted } = await run(offered, view, { cachedModels: ["gpt-2"] }, undefined, {
+      sized: false,
+      log: (m) => logs.push(m),
+    });
+    expect(end).toBe("completed");
+    expect(view.consents).toEqual([]);
+    expect(posted.some((m) => m.type === "load" && m.modelId === "gemma-4-e2b")).toBe(false);
+    expect(view.outcomes.get("gemma-4-e2b")?.kind).toBe("recorded");
+    expect(view.outcomes.get("medium")?.kind).toBe("recorded");
+    expect(logs.join("\n")).toContain("download size is not known");
+  });
+
+  it("an already stored model needs no size and speaks live", async () => {
+    const view = new View(false);
+    await run(offered, view, { cachedModels: ["gpt-2", "gemma-4-e2b"] }, undefined, {
+      sized: false,
+    });
+    expect(view.outcomes.get("gemma-4-e2b")?.kind).toBe("spoken");
+  });
+});
+
+describe("memory (REQ-006)", () => {
+  it("frees GPT-2 once it has spoken, before Gemma 4 loads", async () => {
+    const view = new View(true);
+    const { posted } = await run(offered, view, { cachedModels: ["gpt-2", "gemma-4-e2b"] });
+    const unload = posted.findIndex((m) => m.type === "unload" && m.modelId === "gpt-2");
+    const gemmaLoad = posted.findIndex((m) => m.type === "load" && m.modelId === "gemma-4-e2b");
+    const gpt2Generate = posted.findIndex((m) => m.type === "generate" && m.modelId === "gpt-2");
+    expect(gpt2Generate).toBeGreaterThanOrEqual(0);
+    expect(unload).toBeGreaterThan(gpt2Generate);
+    expect(unload).toBeLessThan(gemmaLoad);
+    expect(posted.filter((m) => m.type === "unload")).toHaveLength(1);
   });
 });
 
