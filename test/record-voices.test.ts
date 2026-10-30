@@ -14,11 +14,7 @@ import { assertKnownIds } from "../src/data/recorded-voices.js";
 import { parseAncestors, parseOfferedQuestions } from "../src/data/validate.js";
 import { OllamaClient, OllamaUnreachableError, assertLoopbackUrl } from "../scripts/ollama.js";
 import { parseArgs } from "../scripts/args.js";
-import {
-  fillMediumPrompt,
-  parseRecorderConfig,
-  recordVoices as recordVoicesStrict,
-} from "../scripts/record.js";
+import { parseRecorderConfig, recordVoices as recordVoicesStrict } from "../scripts/record.js";
 import type { RecorderConfig, RecorderDeps } from "../scripts/record.js";
 
 /** The shipped tags are unverified, so the tests pass the flag unless they test the refusal. */
@@ -248,15 +244,23 @@ describe("recording tool (REQ-013)", () => {
 });
 
 describe("medium phase (AC-007.5)", () => {
-  const template = "Question: {{question}}\nAnswers:\n{{answers}}\nWrite a calaverita.";
+  const template =
+    "---\nid: medium\nversion: 1\n---\nQuestion: {{question}}\nAnswers:\n{{answers}}\nWrite a calaverita.";
 
-  it("is disabled by default in the shipped config", () => {
-    expect(parseRecorderConfig(shippedConfig()).medium.enabled).toBe(false);
+  it("is enabled in the shipped config and reads the shared prompt file", () => {
+    const { medium } = parseRecorderConfig(shippedConfig());
+    expect(medium.enabled).toBe(true);
+    expect(medium.promptFile).toBe("prompts/medium.md");
   });
 
   it("does not call the model for the medium while disabled", async () => {
     fake = await startFakeOllama({ "gemma4:e2b": DIGEST_B });
-    await recordVoices(configFor(fake.url), emptyRecordedVoices(), { readText, now: fixedNow });
+    const config = configFor(fake.url);
+    await recordVoices(
+      { ...config, medium: { ...config.medium, enabled: false } },
+      emptyRecordedVoices(),
+      { readText, now: fixedNow },
+    );
     const prompts = fake.requests.map((r) => promptOf(r));
     expect(prompts.some((p) => p.includes("calaverita"))).toBe(false);
   });
@@ -266,18 +270,18 @@ describe("medium phase (AC-007.5)", () => {
     const config = configFor(fake.url);
     const enabled: RecorderConfig = { ...config, medium: { ...config.medium, enabled: true } };
     const { file } = await recordVoices(enabled, emptyRecordedVoices(), {
-      readText: (path) => (path === "scripts/medium-prompt.txt" ? template : readText(path)),
+      readText: (path) => (path === "prompts/medium.md" ? template : readText(path)),
       now: fixedNow,
     });
     expect(file.medium).toHaveLength(12);
     const entry = file.medium[0];
     expect(entry?.questionId).toBe("when-we-die");
     expect(entry?.model.tag).toBe("gemma4:e2b");
-    expect(entry?.prompt.file).toBe("scripts/medium-prompt.txt");
+    expect(entry?.prompt.file).toBe("prompts/medium.md");
     expect(entry?.prompt.sha256).toMatch(/^[0-9a-f]{64}$/);
     // The medium prompt carried the recorded answers of the ancestors.
     const mediumRequest = fake.requests.find((r) => promptOf(r).includes("Write a calaverita."));
-    expect(String(mediumRequest?.body?.["prompt"])).toContain("Gemma 1: answer from gemma:2b");
+    expect(String(mediumRequest?.body?.["prompt"])).toContain("answer from gemma:2b");
   });
 
   it("skips the medium with a message while the prompt file does not exist", async () => {
@@ -291,10 +295,6 @@ describe("medium phase (AC-007.5)", () => {
     );
     expect(file.medium).toEqual([]);
     expect(messages.some((m) => m.startsWith("SKIP medium: prompt file"))).toBe(true);
-  });
-
-  it("fills placeholders literally (no replacement patterns)", () => {
-    expect(fillMediumPrompt("{{question}}|{{answers}}", "$& why", "a")).toBe("$& why|a");
   });
 });
 

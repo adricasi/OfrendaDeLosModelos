@@ -20,6 +20,7 @@
     "build:e2e": "vite build --mode test --outDir dist-e2e --emptyOutDir",
     "test:e2e": "npm run build:e2e && playwright test",
     "licences": "node tools/check-licences.mjs",
+    "eval:medium": "tsc -p scripts/tsconfig.json && node node_modules/.cache/record-voices/scripts/eval-medium.js",
     "record-voices": "tsc -p scripts/tsconfig.json && node node_modules/.cache/record-voices/scripts/record-voices.js"
   },
   "devDependencies": {
