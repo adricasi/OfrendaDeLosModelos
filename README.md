@@ -28,27 +28,34 @@ check behaviour under the policy.
 The recorded voices (Gemma 1, 2, 3 and Gemma 4 E2B, plus the medium's words) are made once on the
 builder's laptop with [Ollama](https://ollama.com) and committed as
 `public/data/recorded-voices.json`. The site never calls Ollama. The tool only talks to Ollama on
-loopback (`127.0.0.1`, `localhost`, `::1`); any other host is refused.
+loopback (`127.0.0.1`, `localhost`, `::1`), never follows redirects, and refuses any other host.
 
 ```bash
+npm ci
 ollama serve                      # if Ollama is not already running
 ollama pull gemma:2b && ollama pull gemma2:2b && ollama pull gemma3:1b && ollama pull gemma4:e2b
-npm run record-voices             # writes public/data/recorded-voices.json
-git diff --stat public/data/recorded-voices.json
+npm run record-voices -- --allow-unverified   # writes public/data/recorded-voices.json
 ```
 
 - Settings live in `scripts/record-voices.config.json`: ancestors with their Ollama tag and model
-  licence, temperature 0, fixed seed, `num_predict` 120. The tags are candidates marked
-  `"verified": false`: check each exists in the Ollama library, correct the config, then set it to
-  `true`.
-- Every offered question is asked in English and Spanish. Each answer is stored with model name,
-  tag, digest (from `/api/tags`), licence, settings, UTC recording date and Ollama version.
-- A model that is not installed is skipped with a message; the others are recorded, and earlier
-  recordings of a skipped ancestor are kept.
+  licence, temperature 0, fixed seed, `num_predict` 120, optional `timeoutSeconds`
+  (`generate` 300, `quick` 10). The tags are candidates marked `"verified": false`: check each
+  exists in the Ollama library and correct the config, then set it to `true`. Until then the tool
+  refuses to run without `--allow-unverified`.
+- Every offered question is asked in English and Spanish. Each answer is stored exactly as the
+  model wrote it (only leading and trailing whitespace is trimmed), with model name, tag, digest
+  (from `/api/tags`), licence, settings, the question text, UTC recording date and Ollama version.
+- A model that is not installed is skipped with a message. If one ancestor fails mid-run (HTTP
+  error, timeout) it is reported, its earlier recordings are kept, the others are written, and the
+  command exits non-zero.
+- Re-runs keep an entry unchanged (and do not ask the model again) when the model digest, the
+  settings and the question are the same. Entries for ancestors or questions that no longer exist
+  are dropped.
 - The medium's words (AC-007.5) are off until the prompt file `scripts/medium-prompt.txt` exists
   (T-006; placeholders `{{question}}` and `{{answers}}`). Then set `medium.enabled` to `true`. The
   prompt's SHA-256 is stored with each entry.
-- Output is validated (`src/data/recorded-voices.ts`) before it is written, with stable key order.
+- Output is validated (`src/data/recorded-voices.ts`, including that ids match the offered
+  questions and the configured ancestors) before it is written, with stable key order.
 
 ## Deploying
 `.github/workflows/pages.yml` builds the site and publishes `dist/` to GitHub Pages on every

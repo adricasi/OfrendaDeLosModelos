@@ -10,7 +10,8 @@ import {
   parseRecordedVoices,
   serializeRecordedVoices,
 } from "../src/data/recorded-voices.js";
-import { parseAncestors } from "../src/data/validate.js";
+import { assertKnownIds } from "../src/data/recorded-voices.js";
+import { parseAncestors, parseOfferedQuestions } from "../src/data/validate.js";
 import { OllamaClient, OllamaUnreachableError, assertLoopbackUrl } from "../scripts/ollama.js";
 import { parseArgs } from "../scripts/args.js";
 import {
@@ -306,6 +307,10 @@ describe("loopback only", () => {
   );
 
   it.each([
+    "http://127.0.0.1.evil.com:11434",
+    "http://127.0.0.1@evil.com:11434",
+    "http://localhost.:11434",
+    "http://[::ffff:127.0.0.1]:11434",
     "http://192.168.1.20:11434",
     "http://example.com:11434",
     "http://0.0.0.0:11434",
@@ -412,5 +417,207 @@ describe("recorded-voices.json validation", () => {
 
   it("never writes an invalid file: serialisation validates first", () => {
     expect(() => serializeRecordedVoices({ schemaVersion: 1, voices: [{}], medium: [] })).toThrow();
+  });
+});
+
+describe("client hardening", () => {
+  const opts = { temperature: 0, seed: 42, numPredict: 120 };
+
+  it("sends every request with redirect: error and a timeout signal", async () => {
+    const seen: RequestInit[] = [];
+    const fetchFn = (_url: string, init?: RequestInit): Promise<Response> => {
+      seen.push(init ?? {});
+      return Promise.resolve(
+        new Response(JSON.stringify({ version: "1", models: [], done: true, response: "x" })),
+      );
+    };
+    const client = new OllamaClient("http://127.0.0.1:11434", fetchFn);
+    await client.version();
+    await client.digests();
+    await client.generate("m", "p", opts);
+    expect(seen).toHaveLength(3);
+    for (const init of seen) {
+      expect(init.redirect).toBe("error");
+      expect(init.signal).toBeInstanceOf(AbortSignal);
+    }
+  });
+
+  it("maps a timeout to OllamaUnreachableError", async () => {
+    const hang = (_url: string, init?: RequestInit): Promise<Response> =>
+      new Promise((_resolve, reject) => {
+        init?.signal?.addEventListener("abort", () =>
+          reject(new DOMException("timed out", "TimeoutError")),
+        );
+      });
+    const client = new OllamaClient("http://127.0.0.1:11434", hang, {
+      generateMs: 20,
+      quickMs: 20,
+    });
+    await expect(client.version()).rejects.toBeInstanceOf(OllamaUnreachableError);
+    await expect(client.generate("m", "p", opts)).rejects.toThrow(/within \d+ s/);
+  });
+
+  it("reports bad JSON clearly", async () => {
+    const client = new OllamaClient("http://127.0.0.1:11434", () =>
+      Promise.resolve(new Response("<html>nope</html>")),
+    );
+    await expect(client.version()).rejects.toThrow(/did not return valid JSON/);
+  });
+});
+
+describe("re-runs, failures and stale ids", () => {
+  it("keeps unchanged entries byte-identical on a re-run at a later time", async () => {
+    fake = await startFakeOllama({ "gemma:2b": DIGEST_A });
+    const first = await recordVoices(configFor(fake.url), emptyRecordedVoices(), {
+      readText,
+      now: fixedNow,
+    });
+    const calls = fake.requests.filter((r) => r.path === "/api/generate").length;
+    const second = await recordVoices(configFor(fake.url), first.file, {
+      readText,
+      now: () => new Date("2027-01-01T00:00:00.000Z"),
+    });
+    expect(serializeRecordedVoices(second.file)).toBe(serializeRecordedVoices(first.file));
+    expect(fake.requests.filter((r) => r.path === "/api/generate")).toHaveLength(calls);
+  });
+
+  it("re-records when the digest, the settings or the question text changed", async () => {
+    fake = await startFakeOllama({ "gemma:2b": DIGEST_A });
+    const first = await recordVoices(configFor(fake.url), emptyRecordedVoices(), {
+      readText,
+      now: fixedNow,
+    });
+    const later = (): Date => new Date("2027-01-01T00:00:00.000Z");
+    const config = configFor(fake.url);
+    const reseeded = await recordVoices(
+      { ...config, generation: { ...config.generation, seed: 7 } },
+      first.file,
+      { readText, now: later },
+    );
+    expect(reseeded.file.voices[0]?.recordedAt).toBe("2027-01-01T00:00:00.000Z");
+    await fake.close();
+    fake = await startFakeOllama({ "gemma:2b": DIGEST_B });
+    const newDigest = await recordVoices(configFor(fake.url), first.file, { readText, now: later });
+    expect(newDigest.file.voices[0]?.model.digest).toBe(DIGEST_B);
+    const edited = JSON.parse(files["public/data/offered-questions.json"] ?? "") as {
+      questions: { id: string; en: string }[];
+    };
+    edited.questions[0]!.en = "What is left when we go?";
+    const changed = await recordVoices(configFor(fake.url), newDigest.file, {
+      readText: (path) =>
+        path === "public/data/offered-questions.json" ? JSON.stringify(edited) : readText(path),
+      now: later,
+    });
+    expect(changed.file.voices[0]?.answer).toContain("What is left when we go?");
+  });
+
+  it("a failing ancestor does not lose the run: others are written, earlier data kept", async () => {
+    fake = await startFakeOllama({ "gemma:2b": DIGEST_A, "gemma2:2b": DIGEST_A });
+    const first = await recordVoices(configFor(fake.url), emptyRecordedVoices(), {
+      readText,
+      now: fixedNow,
+    });
+    const flaky = async (url: string, init?: RequestInit): Promise<Response> => {
+      const body = typeof init?.body === "string" ? init.body : "";
+      if (body.includes('"gemma2:2b"')) return new Response("{}", { status: 500 });
+      return fetch(url, init);
+    };
+    const config = configFor(fake.url);
+    const reseeded = { ...config, generation: { ...config.generation, seed: 9 } };
+    const second = await recordVoices(reseeded, first.file, {
+      readText,
+      now: () => new Date("2027-01-01T00:00:00.000Z"),
+      fetch: flaky,
+    });
+    expect(second.failures).toHaveLength(1);
+    expect(second.failures[0]).toMatch(/^gemma-2: .*HTTP 500/);
+    const gemma1 = second.file.voices.filter((v) => v.ancestorId === "gemma-1");
+    expect(gemma1.every((v) => v.settings.seed === 9)).toBe(true);
+    const gemma2 = second.file.voices.filter((v) => v.ancestorId === "gemma-2");
+    expect(gemma2).toEqual(first.file.voices.filter((v) => v.ancestorId === "gemma-2"));
+    expect(gemma2).toHaveLength(12);
+  });
+
+  it("refuses unverified tags without allowUnverified", async () => {
+    await expect(
+      recordVoicesStrict(configFor("http://127.0.0.1:11434"), emptyRecordedVoices(), {
+        readText,
+      }),
+    ).rejects.toThrow(/--allow-unverified/);
+  });
+
+  it("drops earlier entries whose ancestor or question no longer exists", async () => {
+    fake = await startFakeOllama({ "gemma:2b": DIGEST_A });
+    const first = await recordVoices(configFor(fake.url), emptyRecordedVoices(), {
+      readText,
+      now: fixedNow,
+    });
+    const stale = {
+      ...first.file,
+      voices: [
+        ...first.file.voices,
+        { ...first.file.voices[0]!, ancestorId: "gemma-9" },
+        { ...first.file.voices[0]!, questionId: "gone" },
+      ],
+    };
+    const { file } = await recordVoices(configFor(fake.url), stale, { readText, now: fixedNow });
+    expect(file.voices).toHaveLength(12);
+  });
+
+  it("assertKnownIds rejects unknown ancestor and question ids", () => {
+    const questions = parseOfferedQuestions(
+      JSON.parse(shippedText("public/data/offered-questions.json")),
+    ).map((q) => q.id);
+    const ancestors = parseAncestors(JSON.parse(shippedText("public/data/ancestors.json"))).map(
+      (a) => a.id,
+    );
+    const known = { ancestorIds: ancestors, questionIds: questions };
+    expect(() =>
+      assertKnownIds(
+        parseRecordedVoices(JSON.parse(shippedText("public/data/recorded-voices.json"))),
+        known,
+      ),
+    ).not.toThrow();
+    const voice = {
+      ancestorId: "gemma-1",
+      questionId: "love-poem",
+      questionText: "Write a love poem.",
+      language: "en",
+      answer: "Roses.",
+      model: {
+        name: "Gemma 1",
+        tag: "gemma:2b",
+        digest: DIGEST_A,
+        licence: { name: "Gemma Terms of Use", url: "https://ai.google.dev/gemma/terms" },
+      },
+      settings: { temperature: 0, seed: 42, numPredict: 120 },
+      recordedAt: "2026-10-30T10:00:00.000Z",
+      runtime: { name: "ollama", version: "0.12.3" },
+    };
+    const make = (patch: object) =>
+      parseRecordedVoices({ schemaVersion: 1, voices: [{ ...voice, ...patch }], medium: [] });
+    expect(() => assertKnownIds(make({}), known)).not.toThrow();
+    expect(() => assertKnownIds(make({ ancestorId: "pythia" }), known)).toThrow(
+      /ancestorId is unknown/,
+    );
+    expect(() => assertKnownIds(make({ questionId: "gone" }), known)).toThrow(
+      /questionId is unknown/,
+    );
+  });
+});
+
+describe("command line", () => {
+  it("parses --config and --allow-unverified", () => {
+    expect(parseArgs(["--config", "x.json", "--allow-unverified"])).toEqual({
+      configPath: "x.json",
+      allowUnverified: true,
+    });
+    expect(parseArgs([])).toEqual({ configPath: undefined, allowUnverified: false });
+  });
+
+  it("rejects --config without a value and unknown flags", () => {
+    expect(() => parseArgs(["--config"])).toThrow(/needs a path/);
+    expect(() => parseArgs(["--config", "--allow-unverified"])).toThrow(/needs a path/);
+    expect(() => parseArgs(["--nope"])).toThrow(/Unknown argument/);
   });
 });

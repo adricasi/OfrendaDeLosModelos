@@ -41,3 +41,4 @@ The latest entry is shown to Claude at the start of every session.
   docs/api.md and docs/modelfile.mdx (main branch), not against a running Ollama.
 - Next: founder runs the pulls and `npm run record-voices`, verifies tags, commits the JSON
   (closes T-005 "Done when"); UI replay (AC-005.1-AC-005.4) is T-003.
+- Review fixes (2026-10-30): redirect refused and timeouts in the client; loopback bypass tests; one timestamp per run and unchanged entries reused; per-ancestor failure isolation with non-zero exit; stale ids dropped and checked; --allow-unverified required for unverified tags; T-005 marked [~].
