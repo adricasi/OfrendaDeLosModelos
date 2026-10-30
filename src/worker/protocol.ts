@@ -19,8 +19,15 @@ export interface Alternative {
  * `load` of a model that is already loaded still answers with `ready` (progress messages are
  * optional in that case), so callers can always wait for `ready` after sending `load`.
  */
+export type InferenceBackend = "webgpu" | "wasm";
+
 export type UiToWorkerMessage =
-  | { readonly type: "load"; readonly modelId: string }
+  | {
+      readonly type: "load";
+      readonly modelId: string;
+      /** Without WebGPU the UI asks for "wasm" (REQ-010); absent means "webgpu". */
+      readonly backend?: InferenceBackend;
+    }
   | {
       readonly type: "generate";
       readonly requestId: string;

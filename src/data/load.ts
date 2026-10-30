@@ -1,3 +1,4 @@
+import { parseRecordedVoices, type RecordedVoicesFile } from "./recorded-voices.js";
 import {
   parseAncestors,
   parseCredits,
@@ -14,6 +15,7 @@ export interface AltarData {
   readonly questions: readonly OfferedQuestion[];
   readonly darkFrames: readonly DarkFrame[];
   readonly credits: Credits;
+  readonly recordedVoices: RecordedVoicesFile;
 }
 
 export type FetchLike = (url: string) => Promise<Pick<Response, "ok" | "status" | "json">>;
@@ -31,16 +33,18 @@ export async function loadAltarData(
   baseUrl: string,
   fetchFn: FetchLike = (url) => fetch(url),
 ): Promise<AltarData> {
-  const [ancestors, questions, darkFrames, credits] = await Promise.all([
+  const [ancestors, questions, darkFrames, credits, recordedVoices] = await Promise.all([
     fetchJson(fetchFn, baseUrl, "ancestors.json"),
     fetchJson(fetchFn, baseUrl, "offered-questions.json"),
     fetchJson(fetchFn, baseUrl, "dark-frames.json"),
     fetchJson(fetchFn, baseUrl, "credits.json"),
+    fetchJson(fetchFn, baseUrl, "recorded-voices.json"),
   ]);
   return {
     ancestors: parseAncestors(ancestors),
     questions: parseOfferedQuestions(questions),
     darkFrames: parseDarkFrames(darkFrames),
     credits: parseCredits(credits),
+    recordedVoices: parseRecordedVoices(recordedVoices),
   };
 }
