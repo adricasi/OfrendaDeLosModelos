@@ -595,7 +595,11 @@ textarea:focus-visible {
 
 .place.speaking .place-candle .flame {
   opacity: 1;
-  animation: flicker var(--flicker-duration) ease-in-out infinite alternate;
+  animation-name: flicker;
+  animation-duration: var(--flicker-duration);
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
 }
 
 .place.speaking .frame {
@@ -604,6 +608,6 @@ textarea:focus-visible {
 
 @media (prefers-reduced-motion: reduce) {
   .place.speaking .place-candle .flame {
-    animation: none;
+    animation-name: none;
   }
 }

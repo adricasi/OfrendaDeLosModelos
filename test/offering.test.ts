@@ -29,7 +29,7 @@ describe("own question validation (AC-002.2, AC-002.3)", () => {
       ok: false,
       error: "too-long",
     });
-    expect(validateOwnQuestion("🕯️".repeat(140)).ok).toBe(false);
+    expect(validateOwnQuestion("🕯️".repeat(141)).ok).toBe(false);
     expect(validateOwnQuestion("🕯".repeat(MAX_QUESTION_LENGTH)).ok).toBe(true);
   });
 
