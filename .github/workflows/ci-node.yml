@@ -32,5 +32,9 @@ jobs:
         run: npm run typecheck
       - name: Tests
         run: npm test -- --coverage
+      - name: Install Chromium for e2e
+        run: npx playwright install --with-deps chromium
+      - name: End-to-end tests (fake model worker)
+        run: npm run test:e2e
       - name: Dependency audit
         run: npm audit --audit-level=high

@@ -21,6 +21,9 @@ models/
 # --- node / typescript ---
 node_modules/
 dist/
+dist-e2e/
+test-results/
+playwright-report/
 coverage/
 *.tsbuildinfo
 

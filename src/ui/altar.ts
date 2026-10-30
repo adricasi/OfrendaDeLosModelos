@@ -65,7 +65,11 @@ function renderPlace(doc: Document, ancestor: Ancestor): HTMLLIElement {
     el(doc, "span", "year", String(ancestor.year)),
     el(doc, "span", "kind", kindLabel(ancestor)),
   );
-  figure.append(portrait, caption);
+  // The candle flickers while this ancestor speaks (see ritual-view.ts).
+  const candle = el(doc, "span", "candle place-candle");
+  candle.setAttribute("aria-hidden", "true");
+  candle.append(el(doc, "span", "flame"));
+  figure.append(portrait, candle, caption);
   item.append(figure);
   return item;
 }
