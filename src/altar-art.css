@@ -7,9 +7,15 @@
  * styles.css switches every animation off.
  */
 
+/*
+ * The arch's flowers overhang the shrine a little. The altar reaches into the page's side
+ * padding and clips there, so nothing causes horizontal scroll and no straight cut shows.
+ */
 .altar {
   position: relative;
-  margin-top: var(--space-3);
+  margin: var(--space-3) calc(var(--space-3) * -1) 0;
+  padding-inline: var(--space-3);
+  overflow-x: clip;
 }
 
 .art-defs {

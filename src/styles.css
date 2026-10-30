@@ -539,7 +539,7 @@ textarea:focus-visible {
   transform: none;
 }
 
-.voice .emblem-fill {
+.voice .voice-emblem .emblem-fill {
   fill: var(--voice-tone);
 }
 
