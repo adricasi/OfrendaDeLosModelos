@@ -21,7 +21,7 @@ describe("sampling options (AC-004.1)", () => {
   });
 
   it("only uses names the library's generation config knows (anything else is ignored silently)", () => {
-    const known = Object.getOwnPropertyNames(new GenerationConfig({}));
+    const known = Object.getOwnPropertyNames(new GenerationConfig({} as never));
     for (const name of Object.keys(options)) expect(known).toContain(name);
   });
 });

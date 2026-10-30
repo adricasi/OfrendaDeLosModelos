@@ -13,6 +13,7 @@ import { StepRecorder, ghostAlternatives } from "./ghost-words.js";
 import type { GenerateParams, LoadedModel, ModelRuntime } from "./inference-host.js";
 import type { ModelDevice } from "./protocol.js";
 import { RecordingProcessor } from "./recording-processor.js";
+import { samplingOptions } from "./sampling.js";
 import { TokenTextAssembler } from "./token-text.js";
 
 /** The ids this runtime serves; Gemma 4 arrives with T-006. */
@@ -195,12 +196,7 @@ async function generateWith(
     // array of processors (src/models/modeling_utils.js, generate()), hence the cast.
     const options: Record<string, unknown> = {
       ...inputs,
-      max_new_tokens: settings.maxTokens,
-      // Sample at temperature 1 in the library: the recorder applies the real temperature
-      // itself, so the shown probabilities are those of the distribution that is sampled.
-      do_sample: true,
-      temperature: 1,
-      bad_words_ids: blocked,
+      ...samplingOptions(settings, blocked),
       streamer,
       logits_processor: [new RecordingProcessor(recorder)],
       stopping_criteria: [stop],
