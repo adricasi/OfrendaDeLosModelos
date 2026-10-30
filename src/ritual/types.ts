@@ -33,16 +33,38 @@ export interface RecordedAnswer {
 
 /** What a step can report. */
 export type SpokenOutcome =
-  | { readonly kind: "spoken"; readonly text: string }
+  | {
+      readonly kind: "spoken";
+      /** The full text as produced; the plain-text fallback when `notes` is absent (AC-007.4). */
+      readonly text: string;
+      /** The medium's parsed output, one note per ancestor; rendered in the medium's own step. */
+      readonly notes?: readonly MediumNote[];
+    }
   | { readonly kind: "recorded"; readonly text: string; readonly credit: string }
   /** AC-005.3: recorded ancestors only answer the questions they left for us. */
   | { readonly kind: "not-invited" };
 
+/** One per-ancestor piece of the medium's words (design.md, Interfaces: medium output). */
+export interface MediumNote {
+  readonly ancestorId: string;
+  readonly meaning: string;
+  /** The four lines of the calaverita. */
+  readonly calaverita: readonly string[];
+}
+
 /** What the UI is told: a step outcome, or that the step failed (set by the sequencer only). */
 export type StepOutcome = SpokenOutcome | { readonly kind: "unavailable" };
 
+/** A step that has finished, with what the view was told about it. */
+export interface CompletedStep {
+  readonly info: StepInfo;
+  readonly outcome: StepOutcome;
+}
+
 export interface StepContext {
   readonly question: Question;
+  /** Steps completed so far in this ritual, in order (the medium reads the ancestors' answers). */
+  readonly previous: readonly CompletedStep[];
   readonly signal: AbortSignal;
   emitToken(token: Token): void;
   reportProgress(loaded: number, total: number): void;

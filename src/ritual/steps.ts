@@ -85,7 +85,7 @@ export class WorkerVoiceStep implements RitualStep {
         action();
       };
       const onAbort = (): void => {
-        if (generating) worker.post({ type: "cancel", requestId });
+        worker.post(generating ? { type: "cancel", requestId } : { type: "cancel-load", modelId });
         finish(() => {
           reject(abortError());
         });

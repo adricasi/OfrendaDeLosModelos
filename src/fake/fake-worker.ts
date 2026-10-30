@@ -18,6 +18,8 @@ export interface FakeWorkerOptions {
   readonly failAfterTokens?: number;
   /** Model ids that report top-3 alternatives with each token. */
   readonly alternativesFor?: readonly string[];
+  /** Delay before a model is ready, in ms (lets tests press Stop during a load). */
+  readonly loadDelayMs?: number;
   /** Overrides the deterministic words of a model. */
   readonly wordsFor?: (modelId: string) => readonly string[];
 }
@@ -49,7 +51,11 @@ export function createFakeWorker(options: FakeWorkerOptions = {}): ModelWorkerPo
 } {
   const listeners = new Set<(message: WorkerToUiMessage) => void>();
   const loaded = new Set<string>();
-  const cancelled = new Set<string>();
+  /** Requests being generated; a cancel only matters for these, so nothing leaks. */
+  const active = new Set<string>();
+  const cancelledRequests = new Set<string>();
+  /** Loads in flight; `cancel-load` removes the entry and the load then stays silent. */
+  const loading = new Set<string>();
   const delayMs = options.tokenDelayMs ?? 0;
 
   const emit = (message: WorkerToUiMessage): void => {
@@ -57,7 +63,14 @@ export function createFakeWorker(options: FakeWorkerOptions = {}): ModelWorkerPo
   };
 
   async function load(modelId: string): Promise<void> {
-    await sleep(0);
+    if (loaded.has(modelId)) {
+      // Loading a loaded model still answers `ready` (protocol contract).
+      emit({ type: "ready", modelId });
+      return;
+    }
+    loading.add(modelId);
+    await sleep(options.loadDelayMs ?? 0);
+    if (!loading.delete(modelId)) return;
     if (options.failLoad?.includes(modelId) === true) {
       emit({ type: "error", modelId, message: `Fake load failure for ${modelId}.` });
       return;
@@ -73,12 +86,22 @@ export function createFakeWorker(options: FakeWorkerOptions = {}): ModelWorkerPo
       emit({ type: "error", requestId, message: `${modelId} is not loaded.` });
       return;
     }
+    active.add(requestId);
+    try {
+      await speak(requestId, modelId);
+    } finally {
+      active.delete(requestId);
+      cancelledRequests.delete(requestId);
+    }
+  }
+
+  async function speak(requestId: string, modelId: string): Promise<void> {
     const words = (options.wordsFor ?? defaultWords)(modelId);
     const failing = options.failGenerate?.includes(modelId) === true;
     const failAfter = options.failAfterTokens ?? 2;
     for (const [index, text] of words.entries()) {
       await sleep(delayMs);
-      if (cancelled.delete(requestId)) return;
+      if (cancelledRequests.has(requestId)) return;
       if (failing && index >= failAfter) {
         emit({ type: "error", requestId, message: `Fake generation failure for ${modelId}.` });
         return;
@@ -103,7 +126,10 @@ export function createFakeWorker(options: FakeWorkerOptions = {}): ModelWorkerPo
           void generate(message.requestId, message.modelId);
           break;
         case "cancel":
-          cancelled.add(message.requestId);
+          if (active.has(message.requestId)) cancelledRequests.add(message.requestId);
+          break;
+        case "cancel-load":
+          loading.delete(message.modelId);
           break;
       }
     },

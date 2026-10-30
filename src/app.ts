@@ -2,7 +2,7 @@ import type { AltarData } from "./data/load.js";
 import { buildRitualPlan, type RitualDependencies } from "./ritual/plan.js";
 import { RitualRunner } from "./ritual/sequencer.js";
 import { noRecordedVoices } from "./ritual/steps.js";
-import { renderAltar } from "./ui/altar.js";
+import { renderAltar, showLoadError } from "./ui/altar.js";
 import { wireOffering } from "./ui/offering.js";
 import { createRitualView } from "./ui/ritual-view.js";
 import { createUnavailableWorker } from "./worker/unavailable.js";
@@ -25,9 +25,13 @@ export function startAltar(doc: Document, data: AltarData, deps: RitualDependenc
       const ritual = runner.start(question);
       if (ritual === null) return;
       form.setRunning(true);
-      void ritual.finally(() => {
-        form.setRunning(false);
-      });
+      ritual
+        .catch((error: unknown) => {
+          showLoadError(doc, error);
+        })
+        .finally(() => {
+          form.setRunning(false);
+        });
     },
     onStop() {
       runner.stop();

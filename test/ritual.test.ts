@@ -11,7 +11,8 @@ import type {
   StepOutcome,
   Token,
 } from "../src/ritual/types.js";
-import type { RecordedVoiceSource } from "../src/ritual/steps.js";
+import { WorkerVoiceStep, type RecordedVoiceSource } from "../src/ritual/steps.js";
+import type { RitualStep } from "../src/ritual/types.js";
 import type { UiToWorkerMessage } from "../src/worker/protocol.js";
 import { loadTestData } from "./helpers.js";
 
@@ -238,5 +239,91 @@ describe("one ritual at a time (AC-002.4)", () => {
     expect(second).not.toBeNull();
     runner.stop();
     await second;
+  });
+});
+
+describe("Stop during a load", () => {
+  it("cancels the in-flight load and starts no generation", async () => {
+    const { steps, view, posted } = await setup({ loadDelayMs: 50 });
+    const controller = new AbortController();
+    const running = runRitual(steps, offered, view, controller.signal);
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    controller.abort();
+    expect(await running).toBe("stopped");
+    expect(posted.map((m) => m.type)).toEqual(["load", "cancel-load"]);
+    await new Promise((resolve) => setTimeout(resolve, 80));
+    expect(posted.map((m) => m.type)).toEqual(["load", "cancel-load"]);
+    expect(view.tokens.size).toBe(0);
+  });
+
+  it("answers ready again when a loaded model is loaded a second time", async () => {
+    const worker = createFakeWorker();
+    const seen: string[] = [];
+    worker.subscribe((m) => seen.push(m.type));
+    worker.post({ type: "load", modelId: "gpt-2" });
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    worker.post({ type: "load", modelId: "gpt-2" });
+    expect(seen.filter((t) => t === "ready")).toHaveLength(2);
+  });
+});
+
+describe("what the steps are given and keep", () => {
+  it("passes the completed steps, in order, to each step (for the medium)", async () => {
+    const { steps, view } = await setup({ failLoad: ["gpt-2"] }, { includeMedium: false });
+    const seen: string[][] = [];
+    const probe: RitualStep = {
+      info: { id: "probe", name: "Probe", ancestorId: null, mode: "medium" },
+      endsRitualOnFailure: false,
+      run: (context) => {
+        seen.push(context.previous.map((p) => `${p.info.id}:${p.outcome.kind}`));
+        return Promise.resolve({ kind: "spoken", text: "" });
+      },
+    };
+    await runRitual([...steps, probe], offered, view, new AbortController().signal);
+    expect(seen[0]).toEqual([
+      "gpt-2:unavailable",
+      "gemma-1:recorded",
+      "gemma-2:recorded",
+      "gemma-3:recorded",
+      "gemma-4-e2b:spoken",
+    ]);
+  });
+
+  it("keeps an answer that completed just before Stop", async () => {
+    const view = new RecordingView();
+    const controller = new AbortController();
+    const step: RitualStep = {
+      info: { id: "late", name: "Late", ancestorId: null, mode: "live" },
+      endsRitualOnFailure: false,
+      run: () => {
+        controller.abort();
+        return Promise.resolve({ kind: "spoken", text: "finished in time" });
+      },
+    };
+    const end = await runRitual([step], offered, view, controller.signal);
+    expect(end).toBe("stopped");
+    expect(view.outcomes.get("late")).toEqual({ kind: "spoken", text: "finished in time" });
+  });
+
+  it("is a WorkerVoiceStep that rejects with an abort error on Stop", async () => {
+    const step = new WorkerVoiceStep(
+      { id: "gpt-2", name: "GPT-2", ancestorId: "gpt-2", mode: "live" },
+      {
+        modelId: "gpt-2",
+        worker: createFakeWorker({ loadDelayMs: 20 }),
+        settings: null,
+        endsRitualOnFailure: false,
+      },
+    );
+    const controller = new AbortController();
+    const result = step.run({
+      question: offered,
+      previous: [],
+      signal: controller.signal,
+      emitToken: () => undefined,
+      reportProgress: () => undefined,
+    });
+    controller.abort();
+    await expect(result).rejects.toMatchObject({ name: "AbortError" });
   });
 });

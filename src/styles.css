@@ -611,3 +611,25 @@ textarea:focus-visible {
     animation-name: none;
   }
 }
+
+/* The medium's words: one block per ancestor inside the medium's own voice. */
+.medium-note {
+  margin-top: var(--space-3);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--text-muted);
+}
+
+.medium-note h4 {
+  margin: 0;
+  font-family: var(--font-display);
+}
+
+.medium-meaning {
+  margin: var(--space-1) 0 0;
+}
+
+.medium-calaverita {
+  margin: var(--space-2) 0 0;
+  font-style: italic;
+  white-space: pre-line;
+}
