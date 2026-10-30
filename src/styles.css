@@ -1,0 +1,430 @@
+/* Design tokens. Components use these, never raw values. */
+:root {
+  --night: #1a1030;
+  --night-soft: #271a47;
+  --cloth: #3b2466;
+  --text: #f6efe3;
+  --text-muted: #cfc3e0;
+  --link: #ffd27a;
+  --marigold: #f59e0b;
+  --marigold-deep: #d97706;
+  --marigold-light: #fcd34d;
+  --wax: #f4ecd8;
+  --flame-core: #fff3c4;
+  --flame-edge: #ff9f1c;
+  --water: #9fd8f0;
+  --glass: rgb(255 255 255 / 0.28);
+  --picado-1: #e8508a;
+  --picado-2: #2ec4b6;
+  --picado-3: #9b6bdc;
+  --picado-4: #f7b538;
+  --frame-wood: #8b5a2b;
+  --frame-gold: #d4a64a;
+  --dark-frame: #0d0818;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 1rem;
+  --space-4: 1.5rem;
+  --space-5: 2.5rem;
+  --radius: 0.5rem;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: Georgia, "Times New Roman", serif;
+  --flicker-duration: 2.6s;
+  --petal-duration: 14s;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(ellipse at top, var(--night-soft), var(--night) 70%);
+  color: var(--text);
+  font-family: var(--font);
+  line-height: 1.5;
+}
+
+a {
+  color: var(--link);
+}
+
+a:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid var(--marigold-light);
+  outline-offset: 3px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--space-3);
+  top: -4rem;
+  padding: var(--space-2) var(--space-3);
+  background: var(--text);
+  color: var(--night);
+  border-radius: var(--radius);
+}
+
+.skip-link:focus {
+  top: var(--space-3);
+}
+
+.site-header {
+  padding: var(--space-4) var(--space-3) 0;
+  text-align: center;
+}
+
+.site-header h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(1.75rem, 5vw, 2.75rem);
+  color: var(--marigold-light);
+}
+
+.statement {
+  max-width: 40rem;
+  margin: var(--space-2) auto;
+  color: var(--text-muted);
+}
+
+main {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: var(--space-3);
+}
+
+.load-error {
+  padding: var(--space-3);
+  border: 2px solid var(--picado-1);
+  border-radius: var(--radius);
+}
+
+/* The altar */
+.altar {
+  position: relative;
+  padding-bottom: var(--space-3);
+}
+
+.papel-picado {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 7.5rem;
+}
+
+.papel-picado .string {
+  fill: none;
+  stroke: var(--text-muted);
+  stroke-width: 1.5;
+}
+
+.flag-body {
+  fill: var(--picado-1);
+}
+
+.flag-cut {
+  fill: var(--night);
+}
+
+.flag-2 .flag-body {
+  fill: var(--picado-2);
+}
+
+.flag-3 .flag-body {
+  fill: var(--picado-3);
+}
+
+.flag-4 .flag-body {
+  fill: var(--picado-4);
+}
+
+.level {
+  position: relative;
+  margin: 0 auto;
+  background: var(--cloth);
+  border-top: 4px solid var(--marigold-deep);
+  padding: var(--space-3);
+}
+
+.level-top {
+  width: 50%;
+  min-height: 5rem;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.level-middle {
+  width: 80%;
+  background: color-mix(in srgb, var(--cloth) 85%, var(--night));
+}
+
+.level-base {
+  width: 100%;
+  padding-bottom: var(--space-5);
+  overflow: hidden;
+}
+
+.candle-row,
+.offerings {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: var(--space-4);
+}
+
+.candle {
+  position: relative;
+  display: inline-block;
+  width: 1rem;
+  height: 3rem;
+  margin-top: 1.75rem;
+  background: var(--wax);
+  border-radius: 0.2rem 0.2rem 0 0;
+}
+
+.flame {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  width: 0.7rem;
+  height: 1.4rem;
+  margin-left: -0.35rem;
+  background: radial-gradient(ellipse at 50% 70%, var(--flame-core), var(--flame-edge) 70%);
+  border-radius: 50% 50% 50% 50% / 65% 65% 35% 35%;
+  transform-origin: 50% 100%;
+  animation: flicker var(--flicker-duration) ease-in-out infinite alternate;
+}
+
+.candle:nth-child(2) .flame {
+  animation-delay: -0.9s;
+}
+
+.candle:nth-child(3) .flame {
+  animation-delay: -1.7s;
+}
+
+.glass-of-water {
+  position: relative;
+  display: inline-block;
+  width: 2rem;
+  height: 3rem;
+  background: var(--glass);
+  border: 2px solid var(--water);
+  border-radius: 0.2rem 0.2rem 0.6rem 0.6rem;
+  overflow: hidden;
+}
+
+.water {
+  position: absolute;
+  inset: 25% 0 0;
+  background: var(--water);
+  opacity: 0.8;
+}
+
+/* Places for the ancestors */
+.places {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.frame {
+  margin: 0;
+  width: 8.5rem;
+  padding: var(--space-2);
+  background: var(--frame-wood);
+  border: 3px solid var(--frame-gold);
+  border-radius: var(--radius);
+  text-align: center;
+}
+
+.portrait {
+  background: var(--night);
+  border-radius: 0.25rem;
+  aspect-ratio: 5 / 6;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.portrait svg {
+  width: 70%;
+  fill: var(--marigold-light);
+  opacity: 0.85;
+}
+
+.frame figcaption {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--space-2);
+  background: var(--night);
+  border-radius: 0.25rem;
+  padding: var(--space-1) var(--space-2);
+  font-size: 0.875rem;
+}
+
+.frame .name {
+  font-size: 1rem;
+  color: var(--marigold-light);
+}
+
+.frame .year,
+.frame .kind,
+.frame .maker {
+  color: var(--text-muted);
+}
+
+.place-recorded .frame {
+  border-style: dashed;
+}
+
+/* Dark frames: where the closed models would be */
+.dark-frames-section h2,
+.about h2 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  color: var(--marigold-light);
+}
+
+.dark-frames {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.frame-dark {
+  background: var(--dark-frame);
+  border-color: var(--text-muted);
+}
+
+.frame-dark .portrait {
+  background: #000;
+  min-height: 4rem;
+}
+
+.frame-dark figcaption {
+  background: transparent;
+}
+
+.frame-dark .retired,
+.frame-dark .never {
+  display: block;
+}
+
+/* Cempasúchil petals and the marigold bed */
+.marigold-bed {
+  position: absolute;
+  inset: auto 0 0;
+  height: 1.75rem;
+  background:
+    radial-gradient(circle at 10px 14px, var(--marigold) 0 8px, transparent 9px),
+    radial-gradient(circle at 26px 8px, var(--marigold-deep) 0 8px, transparent 9px),
+    radial-gradient(circle at 42px 16px, var(--marigold-light) 0 7px, transparent 8px);
+  background-size: 48px 28px;
+  background-repeat: repeat-x;
+}
+
+.petals {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.petal {
+  position: absolute;
+  top: -1rem;
+  left: calc(var(--i) * 5.4%);
+  width: 0.55rem;
+  height: 0.9rem;
+  background: var(--marigold);
+  border-radius: 80% 20% 80% 20%;
+  opacity: 0.9;
+  animation: petal-fall var(--petal-duration) linear infinite;
+  animation-delay: calc(var(--i) * -0.8s);
+}
+
+.petal:nth-child(3n) {
+  background: var(--marigold-deep);
+}
+
+.petal:nth-child(3n + 1) {
+  background: var(--marigold-light);
+}
+
+.about {
+  margin-top: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--night-soft);
+  border-radius: var(--radius);
+}
+
+.about li {
+  margin-bottom: var(--space-2);
+}
+
+@keyframes flicker {
+  0% {
+    transform: scale(1, 1) rotate(-2deg);
+    opacity: 0.95;
+  }
+  50% {
+    transform: scale(0.92, 1.08) rotate(1.5deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.05, 0.95) rotate(-1deg);
+    opacity: 0.9;
+  }
+}
+
+@keyframes petal-fall {
+  from {
+    transform: translateY(0) rotate(0deg);
+  }
+  to {
+    transform: translateY(16rem) rotate(240deg);
+  }
+}
+
+@media (max-width: 40rem) {
+  .level-top,
+  .level-middle {
+    width: 100%;
+  }
+}
+
+/* AC-001.3: with reduced motion, candles and petals are shown without animation. */
+@media (prefers-reduced-motion: reduce) {
+  .flame,
+  .petal {
+    animation: none;
+  }
+
+  .petal {
+    top: auto;
+    bottom: 0.25rem;
+    opacity: 0.8;
+  }
+}
