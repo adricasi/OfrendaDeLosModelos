@@ -32,6 +32,13 @@ export async function runRitual(
         reportProgress: (loaded, total) => {
           if (!signal.aborted) view.stepProgress(step.info.id, loaded, total);
         },
+        reportStatus: (message) => {
+          if (!signal.aborted) view.stepStatus?.(step.info.id, message);
+        },
+        askConsent: (request) =>
+          view.askConsent === undefined
+            ? Promise.resolve(true)
+            : view.askConsent(step.info.id, request, signal),
       });
       // An answer that completed just before Stop is kept; the ritual still ends as stopped.
       view.stepFinished(step.info, outcome);

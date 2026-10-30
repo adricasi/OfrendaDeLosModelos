@@ -42,9 +42,19 @@ export type SpokenOutcome =
       /** The medium's parsed output, one note per ancestor; rendered in the medium's own step. */
       readonly notes?: readonly MediumNote[];
     }
-  | { readonly kind: "recorded"; readonly text: string; readonly credit: string }
+  | {
+      readonly kind: "recorded";
+      readonly text: string;
+      readonly credit: string;
+      /** The recorded medium's words, when they parse; shown per ancestor, labelled as recorded. */
+      readonly notes?: readonly MediumNote[];
+    }
   /** AC-005.3: recorded ancestors only answer the questions they left for us. */
-  | { readonly kind: "not-invited" }
+  | {
+      readonly kind: "not-invited";
+      /** Replaces the default wording (AC-006.3: Gemma 4 is waiting to be invited). */
+      readonly message?: string;
+    }
   /** AC-010: the recordings have not been made yet (recorded-voices.json is still empty). */
   | { readonly kind: "gathering" };
 
@@ -72,6 +82,19 @@ export interface StepContext {
   readonly signal: AbortSignal;
   emitToken(token: Token): void;
   reportProgress(loaded: number, total: number): void;
+  /** A short line under the step while it works, such as "Writing…" (replaced by the answer). */
+  reportStatus?(message: string): void;
+  /**
+   * AC-006.2: asks the visitor before a download. Resolves true when they agree, false when they
+   * decline; rejects with an abort error when the ritual is stopped while asking.
+   */
+  askConsent(request: ConsentRequest): Promise<boolean>;
+}
+
+export interface ConsentRequest {
+  readonly modelName: string;
+  /** The whole download, or null when the size has not been verified yet. */
+  readonly bytes: number | null;
 }
 
 export interface RitualStep {
@@ -87,6 +110,10 @@ export interface RitualView {
   ritualStarted(question: Question): void;
   stepStarted(info: StepInfo): void;
   stepProgress(stepId: string, loaded: number, total: number): void;
+  /** Optional: shows a short status line for a step. */
+  stepStatus?(stepId: string, message: string): void;
+  /** Optional: asks about a download; a view without it counts as consent (tests, previews). */
+  askConsent?(stepId: string, request: ConsentRequest, signal: AbortSignal): Promise<boolean>;
   token(stepId: string, token: Token): void;
   stepFinished(info: StepInfo, outcome: StepOutcome): void;
   ritualFinished(reason: RitualEnd): void;

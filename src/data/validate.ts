@@ -10,6 +10,8 @@ export class DataValidationError extends Error {
   }
 }
 
+import type { DtypeSetting } from "../worker/protocol.js";
+
 export interface Licence {
   readonly name: string;
   readonly url: string;
@@ -27,7 +29,9 @@ export interface Ancestor {
   readonly repositoryId: string | null;
   readonly revision: string | null;
   /** ONNX weight precision per runtime; null lets the worker choose. */
-  readonly dtypes: { readonly webgpu?: string; readonly wasm?: string } | null;
+  readonly dtypes: { readonly webgpu?: DtypeSetting; readonly wasm?: DtypeSetting } | null;
+  /** Total download in bytes, shown before the visitor consents; null until verified (T-001). */
+  readonly downloadBytes: number | null;
   readonly settings: { readonly maxTokens: number; readonly temperature: number } | null;
   readonly verify: string | null;
 }
@@ -108,6 +112,33 @@ class Reader {
       this.fail(key, "must be a positive number");
     }
     return v;
+  }
+
+  nullablePositiveInteger(key: string): number | null {
+    const v = this.value[key];
+    if (v === null || v === undefined) return null;
+    if (typeof v !== "number" || !Number.isInteger(v) || v <= 0) {
+      this.fail(key, "must be a positive integer or null");
+    }
+    return v;
+  }
+
+  /** A precision name, or a map from ONNX session name to precision name. */
+  nullableDtypeSetting(key: string): DtypeSetting | null {
+    const v = this.value[key];
+    if (v === null || v === undefined) return null;
+    if (typeof v === "string" && v.trim() !== "") return v;
+    if (isRecord(v) && Object.keys(v).length > 0) {
+      const map: Record<string, string> = {};
+      for (const [session, dtype] of Object.entries(v)) {
+        if (typeof dtype !== "string" || dtype.trim() === "") {
+          this.fail(`${key}.${session}`, "must be a non-empty string");
+        }
+        map[session] = dtype;
+      }
+      return map;
+    }
+    return this.fail(key, "must be a precision name or a map of session to precision");
   }
 
   boolean(key: string): boolean {
@@ -192,9 +223,9 @@ function items<T>(
   });
 }
 
-function parseDtypes(reader: Reader): { webgpu?: string; wasm?: string } {
-  const webgpu = reader.nullableString("webgpu");
-  const wasm = reader.nullableString("wasm");
+function parseDtypes(reader: Reader): { webgpu?: DtypeSetting; wasm?: DtypeSetting } {
+  const webgpu = reader.nullableDtypeSetting("webgpu");
+  const wasm = reader.nullableDtypeSetting("wasm");
   return {
     ...(webgpu === null ? {} : { webgpu }),
     ...(wasm === null ? {} : { wasm }),
@@ -222,6 +253,7 @@ export function parseAncestors(input: unknown): Ancestor[] {
         repositoryId: r.nullableString("repositoryId"),
         revision: r.nullableString("revision"),
         dtypes: dtypes === null ? null : parseDtypes(dtypes),
+        downloadBytes: r.nullablePositiveInteger("downloadBytes"),
         settings:
           settings === null
             ? null

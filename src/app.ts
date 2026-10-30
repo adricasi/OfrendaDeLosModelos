@@ -32,7 +32,7 @@ export function createProductionDependencies(
   return {
     worker: debug ? withDebugLogging(port, console) : port,
     recorded: createRecordedSource(data.recordedVoices),
-    includeMedium: false,
+    includeMedium: true,
     webgpu,
   };
 }

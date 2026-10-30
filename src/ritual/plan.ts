@@ -1,6 +1,13 @@
 import type { Ancestor } from "../data/validate.js";
-import type { ModelWorkerPort } from "../worker/protocol.js";
-import { RecordedVoiceStep, WorkerVoiceStep, type RecordedVoiceSource } from "./steps.js";
+import type { ModelSource, ModelWorkerPort } from "../worker/protocol.js";
+import { buildAnswerPrompt, buildMediumPrompt } from "../medium/prompt-source.js";
+import {
+  MEDIUM_RETRY_BUDGET_MS,
+  MediumStep,
+  RecordedVoiceStep,
+  WorkerVoiceStep,
+  type RecordedVoiceSource,
+} from "./steps.js";
 import type { RitualStep, StepInfo } from "./types.js";
 
 export const GPT2_ID = "gpt-2";
@@ -23,6 +30,24 @@ export interface RitualDependencies {
 }
 
 const MEDIUM_NAME = "La que cuida el altar";
+
+/** AC-006.3: said in Gemma 4's place when the visitor declines the download for their own question. */
+export const GEMMA4_WAITING_MESSAGE =
+  "Gemma 4 is waiting to be invited: it answers your own question on your device once you allow the download.";
+
+/**
+ * The medium writes up to six entries as JSON, so it gets a larger budget than an answer.
+ * A lower temperature keeps the JSON well formed (unverified until the real-model check).
+ */
+const MEDIUM_SETTINGS = { maxTokens: 1100, temperature: 0.5 } as const;
+
+function sourceOf(ancestor: Ancestor): ModelSource {
+  return {
+    repositoryId: ancestor.repositoryId,
+    revision: ancestor.revision,
+    dtypes: ancestor.dtypes,
+  };
+}
 
 /**
  * The fixed order: ancestors as listed in ancestors.json (GPT-2 live, the recorded
@@ -52,13 +77,25 @@ export function buildRitualPlan(
       modelId: ancestor.id,
       worker: deps.worker,
       settings: ancestor.settings,
-      source: {
-        repositoryId: ancestor.repositoryId,
-        revision: ancestor.revision,
-        dtypes: ancestor.dtypes,
-      },
+      source: sourceOf(ancestor),
       endsRitualOnFailure: ancestor.id === lastLiveId && webgpu,
       ...(webgpu ? {} : { backend: "wasm" as const }),
+      ...(ancestor.id === MEDIUM_MODEL_ID
+        ? {
+            // AC-006.1, AC-006.2, AC-006.3: its own answer, with consent before a download.
+            buildPrompt: (context) =>
+              buildAnswerPrompt({
+                question: context.question.text,
+                language: context.question.lang,
+              }),
+            consent: {
+              modelName: ancestor.name,
+              bytes: ancestor.downloadBytes,
+              declined: new RecordedVoiceStep({ ...info, mode: "recorded" }, deps.recorded),
+              waitingMessage: GEMMA4_WAITING_MESSAGE,
+            },
+          }
+        : {}),
     });
   });
   if (!webgpu) {
@@ -78,20 +115,25 @@ export function buildRitualPlan(
       ),
     );
   } else if (deps.includeMedium) {
+    const gemma = ancestors.find((a) => a.id === MEDIUM_MODEL_ID);
+    const recordedMedium = {
+      id: MEDIUM_STEP_ID,
+      name: MEDIUM_NAME,
+      nameLang: "es",
+      ancestorId: null,
+    } as const;
     steps.push(
-      new WorkerVoiceStep(
-        {
-          id: MEDIUM_STEP_ID,
-          name: MEDIUM_NAME,
-          nameLang: "es",
-          ancestorId: null,
-          mode: "medium",
-        },
+      new MediumStep(
+        { ...recordedMedium, mode: "medium" },
         {
           modelId: MEDIUM_MODEL_ID,
           worker: deps.worker,
-          settings: null,
-          endsRitualOnFailure: false,
+          settings: MEDIUM_SETTINGS,
+          ...(gemma === undefined ? {} : { source: sourceOf(gemma) }),
+          buildPrompt: buildMediumPrompt,
+          // Gemma 4 declined: the recorded medium's words, labelled (AC-007.5).
+          fallback: new RecordedVoiceStep({ ...recordedMedium, mode: "recorded" }, deps.recorded),
+          retryBudgetMs: MEDIUM_RETRY_BUDGET_MS,
         },
       ),
     );

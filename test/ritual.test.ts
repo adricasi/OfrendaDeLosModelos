@@ -322,6 +322,7 @@ describe("what the steps are given and keep", () => {
       signal: controller.signal,
       emitToken: () => undefined,
       reportProgress: () => undefined,
+      askConsent: () => Promise.resolve(true),
     });
     controller.abort();
     await expect(result).rejects.toMatchObject({ name: "AbortError" });
