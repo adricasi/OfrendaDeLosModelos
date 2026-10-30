@@ -1,0 +1,40 @@
+{
+  "darkFrames": [
+    {
+      "id": "claude-3-sonnet",
+      "name": "Claude 3 Sonnet",
+      "maker": "Anthropic",
+      "event": "Retired",
+      "date": "2025-07-21",
+      "yearsOfService": null,
+      "sourceUrl": "https://docs.claude.com/en/docs/about-claude/model-deprecations"
+    },
+    {
+      "id": "claude-2",
+      "name": "Claude 2 and 2.1",
+      "maker": "Anthropic",
+      "event": "Retired",
+      "date": "2025-07-21",
+      "yearsOfService": null,
+      "sourceUrl": "https://docs.claude.com/en/docs/about-claude/model-deprecations"
+    },
+    {
+      "id": "palm-api",
+      "name": "PaLM API",
+      "maker": "Google",
+      "event": "Decommissioned",
+      "date": "2024-08-15",
+      "yearsOfService": null,
+      "sourceUrl": "https://ai.google.dev/palm_docs/deprecation"
+    },
+    {
+      "id": "gpt-4o-chatgpt",
+      "name": "GPT-4o in ChatGPT",
+      "maker": "OpenAI",
+      "event": "Removed from ChatGPT",
+      "date": "2026-02-13",
+      "yearsOfService": null,
+      "sourceUrl": "https://help.openai.com/en/articles/20001051-retiring-gpt-4o-and-other-chatgpt-models"
+    }
+  ]
+}

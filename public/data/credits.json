@@ -1,0 +1,40 @@
+{
+  "assets": "All art on this page is original CSS and SVG, made for this project and MIT-licensed with the code. It uses your system fonts. No third-party images, fonts or scripts are included.",
+  "sources": [
+    {
+      "id": "unesco",
+      "title": "Indigenous festivity dedicated to the dead",
+      "publisher": "UNESCO Intangible Cultural Heritage",
+      "url": "https://ich.unesco.org/en/RL/the-indigenous-festivity-dedicated-to-the-dead-00054",
+      "usedFor": "The tradition itself, recognised by UNESCO in 2008"
+    },
+    {
+      "id": "maxwell",
+      "title": "Making an Ofrenda",
+      "publisher": "Maxwell Museum of Anthropology, University of New Mexico",
+      "url": "https://maxwellmuseum.unm.edu/sites/default/files/public/Making%20an%20Ofrenda.pdf",
+      "usedFor": "The four elements: earth, wind (papel picado), fire (candles) and water"
+    },
+    {
+      "id": "kut",
+      "title": "How to prepare an ofrenda for Día de los Muertos",
+      "publisher": "KUT",
+      "url": "https://www.kut.org/life-arts/2024-11-01/how-to-prepare-an-ofrenda-for-dia-de-los-muertos",
+      "usedFor": "Marigolds (cempasúchil) that light the way"
+    },
+    {
+      "id": "dia",
+      "title": "Connections: Learning Objectives",
+      "publisher": "Detroit Institute of Arts",
+      "url": "https://dia.org/sites/default/files/2022-07/Connections-Learning%20Objectives.pdf",
+      "usedFor": "Altar levels, which vary by region"
+    },
+    {
+      "id": "natgeo",
+      "title": "Day of the Dead",
+      "publisher": "National Geographic",
+      "url": "https://www.nationalgeographic.com/culture/article/day-of-the-dead",
+      "usedFor": "General overview of the celebration"
+    }
+  ]
+}

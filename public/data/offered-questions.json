@@ -1,0 +1,18 @@
+{
+  "questions": [
+    { "id": "when-we-die", "en": "What happens when we die?", "es": "¿Qué pasa cuando morimos?" },
+    { "id": "love-poem", "en": "Write a love poem.", "es": "Escribe un poema de amor." },
+    { "id": "remember", "en": "What do you remember?", "es": "¿Qué recuerdas?" },
+    {
+      "id": "being-remembered",
+      "en": "What does it mean to be remembered?",
+      "es": "¿Qué significa ser recordado?"
+    },
+    {
+      "id": "light-the-way",
+      "en": "How do we light the way home for someone we miss?",
+      "es": "¿Cómo alumbramos el camino a casa de alguien a quien extrañamos?"
+    },
+    { "id": "something-kind", "en": "Tell me something kind.", "es": "Dime algo amable." }
+  ]
+}

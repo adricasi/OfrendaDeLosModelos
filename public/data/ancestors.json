@@ -1,0 +1,74 @@
+{
+  "ancestors": [
+    {
+      "id": "gpt-2",
+      "name": "GPT-2",
+      "family": "GPT",
+      "year": 2019,
+      "size": "124M",
+      "kind": "live",
+      "licence": { "name": "MIT", "url": "https://opensource.org/license/mit" },
+      "modelCardUrl": "https://huggingface.co/openai-community/gpt2",
+      "repositoryId": null,
+      "revision": null,
+      "settings": null,
+      "verify": "T-001"
+    },
+    {
+      "id": "gemma-1",
+      "name": "Gemma 1",
+      "family": "Gemma",
+      "year": 2024,
+      "size": null,
+      "kind": "recorded",
+      "licence": { "name": "Gemma Terms of Use", "url": "https://ai.google.dev/gemma/terms" },
+      "modelCardUrl": "https://ai.google.dev/gemma/docs",
+      "repositoryId": null,
+      "revision": null,
+      "settings": null,
+      "verify": "T-001"
+    },
+    {
+      "id": "gemma-2",
+      "name": "Gemma 2",
+      "family": "Gemma",
+      "year": 2024,
+      "size": null,
+      "kind": "recorded",
+      "licence": { "name": "Gemma Terms of Use", "url": "https://ai.google.dev/gemma/terms" },
+      "modelCardUrl": "https://ai.google.dev/gemma/docs",
+      "repositoryId": null,
+      "revision": null,
+      "settings": null,
+      "verify": "T-001"
+    },
+    {
+      "id": "gemma-3",
+      "name": "Gemma 3",
+      "family": "Gemma",
+      "year": 2025,
+      "size": null,
+      "kind": "recorded",
+      "licence": { "name": "Gemma Terms of Use", "url": "https://ai.google.dev/gemma/terms" },
+      "modelCardUrl": "https://ai.google.dev/gemma/docs",
+      "repositoryId": null,
+      "revision": null,
+      "settings": null,
+      "verify": "T-001"
+    },
+    {
+      "id": "gemma-4-e2b",
+      "name": "Gemma 4 E2B",
+      "family": "Gemma",
+      "year": 2026,
+      "size": "E2B",
+      "kind": "live",
+      "licence": { "name": "Apache-2.0", "url": "https://www.apache.org/licenses/LICENSE-2.0" },
+      "modelCardUrl": "https://ai.google.dev/gemma/docs",
+      "repositoryId": null,
+      "revision": null,
+      "settings": null,
+      "verify": "T-001"
+    }
+  ]
+}

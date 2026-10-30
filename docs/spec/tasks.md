@@ -29,7 +29,7 @@ At most 2 tasks in parallel. Marked ⚡ where a task can run beside the previous
     answers; licences of the ONNX conversion repos checked; timings and sizes recorded in progress.md; pinned ids/revisions and hosts written
     into design.md (the "VERIFY in T-001" items closed); go/fallback decision recorded
     (ADR-0003 consequences).
-- [ ] T-002: ⚡ Walking skeleton — the altar online
+- [~] T-002: ⚡ Walking skeleton — the altar online
   - Requirements: REQ-001, REQ-009 (skeleton); NFR-001, NFR-003, NFR-006
   - Depends on: —
   - Scope: Vite + TypeScript page with the static altar (levels, cempasúchil, papel picado,
@@ -41,6 +41,9 @@ At most 2 tasks in parallel. Marked ⚡ where a task can run beside the previous
     GitHub Pages needs the repository public on a free plan (Q-5).
   - Done when: AC-001.1–AC-001.3 tests pass; data validation unit tests pass; CI green; the
     page is live on GitHub Pages.
+  - Status note (2026-10-30): code, tests and the Pages workflow are on branch
+    `feat/t-002-walking-skeleton`; the remaining Done-when item (live on Pages) needs the merge
+    and the founder setting Pages Source to "GitHub Actions" (repository public, Q-5).
 
 ## Milestone 2: The ritual (Thu night – Fri Oct 31 morning)
 - [ ] T-003: Offering and ritual sequencer with a fake model worker
