@@ -1,3 +1,4 @@
+import type { Alternative } from "../worker/protocol.js";
 import type {
   MediumNote,
   Question,
@@ -46,6 +47,24 @@ function make<K extends keyof HTMLElementTagNameMap>(
   return element;
 }
 
+/** How a ghost word's probability reads on hover and focus: "20%", "5.0%", "<0.1%". */
+export function formatProbability(p: number): string {
+  if (p < 0.001) return "<0.1%";
+  const percent = p * 100;
+  return `${percent.toFixed(percent < 10 ? 1 : 0)}%`;
+}
+
+/** How a token shows inside a ghost list: whitespace-only tokens get a visible mark. */
+function visibleToken(text: string): string {
+  const trimmed = text.trim();
+  if (trimmed !== "") return trimmed;
+  return text.includes("\n") ? "↵" : "␣";
+}
+
+function formatBytes(bytes: number): string {
+  return `${(bytes / 1_000_000).toFixed(1)} MB`;
+}
+
 function renderNote(note: MediumNote, ancestorName: string | undefined): HTMLElement {
   const block = document.createElement("section");
   block.className = "medium-note";
@@ -64,8 +83,14 @@ function renderNote(note: MediumNote, ancestorName: string | undefined): HTMLEle
 
 interface VoiceElements {
   readonly item: HTMLLIElement;
-  readonly text: Text;
+  readonly textEl: HTMLElement;
+  /** The text node plain tokens are appended to (the tail of `textEl`). */
+  text: Text;
   readonly status: HTMLElement;
+  /** Token units with ghost words, in order; one of them is the roving tab stop. */
+  readonly units: HTMLElement[];
+  /** Screen-reader list of what the model almost said, outside the answer text. */
+  notes: HTMLElement | null;
 }
 
 /**
@@ -97,6 +122,98 @@ export function createRitualView(doc: Document): RitualView {
   };
   const nameOf = (info: StepInfo): string => info.name;
 
+  const appendPlain = (voice: VoiceElements, text: string): void => {
+    if (voice.textEl.lastChild !== voice.text) {
+      voice.text = doc.createTextNode("");
+      voice.textEl.append(voice.text);
+    }
+    voice.text.appendData(text);
+  };
+
+  /**
+   * One token with its ghost words (AC-004.1, AC-004.2). The visible ghosts are decoration
+   * (aria-hidden). The text "almost: X, Y, Z" sits in a hidden block and is the accessible
+   * description of the token (aria-describedby), so a screen reader reads the answer straight
+   * through, and says what the model almost said when focus reaches a word. One visually hidden
+   * line per answer explains this; nothing is repeated 60 times. Probabilities show on hover,
+   * focus and tap, can be dismissed with Escape and stay while the pointer is over them
+   * (WCAG 1.4.13); the units form one tab stop moved with the arrow keys.
+   */
+  const appendGhostToken = (
+    voice: VoiceElements,
+    stepId: string,
+    text: string,
+    alternatives: readonly Alternative[],
+  ): void => {
+    const body = text.trim();
+    const start = text.indexOf(body === "" ? text : body);
+    const lead = body === "" ? text : text.slice(0, start);
+    const trail = body === "" ? "" : text.slice(start + body.length);
+    if (lead !== "") appendPlain(voice, lead);
+
+    const noteId = `${stepId}-almost-${String(voice.units.length + 1)}`;
+    const unit = make(doc, "span", "token");
+    unit.tabIndex = voice.units.length === 0 ? 0 : -1;
+    unit.setAttribute("aria-describedby", noteId);
+    const shown = body === "" ? visibleToken(text) : body;
+    const word = make(doc, "span", "token-text", shown);
+    if (body === "") word.setAttribute("aria-hidden", "true");
+    const ghosts = make(doc, "span", "ghosts");
+    ghosts.setAttribute("aria-hidden", "true");
+    for (const alternative of alternatives) {
+      const ghost = make(doc, "span", "ghost");
+      ghost.append(
+        make(doc, "span", "ghost-word", visibleToken(alternative.text)),
+        make(doc, "span", "ghost-p", formatProbability(alternative.p)),
+      );
+      ghosts.append(ghost);
+    }
+    unit.append(word, ghosts);
+    voice.textEl.append(unit);
+    voice.units.push(unit);
+    voice.text = doc.createTextNode("");
+    voice.textEl.append(voice.text);
+    if (trail !== "") voice.text.appendData(trail);
+
+    if (voice.notes === null) {
+      const summary = make(
+        doc,
+        "p",
+        "ghost-summary visually-hidden",
+        "Each word has ghost words: use the arrow keys on the answer to hear what the model almost said at that word.",
+      );
+      voice.textEl.before(summary);
+      voice.notes = make(doc, "div", "ghost-notes");
+      voice.notes.hidden = true;
+      voice.item.append(voice.notes);
+    }
+    const note = doc.createElement("p");
+    note.id = noteId;
+    note.textContent = `${shown}: almost: ${alternatives.map((a) => visibleToken(a.text)).join(", ")}`;
+    voice.notes.append(note);
+  };
+
+  const moveFocus = (voice: VoiceElements, from: HTMLElement, key: string): HTMLElement | null => {
+    const index = voice.units.indexOf(from);
+    if (index === -1) return null;
+    const last = voice.units.length - 1;
+    const target =
+      key === "ArrowRight" || key === "ArrowDown"
+        ? Math.min(index + 1, last)
+        : key === "ArrowLeft" || key === "ArrowUp"
+          ? Math.max(index - 1, 0)
+          : key === "Home"
+            ? 0
+            : key === "End"
+              ? last
+              : -1;
+    return voice.units[target] ?? null;
+  };
+
+  const setRoving = (voice: VoiceElements, active: HTMLElement): void => {
+    for (const unit of voice.units) unit.tabIndex = unit === active ? 0 : -1;
+  };
+
   return {
     ritualStarted(question: Question): void {
       voices.clear();
@@ -125,23 +242,72 @@ export function createRitualView(doc: Document): RitualView {
       const text = make(doc, "p", "voice-text");
       text.append(textNode);
       const status = make(doc, "p", "voice-status");
-      item.append(name, label, text, status);
+      item.append(name, label);
+      if (info.caveat !== undefined) item.append(make(doc, "p", "voice-caveat", info.caveat));
+      item.append(text, status);
       list.append(item);
-      voices.set(info.id, { item, text: textNode, status });
+      const voice: VoiceElements = {
+        item,
+        textEl: text,
+        text: textNode,
+        status,
+        units: [],
+        notes: null,
+      };
+      voices.set(info.id, voice);
+      text.addEventListener("keydown", (event) => {
+        const from =
+          event.target instanceof HTMLElement ? event.target.closest<HTMLElement>(".token") : null;
+        if (from === null) return;
+        if (event.key === "Escape") {
+          // WCAG 1.4.13: the probabilities can be dismissed without moving focus or pointer.
+          from.dataset["dismissed"] = "";
+          return;
+        }
+        const next = moveFocus(voice, from, event.key);
+        if (next === null) return;
+        event.preventDefault();
+        setRoving(voice, next);
+        next.focus();
+      });
+      const forget = (event: Event): void => {
+        const unit =
+          event.target instanceof HTMLElement ? event.target.closest<HTMLElement>(".token") : null;
+        if (unit !== null) delete unit.dataset["dismissed"];
+      };
+      text.addEventListener("focusout", forget);
+      text.addEventListener("pointerout", forget);
+      // A tap focuses the word (not every mobile browser focuses a span on its own).
+      text.addEventListener("click", (event) => {
+        const unit =
+          event.target instanceof HTMLElement ? event.target.closest<HTMLElement>(".token") : null;
+        unit?.focus();
+      });
+      text.addEventListener("focusin", (event) => {
+        const unit =
+          event.target instanceof HTMLElement ? event.target.closest<HTMLElement>(".token") : null;
+        if (unit !== null) setRoving(voice, unit);
+      });
       place(info)?.classList.add("speaking");
     },
 
     stepProgress(stepId: string, loaded: number, total: number): void {
       const voice = voices.get(stepId);
       if (voice === undefined || total <= 0) return;
-      voice.status.textContent = `Preparing… ${String(Math.round((loaded / total) * 100))}%`;
+      const percent = String(Math.round((loaded / total) * 100));
+      // The size is the real download total, so the visitor sees what is being fetched (NFR-005).
+      voice.status.textContent = `Preparing… ${percent}% (${formatBytes(loaded)} of ${formatBytes(total)})`;
     },
 
     token(stepId: string, token: Token): void {
       const voice = voices.get(stepId);
       if (voice === undefined) return;
       voice.status.textContent = "";
-      voice.text.appendData(token.text);
+      if (token.alternatives === undefined || token.alternatives.length === 0) {
+        appendPlain(voice, token.text);
+      } else {
+        appendGhostToken(voice, stepId, token.text, token.alternatives);
+      }
     },
 
     stepFinished(info: StepInfo, outcome: StepOutcome): void {
@@ -153,7 +319,8 @@ export function createRitualView(doc: Document): RitualView {
       const name = nameOf(info);
       switch (outcome.kind) {
         case "spoken": {
-          voice.text.data = outcome.text;
+          // Ghost words stay as they were streamed; plain answers are set to the final text.
+          if (voice.units.length === 0) voice.textEl.textContent = outcome.text;
           // The medium answers in the question's language (AC-007.2), so its announcement is
           // tagged with it; the other ancestors' language is not known.
           const lang = info.mode === "medium" ? questionLang : null;
@@ -162,7 +329,7 @@ export function createRitualView(doc: Document): RitualView {
             break;
           }
           // One block per ancestor, inside the medium's own step (reading order stays linear).
-          voice.text.data = "";
+          voice.textEl.textContent = "";
           const notes = outcome.notes;
           voice.item.append(...notes.map((note) => renderNote(note, names.get(note.ancestorId))));
           announce(
@@ -177,7 +344,7 @@ export function createRitualView(doc: Document): RitualView {
           break;
         }
         case "recorded":
-          voice.text.data = outcome.text;
+          voice.textEl.textContent = outcome.text;
           voice.status.textContent = outcome.credit;
           announce(`${name}, recorded: ${outcome.text}`);
           break;

@@ -3,6 +3,8 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
+import { WORKER_POLICY_NAME } from "../src/worker/trusted-worker.js";
+
 const root = new URL("../", import.meta.url).pathname;
 
 function read(path: string): string {
@@ -34,13 +36,15 @@ describe("Content Security Policy (NFR-001)", () => {
     const policy = csp();
     expect(policy.get("default-src")).toBe("'self'");
     expect(policy.get("script-src")).toBe("'self' 'wasm-unsafe-eval'");
-    expect(policy.get("worker-src")).toBe("'self' blob:");
-    expect(policy.get("connect-src")).toBe("'self'");
+    expect(policy.get("worker-src")).toBe("'self'");
+    expect(policy.get("connect-src")).toBe("'self' https://huggingface.co");
     expect(policy.get("img-src")).toBe("'self' data: blob:");
     expect(policy.get("style-src")).toBe("'self'");
     expect(policy.get("object-src")).toBe("'none'");
     expect(policy.get("base-uri")).toBe("'self'");
     expect(policy.get("require-trusted-types-for")).toBe("'script'");
+    // Only the worker policy of src/worker/trusted-worker.ts may exist.
+    expect(policy.get("trusted-types")).toBe(WORKER_POLICY_NAME);
   });
 
   it("is not weakened by unsafe-inline or unsafe-eval", () => {

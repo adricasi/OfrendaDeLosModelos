@@ -16,6 +16,19 @@ export interface Alternative {
 }
 
 /**
+ * Where a model comes from, copied from ancestors.json. The worker loads a model only from
+ * this repository at this exact revision, and refuses when either is missing (AC-003.3).
+ */
+export interface ModelSource {
+  readonly repositoryId: string | null;
+  readonly revision: string | null;
+  /** ONNX weight precision per runtime (for example "fp16" or "q8"); null uses the worker's default. */
+  readonly dtypes: { readonly webgpu?: string; readonly wasm?: string } | null;
+}
+
+export type ModelDevice = "webgpu" | "wasm";
+
+/**
  * `load` of a model that is already loaded still answers with `ready` (progress messages are
  * optional in that case), so callers can always wait for `ready` after sending `load`.
  */
@@ -25,6 +38,7 @@ export type UiToWorkerMessage =
   | {
       readonly type: "load";
       readonly modelId: string;
+      readonly source?: ModelSource;
       /** Without WebGPU the UI asks for "wasm" (REQ-010); absent means "webgpu". */
       readonly backend?: InferenceBackend;
     }
@@ -42,7 +56,12 @@ export type UiToWorkerMessage =
    * initialising). No reply is expected; after it the model may be unloaded, and a later `load`
    * starts again. Ignored when the model is already loaded or not loading.
    */
-  | { readonly type: "cancel-load"; readonly modelId: string };
+  | { readonly type: "cancel-load"; readonly modelId: string }
+  /**
+   * Frees a model's memory (stops its answers, then disposes it). No reply is expected; a later
+   * `load` starts afresh. For Gemma 4 to take GPT-2's place when memory is tight (T-006).
+   */
+  | { readonly type: "unload"; readonly modelId: string };
 
 export type WorkerToUiMessage =
   | {
@@ -51,7 +70,13 @@ export type WorkerToUiMessage =
       readonly loaded: number;
       readonly total: number;
     }
-  | { readonly type: "ready"; readonly modelId: string }
+  | {
+      readonly type: "ready";
+      readonly modelId: string;
+      /** What the model runs on; reported for `?debug` and the manual checks. */
+      readonly device?: ModelDevice;
+      readonly dtype?: string;
+    }
   | {
       readonly type: "token";
       readonly requestId: string;

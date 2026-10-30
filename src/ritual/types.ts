@@ -22,6 +22,8 @@ export interface StepInfo {
   /** The altar place this step lights, if it has one. */
   readonly ancestorId: string | null;
   readonly mode: StepMode;
+  /** A short caution shown with the answer, such as "Unfiltered 2019 model" (AC-003.4). */
+  readonly caveat?: string;
 }
 
 export interface RecordedAnswer {

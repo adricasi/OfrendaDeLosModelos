@@ -646,3 +646,80 @@ textarea:focus-visible {
 .voice[data-state="gathering"] {
   border-left-color: var(--text-muted);
 }
+
+/* The caution that goes with GPT-2's answer (AC-003.4). */
+.voice-caveat {
+  display: inline-block;
+  margin: var(--space-1) 0 0;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--marigold-deep);
+  border-radius: var(--radius);
+  color: var(--marigold-light);
+  font-size: 0.85rem;
+}
+
+/*
+ * Ghost words: what the model almost said, fainter, under each token (AC-004.1).
+ * Contrast (WCAG AA 4.5:1, checked by test/ghost-contrast.test.ts): resting ghosts are
+ * --text-muted at 0.8 opacity on --night-soft (6.5:1), full strength on hover and focus
+ * (9.5:1); the probability is --text on --night (15.8:1).
+ */
+.token {
+  display: inline-block;
+  position: relative;
+  vertical-align: top;
+  border-radius: 0.25rem;
+}
+
+.token:focus {
+  outline: 2px solid var(--marigold-light);
+  outline-offset: 1px;
+}
+
+.token-text {
+  display: block;
+}
+
+.ghosts {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  line-height: 1.2;
+  opacity: 0.8;
+  user-select: none;
+}
+
+.ghost {
+  display: block;
+  white-space: nowrap;
+}
+
+/* The probability appears on hover and on keyboard focus, never shifting the layout. */
+.ghost-p {
+  position: absolute;
+  left: 100%;
+  /* No gap between the word and the probability: the pointer can travel onto it (WCAG 1.4.13). */
+  padding: 0 var(--space-1);
+  background: var(--night);
+  border: 1px solid var(--text-muted);
+  border-radius: 0.25rem;
+  color: var(--text);
+  font-size: 0.75rem;
+  visibility: hidden;
+  z-index: 1;
+}
+
+.token:hover .ghosts,
+.token:focus .ghosts {
+  opacity: 1;
+}
+
+.token:hover .ghost-p,
+.token:focus .ghost-p {
+  visibility: visible;
+}
+
+/* Escape dismisses the probabilities (WCAG 1.4.13). */
+.token[data-dismissed] .ghost-p {
+  visibility: hidden;
+}

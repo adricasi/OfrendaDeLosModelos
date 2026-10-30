@@ -100,9 +100,25 @@ test("a full ritual for an offered question sends nothing anywhere (AC-002.1, NF
     "Gemma 4 E2B",
     "La que cuida el altar",
   ]);
-  await expect(page.locator(".voice").nth(0).locator(".voice-text")).toContainText(
-    "[gpt-2]Fake voice",
-  );
+  // GPT-2's answer is made of tokens with ghost words under them (REQ-004).
+  const gpt2 = page.locator(".voice").nth(0);
+  await expect(gpt2.locator(".token-text").first()).toHaveText("[gpt-2]");
+  await expect(gpt2.locator(".voice-caveat")).toHaveText("Unfiltered 2019 model");
+  await expect(gpt2.locator(".token").first().locator(".ghost-word")).toHaveText([
+    "maybe0",
+    "perhaps0",
+    "almost0",
+  ]);
+  // The probability is hidden until hover or keyboard focus.
+  const firstProbability = gpt2.locator(".token").first().locator(".ghost-p").first();
+  await expect(firstProbability).toHaveCSS("visibility", "hidden");
+  await gpt2.locator(".token").first().focus();
+  await expect(firstProbability).toHaveCSS("visibility", "visible");
+  await expect(firstProbability).toHaveText("20%");
+  // Escape dismisses it without moving focus (WCAG 1.4.13).
+  await page.keyboard.press("Escape");
+  await expect(firstProbability).toHaveCSS("visibility", "hidden");
+  await page.mouse.move(0, 0);
   await expect(page.locator(".voice").nth(1).locator(".voice-text")).toContainText(
     "Fake recording of gemma-1",
   );
@@ -274,4 +290,93 @@ test("negative control: the privacy assertion catches a leaking fetch and beacon
   expect(() => expectNoRequestCarries(urlOnly, OWN_QUESTION)).toThrow();
   expect(() => expectNoRequestCarries(bodyOnly, OWN_QUESTION)).toThrow();
   expect(() => expectNoRequestCarries({ requests: [], websockets: ["ws://x"] }, "q")).toThrow();
+});
+
+test("the real worker build: GPT-2 without a pinned revision cannot come, and nothing leaves (AC-003.3, NFR-002)", async ({
+  page,
+  baseURL,
+}) => {
+  const traffic = trackRequests(page);
+  const logged: string[] = [];
+  page.on("console", (message) => logged.push(message.text()));
+  await page.goto("/OfrendaDeLosModelos/?debug");
+  await expect(page.locator("#places > li")).toHaveCount(5);
+  await expect(page.locator("html")).not.toHaveAttribute("data-model-worker", "fake");
+
+  await page.getByRole("textbox", { name: "Your own question" }).fill(OWN_QUESTION);
+  await page.getByRole("button", { name: "Offer it to the altar" }).click();
+
+  const gpt2 = page.locator('.voice[data-step-id="gpt-2"]');
+  await expect(gpt2).toHaveAttribute("data-state", "unavailable");
+  await expect(gpt2.locator(".voice-status")).toHaveText("This ancestor could not come tonight.");
+  await expect(gpt2.locator(".voice-caveat")).toHaveText("Unfiltered 2019 model");
+  await expect(page.locator("#ritual-end")).not.toHaveText("");
+
+  // Nothing but this site was contacted (worker-initiated requests are not in this list).
+  // ?debug logs why: the worker answered, it did not crash (NFR-007).
+  await expect.poll(() => logged.join("\n")).toContain("no pinned repository and revision");
+  expectOnlySameOrigin(traffic, baseURL);
+  expectNoRequestCarries(traffic, OWN_QUESTION);
+});
+
+/** The model hosts the CSP allows besides this site (design.md; the T-001 report adds CDN hosts). */
+const MODEL_HOSTS = ["huggingface.co"];
+
+/** Every request of the page and of its workers: the context sees both. */
+function trackAllRequests(page: Page): Request[] {
+  const seen = new Set<Request>();
+  page.context().on("request", (request) => seen.add(request));
+  page.on("request", (request) => seen.add(request));
+  return {
+    get length() {
+      return seen.size;
+    },
+    [Symbol.iterator]: () => seen.values(),
+  } as unknown as Request[];
+}
+
+function expectOnlyThisSiteAndModelHosts(
+  requests: Iterable<Request>,
+  baseURL: string | undefined,
+): void {
+  const origin = new URL(baseURL ?? "http://localhost:4173").origin;
+  for (const request of requests) {
+    const url = new URL(request.url());
+    if (url.protocol === "data:" || url.protocol === "blob:") continue;
+    const allowed =
+      url.origin === origin || (url.protocol === "https:" && MODEL_HOSTS.includes(url.hostname));
+    expect(allowed, request.url()).toBe(true);
+  }
+}
+
+test("requests made by the worker are seen too: only this site and the model host (NFR-001, NFR-002)", async ({
+  page,
+  baseURL,
+}) => {
+  await page.route("https://huggingface.co/**", (route) => route.fulfill({ status: 404 }));
+  await page.route("https://evil.example/**", (route) => route.fulfill({ status: 404 }));
+  const requests = trackAllRequests(page);
+  await page.goto("/OfrendaDeLosModelos/");
+  await expect(page.locator("#places > li")).toHaveCount(5);
+  await page.getByRole("textbox", { name: "Your own question" }).fill(OWN_QUESTION);
+  await page.getByRole("button", { name: "Offer it to the altar" }).click();
+  await expect(page.locator("#ritual-end")).not.toHaveText("");
+  await expect.poll(() => page.workers().length).toBeGreaterThan(0);
+  expectOnlyThisSiteAndModelHosts(requests, baseURL);
+
+  // Positive control: a request made from inside the worker shows up in the list.
+  const worker = page.workers()[0];
+  if (worker === undefined) throw new Error("no worker");
+  await worker.evaluate(() => fetch("https://huggingface.co/probe").catch(() => undefined));
+  await expect
+    .poll(() => [...requests].some((r) => r.url() === "https://huggingface.co/probe"))
+    .toBe(true);
+  expectOnlyThisSiteAndModelHosts(requests, baseURL);
+
+  // Negative control: a request to any other host from the worker fails the check.
+  await worker.evaluate(() => fetch("https://evil.example/leak").catch(() => undefined));
+  await expect
+    .poll(() => [...requests].some((r) => r.url() === "https://evil.example/leak"))
+    .toBe(true);
+  expect(() => expectOnlyThisSiteAndModelHosts(requests, baseURL)).toThrow();
 });

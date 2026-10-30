@@ -56,7 +56,7 @@ At most 2 tasks in parallel. Marked ⚡ where a task can run beside the previous
     (NFR-002) and axe reports 0 serious/critical (NFR-009); CI green.
   - Status note (2026-10-30): code, unit tests, e2e and the CI e2e step (Q-6 approved) are on
     branch `feat/t-003-ritual`; "CI green" is confirmed once the PR's checks pass.
-- [ ] T-004: GPT-2 speaks, with ghost words
+- [~] T-004: GPT-2 speaks, with ghost words
   - Requirements: REQ-003, REQ-004
   - Depends on: T-001, T-003
   - Scope: real inference worker for GPT-2 (pinned revision), token streaming, top-3

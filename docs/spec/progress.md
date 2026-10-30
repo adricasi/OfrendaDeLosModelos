@@ -85,3 +85,40 @@ The latest entry is shown to Claude at the start of every session.
   recordings until the founder runs `npm run record-voices`.
 - Next: founder sends `docs/cultural-review.md` and sample medium outputs by Oct 31 12:00; set
   `culturalReviewPending` to false after approval; T-004 handles `backend: "wasm"`.
+
+## 2026-10-30 — T-004: GPT-2 speaks, with ghost words (partial: real-model check pending)
+- Done: real inference worker (`src/worker/`: module worker, message host with `load`,
+  `cancel-load`, `generate`, `cancel`; transformers.js 4.3.1 adapter; ghost-word top-k from the
+  step's logits at the sampling temperature, chosen token excluded; blocked-word list via
+  `bad_words_ids`; 60-token and end-of-text stop; WebAssembly when asked (`backend`) or without
+  a WebGPU adapter, WebAssembly fallback if WebGPU cannot load); ONNX Runtime `.wasm` self-hosted
+  under `ort/` (copied at build time, the jsDelivr fallback in the library rewritten away, build
+  fails if it reappears); CSP `connect-src` has `https://huggingface.co` (TODO: T-001 report
+  confirms CDN hosts); ghost-words UI (faint alternatives under each token, probability on hover
+  and focus, one arrow-key tab stop, "almost: X, Y, Z" list for screen readers outside any live
+  region), "Unfiltered 2019 model" label, download size in the loading line, `?debug` console
+  timings; dev-only `?model-gpt2=<repo>@<40-hex commit>` override (absent from production
+  bundles, tested); Trusted Types policy for the worker URL (found by an e2e run: a plain
+  `new Worker(url)` is blocked by the CSP).
+- Decisions: GPT-2 `repositoryId`/`revision` stay `null` ("verify: T-001"), so the worker refuses
+  to load and the UI says it could not come tonight; revision must be a full commit hash.
+  `ancestors.json` gains `dtypes` (GPT-2: fp16 on WebGPU, q8 on WebAssembly, unverified) and
+  `settings` 60 tokens at temperature 0.7. The library samples at temperature 1; the recorder
+  applies the real temperature itself so shown probabilities are the sampled distribution
+  (top-k 50 of the library's sampler still applies). `cancel-load` cannot abort a download in
+  4.3.1: the result is discarded and the model disposed.
+- Not verified here (no GPU, no huggingface.co): a real model load and generation, the
+  dtype files that exist in the repo, WebGPU vs WebAssembly speed, the CDN hosts for the CSP.
+- Next: founder pins repository and revision (or tries `?model-gpt2=` in `npm run dev` with
+  `?debug`), confirms dtypes, the CDN hosts, and the manual check on the reference laptop.
+- Review fixes (2026-10-30): sampler draws from the full vocabulary (`top_k: 0`) so ghost
+  probabilities are the sampled ones; generations queue behind a cancelled one; `cancel-load`
+  keeps and reuses the in-flight load; new `unload` message frees a model; ghost words are a
+  per-word description (no 60-item hidden list), dismissible with Escape, hoverable, tap-focus,
+  contrast tested; held-back characters capped; first-run WebGPU failure falls back to wasm;
+  CSP `worker-src 'self'` and `trusted-types ofrenda-worker`; design.md and index.html state
+  that the meta CSP does not cover the worker; e2e records worker requests; `.npmrc`
+  `ignore-scripts=true` (build, tests, e2e unaffected; the CI browser install is explicit);
+  build fails on unlisted hosts in the bundle; override gated on DEV and development mode;
+  revisions validated as 40-hex in `parseAncestors`; blocked words stored base64; ADR-0003
+  notes the onnxruntime-web prerelease.

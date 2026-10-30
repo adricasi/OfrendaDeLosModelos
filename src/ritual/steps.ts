@@ -1,6 +1,7 @@
 import type {
   GenerationSettings,
   InferenceBackend,
+  ModelSource,
   ModelWorkerPort,
   WorkerToUiMessage,
 } from "../worker/protocol.js";
@@ -68,6 +69,8 @@ export interface WorkerVoiceOptions {
   readonly modelId: string;
   readonly worker: ModelWorkerPort;
   readonly settings: GenerationSettings | null;
+  /** Where the worker loads the model from; absent for models that are not ready (AC-003.3). */
+  readonly source?: ModelSource;
   readonly endsRitualOnFailure: boolean;
   /** Set to "wasm" when the browser has no WebGPU (REQ-010). */
   readonly backend?: InferenceBackend;
@@ -147,7 +150,12 @@ export class WorkerVoiceStep implements RitualStep {
             }
             break;
           case "error":
-            if (message.requestId === requestId || message.modelId === modelId) {
+            // An error naming neither a request nor a model is a failure of the worker itself.
+            if (
+              message.requestId === requestId ||
+              message.modelId === modelId ||
+              (message.requestId === undefined && message.modelId === undefined)
+            ) {
               fail(message.message);
             }
             break;
@@ -156,11 +164,13 @@ export class WorkerVoiceStep implements RitualStep {
 
       const unsubscribe = worker.subscribe(onMessage);
       signal.addEventListener("abort", onAbort, { once: true });
-      worker.post(
-        this.options.backend === undefined
-          ? { type: "load", modelId }
-          : { type: "load", modelId, backend: this.options.backend },
-      );
+      const { source, backend } = this.options;
+      worker.post({
+        type: "load",
+        modelId,
+        ...(source === undefined ? {} : { source }),
+        ...(backend === undefined ? {} : { backend }),
+      });
     });
   }
 }

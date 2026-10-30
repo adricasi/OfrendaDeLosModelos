@@ -6,12 +6,31 @@ import { NO_WEBGPU_MESSAGE } from "./ritual/gpu.js";
 import { renderAltar, showBrowserNote, showLoadError } from "./ui/altar.js";
 import { wireOffering } from "./ui/offering.js";
 import { createRitualView } from "./ui/ritual-view.js";
-import { createUnavailableWorker } from "./worker/unavailable.js";
+import { withDebugLogging } from "./debug/debug-log.js";
+import inferenceWorkerUrl from "./worker/inference.worker.ts?worker&url";
+import { workerScriptUrl } from "./worker/trusted-worker.js";
+import { lazyPort, portForWorker } from "./worker/worker-port.js";
 
-/** What ships until the real workers (T-004, T-006) and recordings (T-005) are plugged in. */
-export function createProductionDependencies(data: AltarData, webgpu: boolean): RitualDependencies {
+/**
+ * What ships: the real inference worker (GPT-2 now, Gemma 4 with T-006), created on first use.
+ * The medium (T-006) is not plugged in yet. With `debug`, load times, tokens per second and
+ * errors go to the console (NFR-007).
+ */
+export function createProductionDependencies(
+  data: AltarData,
+  webgpu: boolean,
+  debug = false,
+): RitualDependencies {
+  const port = lazyPort(() =>
+    portForWorker(
+      // Trusted Types (CSP) require the script URL to pass through the worker policy.
+      new Worker(workerScriptUrl(new URL(inferenceWorkerUrl, location.href)), {
+        type: "module",
+      }),
+    ),
+  );
   return {
-    worker: createUnavailableWorker(),
+    worker: debug ? withDebugLogging(port, console) : port,
     recorded: createRecordedSource(data.recordedVoices),
     includeMedium: false,
     webgpu,
