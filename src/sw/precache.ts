@@ -13,12 +13,28 @@ export interface PrecacheFile {
   readonly content: string | Uint8Array;
 }
 
+export interface PrecacheEntry {
+  readonly path: string;
+  /** SHA-256 of the content (hex): lets a new worker copy an unchanged file from the old cache. */
+  readonly digest: string;
+  /** True when the file name carries a content hash, so one name always means one content. */
+  readonly hashed: boolean;
+}
+
 export interface PrecacheManifest {
   /** Changes whenever any precached file changes. */
   readonly version: string;
   readonly cacheName: string;
-  /** Sorted, unique paths relative to the base. Always contains `index.html`. */
-  readonly entries: readonly string[];
+  /** Sorted by path, unique. Always contains `index.html`. */
+  readonly entries: readonly PrecacheEntry[];
+}
+
+/**
+ * Vite names bundled files `assets/<name>-<8 character hash>.<ext>`. Everything else (the page,
+ * `data/*.json`, `ort/*`) keeps its name across builds, so a cached copy can be out of date.
+ */
+export function isContentHashed(path: string): boolean {
+  return /^assets\/.+-[A-Za-z0-9_-]{8}\.[A-Za-z0-9]+$/.test(path);
 }
 
 function checkPath(path: string): void {
@@ -35,9 +51,13 @@ export function buildPrecacheManifest(files: Iterable<PrecacheFile>): PrecacheMa
     digests.set(file.path, createHash("sha256").update(file.content).digest("hex"));
   }
   if (!digests.has("index.html")) throw new Error("The precache list has no index.html.");
-  const entries = [...digests.keys()].sort();
+  const entries = [...digests.keys()].sort().map((path) => ({
+    path,
+    digest: digests.get(path) ?? "",
+    hashed: isContentHashed(path),
+  }));
   const overall = createHash("sha256");
-  for (const entry of entries) overall.update(`${entry}\0${digests.get(entry) ?? ""}\n`);
+  for (const entry of entries) overall.update(`${entry.path}\0${entry.digest}\n`);
   const version = overall.digest("hex").slice(0, 16);
   return { version, cacheName: `${CACHE_PREFIX}${version}`, entries };
 }

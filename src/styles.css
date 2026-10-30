@@ -741,3 +741,10 @@ textarea:focus-visible {
 .consent button {
   margin-right: var(--space-2);
 }
+
+/* The offline note is a live region that stays in the page, empty, until it has something to say. */
+.offline-note:empty {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}

@@ -1,22 +1,9 @@
-import { createProductionDependencies, startAltar } from "./app.js";
+import { createProductionDependencies, pageScripts, startAltar } from "./app.js";
 import { loadAltarData } from "./data/load.js";
 import { debugRequested } from "./debug/debug-log.js";
 import { detectWebGpu } from "./ritual/gpu.js";
 import { registerOfflineShell } from "./sw/register.js";
 import { showLoadError, showOfflineNote, wireAboutPanel } from "./ui/altar.js";
-
-function pageLoaded(): Promise<void> {
-  if (document.readyState === "complete") return Promise.resolve();
-  return new Promise((resolve) => {
-    window.addEventListener(
-      "load",
-      () => {
-        resolve();
-      },
-      { once: true },
-    );
-  });
-}
 
 async function main(): Promise<void> {
   let data = await loadAltarData(import.meta.env.BASE_URL);
@@ -40,22 +27,23 @@ async function main(): Promise<void> {
       document.documentElement.dataset["modelWorker"] = "fake";
     }
   }
-  // REQ-011: production builds on secure contexts only; the note waits for a complete ritual.
-  // It starts after the page has loaded, so the 27 MB of precached files do not compete with it.
-  const offlineReady = pageLoaded().then(() =>
-    registerOfflineShell({
+  // REQ-011: the service worker (27 MB of files) is registered only after the first complete
+  // ritual and only where the live models can run (WebGPU), so a visitor who leaves early or
+  // only gets recordings downloads nothing extra. Production builds on secure contexts only.
+  let registration: Promise<boolean> | undefined;
+  startAltar(document, data, deps, () => {
+    if (!deps.webgpu) return;
+    registration ??= registerOfflineShell({
       serviceWorker: "serviceWorker" in navigator ? navigator.serviceWorker : undefined,
       production: import.meta.env.PROD,
       secureContext: window.isSecureContext,
       base: import.meta.env.BASE_URL,
-      origin: location.origin,
+      known: pageScripts(),
       log: (message, error) => {
         console.warn(message, error);
       },
-    }),
-  );
-  startAltar(document, data, deps, () => {
-    void offlineReady.then((ready) => {
+    });
+    void registration.then((ready) => {
       if (ready) showOfflineNote(document);
     });
   });

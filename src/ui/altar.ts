@@ -182,7 +182,6 @@ export const OFFLINE_READY_MESSAGE = "This altar now works offline on this devic
 export function showOfflineNote(doc: Document): void {
   const note = byId(doc, "offline-note");
   note.textContent = OFFLINE_READY_MESSAGE;
-  note.hidden = false;
 }
 
 export function showLoadError(doc: Document, error: unknown): void {

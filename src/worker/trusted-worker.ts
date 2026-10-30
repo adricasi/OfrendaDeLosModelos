@@ -2,9 +2,11 @@
  * The page's CSP requires Trusted Types for scripts (`require-trusted-types-for 'script'`).
  * `new Worker(url)` and `navigator.serviceWorker.register(url)` are such sinks: a plain string is
  * refused. The CSP allows exactly one policy name, so one policy serves both, and it vouches for
- * exactly two things: the URL of the site's own inference worker and the URL of the site's own
- * service worker (`sw.js`). Each URL is added by its own function after a same-origin check; the
- * policy throws for anything else, so it cannot be used to start a script from elsewhere.
+ * exactly two URLs, compared as whole strings (no prefix, suffix or "same origin" rule, because a
+ * GitHub Pages origin is shared with the owner's other sites):
+ * - the inference worker: the one URL the build produced for it;
+ * - the service worker: `<origin><base>sw.js`.
+ * It throws for anything else, so it cannot be used to start a script from elsewhere.
  */
 interface TrustedPolicy {
   createScriptURL(input: string): unknown;
@@ -15,59 +17,70 @@ interface TrustedTypesFactory {
 
 export const WORKER_POLICY_NAME = "ofrenda-worker";
 
-interface PolicyState {
-  readonly policy: TrustedPolicy;
-  readonly allowed: Set<string>;
+/** The two script URLs (absolute, as hrefs) this page may start. */
+export interface KnownScripts {
+  readonly inferenceWorker: string;
+  readonly serviceWorker: string;
 }
 
-// A policy name can be created once per page, so the policy is kept per factory.
-const policies = new WeakMap<TrustedTypesFactory, PolicyState>();
+/**
+ * `builtWorkerUrl` is the inference worker's URL as the build resolved it; `base` is the site's
+ * base path ("/OfrendaDeLosModelos/"). Both must be on `origin`.
+ */
+export function knownScripts(
+  builtWorkerUrl: string,
+  base: string,
+  origin: string = globalThis.location.origin,
+): KnownScripts {
+  const inferenceWorker = new URL(builtWorkerUrl, origin);
+  if (inferenceWorker.origin !== origin)
+    throw new Error("The worker script must come from this site.");
+  return {
+    inferenceWorker: inferenceWorker.href,
+    serviceWorker: new URL(`${base}sw.js`, origin).href,
+  };
+}
 
-function policyFor(factory: TrustedTypesFactory): PolicyState {
+const policies = new WeakMap<TrustedTypesFactory, TrustedPolicy>();
+
+function policyFor(factory: TrustedTypesFactory, known: KnownScripts): TrustedPolicy {
+  // A policy name can be created once per page, so the policy is kept per factory.
   const existing = policies.get(factory);
   if (existing !== undefined) return existing;
-  const allowed = new Set<string>();
   const policy = factory.createPolicy(WORKER_POLICY_NAME, {
     createScriptURL(input: string): string {
-      if (!allowed.has(input)) throw new TypeError("Only this site's own workers may be started.");
+      if (input !== known.inferenceWorker && input !== known.serviceWorker) {
+        throw new TypeError("Only this site's own workers may be started.");
+      }
       return input;
     },
   });
-  const state: PolicyState = { policy, allowed };
-  policies.set(factory, state);
-  return state;
-}
-
-function vouch(url: URL, factory: TrustedTypesFactory | undefined, origin: string): string {
-  if (url.origin !== origin) throw new Error("The worker script must come from this site.");
-  if (factory === undefined) return url.href;
-  const state = policyFor(factory);
-  state.allowed.add(url.href);
-  // The browser's TrustedScriptURL object is accepted wherever a script URL string is.
-  return state.policy.createScriptURL(url.href) as string;
+  policies.set(factory, policy);
+  return policy;
 }
 
 function defaultFactory(): TrustedTypesFactory | undefined {
   return (globalThis as { trustedTypes?: TrustedTypesFactory }).trustedTypes;
 }
 
-/** The value to give `new Worker(...)`: a TrustedScriptURL where the browser has Trusted Types. */
-export function workerScriptUrl(
-  workerUrl: URL,
-  factory: TrustedTypesFactory | undefined = defaultFactory(),
-  origin: string = globalThis.location.origin,
-): string {
-  return vouch(workerUrl, factory, origin);
+function vouch(url: string, known: KnownScripts, factory: TrustedTypesFactory | undefined): string {
+  if (factory === undefined) return url;
+  // The browser's TrustedScriptURL object is accepted wherever a script URL string is.
+  return policyFor(factory, known).createScriptURL(url) as string;
 }
 
-/** The value to give `serviceWorker.register(...)`; only a script named `sw.js` is accepted. */
-export function serviceWorkerScriptUrl(
-  serviceWorkerUrl: URL,
+/** The value to give `new Worker(...)`: a TrustedScriptURL where the browser has Trusted Types. */
+export function workerScriptUrl(
+  known: KnownScripts,
   factory: TrustedTypesFactory | undefined = defaultFactory(),
-  origin: string = globalThis.location.origin,
 ): string {
-  if (!serviceWorkerUrl.pathname.endsWith("/sw.js")) {
-    throw new Error("Only the site's service worker (sw.js) may be registered.");
-  }
-  return vouch(serviceWorkerUrl, factory, origin);
+  return vouch(known.inferenceWorker, known, factory);
+}
+
+/** The value to give `serviceWorker.register(...)`. */
+export function serviceWorkerScriptUrl(
+  known: KnownScripts,
+  factory: TrustedTypesFactory | undefined = defaultFactory(),
+): string {
+  return vouch(known.serviceWorker, known, factory);
 }

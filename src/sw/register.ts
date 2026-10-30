@@ -1,4 +1,4 @@
-import { serviceWorkerScriptUrl } from "../worker/trusted-worker.js";
+import { serviceWorkerScriptUrl, type KnownScripts } from "../worker/trusted-worker.js";
 
 /**
  * Registers the service worker (T-008, REQ-011) and resolves to `true` once it is active, which
@@ -10,18 +10,17 @@ export interface OfflineShellOptions {
   readonly serviceWorker: ServiceWorkerContainer | undefined;
   readonly production: boolean;
   readonly secureContext: boolean;
-  /** The site's base path, e.g. "/OfrendaDeLosModelos/". */
+  /** The site's base path, e.g. "/OfrendaDeLosModelos/": the worker's scope. */
   readonly base: string;
-  readonly origin: string;
+  readonly known: KnownScripts;
   readonly log?: (message: string, error: unknown) => void;
 }
 
 export async function registerOfflineShell(options: OfflineShellOptions): Promise<boolean> {
-  const { serviceWorker, production, secureContext, base, origin } = options;
+  const { serviceWorker, production, secureContext, base, known } = options;
   if (!production || !secureContext || serviceWorker === undefined) return false;
   try {
-    const url = new URL(`${base}sw.js`, origin);
-    await serviceWorker.register(serviceWorkerScriptUrl(url, undefined, origin), { scope: base });
+    await serviceWorker.register(serviceWorkerScriptUrl(known), { scope: base });
     await serviceWorker.ready;
     return true;
   } catch (error: unknown) {
