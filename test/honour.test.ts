@@ -167,6 +167,8 @@ describe("about panel (AC-009.1 to AC-009.4, NFR-010)", () => {
     expect(data.credits.culturalReviewPending).toBe(true);
     expect(note?.hidden).toBe(false);
     expect(note?.textContent).toMatch(/Cultural review pending/);
+    expect(note?.textContent).toMatch(/not yet\s+been reviewed or approved/);
+    expect(note?.textContent).not.toMatch(/has been (reviewed|approved)/);
     renderAltar(document, { ...data, credits: { ...data.credits, culturalReviewPending: false } });
     expect(note?.hidden).toBe(true);
   });

@@ -2,7 +2,7 @@
   "name": "ofrenda-de-los-modelos",
   "version": "0.1.0",
   "private": true,
-  "description": "An altar where open-weight AI models come home for Día de los Muertos; Gemma 4 tends it on your device",
+  "description": "An artistic tribute to the memory of AI models, inspired by the Mexican tradition of Día de Muertos; Gemma 4 tends the altar on your device",
   "type": "module",
   "engines": {
     "node": ">=22"

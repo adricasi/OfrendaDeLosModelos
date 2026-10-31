@@ -140,8 +140,8 @@ describe("the download question (AC-006.2)", () => {
     const view = createRitualView(document);
     view.ritualStarted({ text: "q", offeredId: null, lang: "en" });
     view.stepStarted(gemma);
-    view.stepStatus?.(gemma.id, "Writing for each ancestor…");
-    expect(document.querySelector(".voice-status")?.textContent).toBe("Writing for each ancestor…");
+    view.stepStatus?.(gemma.id, "Writing for each model…");
+    expect(document.querySelector(".voice-status")?.textContent).toBe("Writing for each model…");
   });
 });
 

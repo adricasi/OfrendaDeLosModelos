@@ -16,18 +16,18 @@ import type {
 /** Shown on the card while the question about the download is open (AC-006.2). */
 export const WAITING_FOR_PERMISSION = "Waiting for your permission";
 
-export const UNAVAILABLE_MESSAGE = "This ancestor could not come tonight.";
+export const UNAVAILABLE_MESSAGE = "This model could not come tonight.";
 export const GATHERING_MESSAGE =
-  "The recorded voices are still being gathered. This ancestor will speak here soon.";
+  "The recorded voices are still being gathered. This model will speak here soon.";
 export const MEDIUM_NOT_INVITED_MESSAGE =
-  "La que cuida el altar only speaks for questions the ancestors left for us.";
+  "La que cuida el altar only writes about the offered questions, the ones the models have recorded answers for.";
 export const NOT_INVITED_MESSAGE =
-  "These ancestors only answer the questions they left for us. Their voices rest tonight.";
+  "These models only have recorded answers to the offered questions. Their recorded voices are resting tonight.";
 
 const END_MESSAGES: Readonly<Record<RitualEnd, string>> = {
   completed: "The ritual is complete.",
   stopped: "The ritual was stopped.",
-  "ended-early": "The ritual ended early: the ancestor who tends the altar could not come.",
+  "ended-early": "The ritual ended early: Gemma 4, who tends the altar, could not come.",
 };
 
 const MODE_LABELS = {

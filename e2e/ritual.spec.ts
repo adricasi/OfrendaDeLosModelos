@@ -210,7 +210,7 @@ test("a failing ancestor does not stop the ritual (AC-003.3)", async ({ page }) 
   await page.getByRole("button", { name: "Offer it to the altar" }).click();
   await expect(page.locator("#ritual-end")).toHaveText("The ritual is complete.");
   await expect(page.locator(".voice").first().locator(".voice-status")).toHaveText(
-    "This ancestor could not come tonight.",
+    "This model could not come tonight.",
   );
   await expect(page.locator('.voice[data-state="spoken"]')).toHaveCount(2);
 });
@@ -308,7 +308,7 @@ test("the real worker build: GPT-2 without a pinned revision cannot come, and no
 
   const gpt2 = page.locator('.voice[data-step-id="gpt-2"]');
   await expect(gpt2).toHaveAttribute("data-state", "unavailable");
-  await expect(gpt2.locator(".voice-status")).toHaveText("This ancestor could not come tonight.");
+  await expect(gpt2.locator(".voice-status")).toHaveText("This model could not come tonight.");
   await expect(gpt2.locator(".voice-caveat")).toHaveText("Unfiltered 2019 model");
   await expect(page.locator("#ritual-end")).not.toHaveText("");
 

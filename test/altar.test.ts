@@ -65,14 +65,33 @@ describe("the altar (AC-001.1)", () => {
       expect(frame.querySelector("a")?.getAttribute("href")).toMatch(/^https:\/\//);
       expect(frame.textContent).toContain("never released");
     }
+    const section = document.getElementById("dark-frames-section")?.textContent ?? "";
+    expect(section).toMatch(/Models that cannot return/);
+    expect(section).toMatch(/inaccessible digital history/);
+    expect(section).toMatch(/software, not for people/);
   });
 });
 
 describe("the statement and the about panel (AC-001.2, REQ-009)", () => {
   it("states what the altar is in one line and links the about panel", () => {
     const statement = document.getElementById("statement")?.textContent ?? "";
-    expect(statement).toMatch(/open-weight AI models come home/);
+    expect(statement).toMatch(/artistic tribute to the memory of AI models/);
+    expect(statement).toMatch(/Mexican tradition of Día de\s+Muertos/);
+    const note = document.getElementById("interpretation-note")?.textContent ?? "";
+    expect(note).toMatch(/artistic interpretation, not a Mexican ritual/);
+    expect(note).toMatch(/does not speak for the communities/);
     expect(document.getElementById("about-link")?.getAttribute("href")).toBe("#about");
+  });
+
+  it("frames the altar as an artistic interpretation and one possible arrangement (NFR-010)", () => {
+    const framing = document.getElementById("about-framing")?.textContent ?? "";
+    expect(framing).toMatch(/not a Mexican religious, spiritual or family ritual/);
+    expect(framing).toMatch(/does not speak\s+for the communities/);
+    expect(framing).toMatch(/software, not people/);
+    const arrangement = document.getElementById("about-arrangement")?.textContent ?? "";
+    expect(arrangement).toMatch(/one possible arrangement/);
+    expect(arrangement).toMatch(/vary by region, community and family/);
+    expect(arrangement).toMatch(/not\s+the standard/);
   });
 
   it("opens and closes the about panel from the link", () => {

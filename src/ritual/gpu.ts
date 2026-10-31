@@ -18,4 +18,4 @@ export async function detectWebGpu(nav: object): Promise<boolean> {
 }
 
 export const NO_WEBGPU_MESSAGE =
-  "This browser has no WebGPU, so most ancestors speak from recordings. For the live ritual, use Chrome or Edge on a desktop computer.";
+  "This browser has no WebGPU, so most models speak from recordings. For the live ritual, use Chrome or Edge on a desktop computer.";
