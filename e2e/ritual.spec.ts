@@ -149,7 +149,7 @@ test("a full ritual for an own question: recorded ancestors rest (AC-002.2, AC-0
   const resting = page.locator('.voice[data-state="not-invited"]');
   await expect(resting).toHaveCount(3);
   await expect(resting.first().locator(".voice-status")).toContainText(
-    "only answer the questions they left for us",
+    "only have recorded answers to the offered questions",
   );
   await expect(page.locator('.voice[data-state="spoken"]')).toHaveCount(3);
 
