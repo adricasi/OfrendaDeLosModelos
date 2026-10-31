@@ -1,4 +1,4 @@
-// Demo video for the DEV post: one continuous take of the site, captions timed to the narration.
+// Demo video for the DEV post: one continuous take of the site, scenes timed to the narration.
 // Draft (stand-in models): npm run build:e2e && npx vite preview --outDir dist-e2e, then
 //   node tools/demo-video.mjs http://localhost:4173/OfrendaDeLosModelos/ <out-dir> --draft
 // Final (real models, Chrome with WebGPU): npm run build && npx vite preview, then
@@ -83,16 +83,13 @@ cdp.on("Page.screencastFrame", async (f) => {
   await cdp.send("Page.screencastFrameAck", { sessionId: f.sessionId }).catch(() => {});
 });
 
-// Video chrome (captions, cards, draft badge) lives in one fixed layer above the page.
+// Video chrome (title and end cards, badges) lives in one fixed layer above the page.
 async function installLayer() {
   await p.evaluate(
     ([draft, offline]) => {
       const css = document.createElement("style");
       css.textContent = `
       #demo-layer{position:fixed;inset:0;pointer-events:none;z-index:2147483647;font-family:var(--font)}
-      #demo-caption{position:absolute;left:50%;bottom:34px;transform:translateX(-50%);max-width:980px;
-        padding:12px 22px;border-radius:10px;background:rgb(20 10 18 / .82);color:#fff4e0;
-        font-size:25px;line-height:1.35;text-align:center;opacity:0;transition:opacity .45s}
       #demo-card{position:absolute;inset:0;display:grid;place-content:center;gap:18px;text-align:center;
         background:radial-gradient(circle at 50% 45%,#2b1630,#0f0810 70%);color:#fff4e0;opacity:0;transition:opacity .9s}
       #demo-card h1+h1{margin-top:-14px}
@@ -106,7 +103,7 @@ async function installLayer() {
       document.head.append(css);
       const layer = document.createElement("div");
       layer.id = "demo-layer";
-      for (const id of ["demo-card", "demo-note", "demo-caption"]) {
+      for (const id of ["demo-card", "demo-note"]) {
         const div = document.createElement("div");
         div.id = id;
         layer.append(div);
@@ -128,18 +125,6 @@ async function installLayer() {
     [DRAFT, LIVE],
   );
 }
-const caption = (text) =>
-  p.evaluate((t) => {
-    const el = document.getElementById("demo-caption");
-    el.style.opacity = "0";
-    setTimeout(
-      () => {
-        el.textContent = t;
-        el.style.opacity = t ? "1" : "0";
-      },
-      t ? 450 : 0,
-    );
-  }, text);
 // Card content is a list of [tag, text] lines; text only, never HTML.
 const card = (lines, show) =>
   p.evaluate(
@@ -186,10 +171,9 @@ const glide = (target, ms) =>
   );
 const wait = (ms) => p.waitForTimeout(ms);
 const now = () => Date.now() / 1000;
-// A paragraph starts with its caption; with narration, the scene holds until it is spoken.
+// Marks where paragraph i starts; with narration, the scene holds until it is spoken.
 const say = async (i) => {
   paragraphStart[i] = now();
-  await caption(NARRATION[i]);
 };
 const hold = async (i) => {
   if (!narrationSeconds) return;
@@ -313,7 +297,6 @@ if (DRAFT) await note("[Final cut: the laptop with Wi-Fi off, the ritual still r
 await wait(narrationSeconds ? END_CARD_AFTER * 1000 : 3400);
 
 // 8. End card.
-await caption("");
 await note(null, false);
 await card(
   [
@@ -368,7 +351,7 @@ execFileSync("ffmpeg", [
   silent,
 ]);
 if (NARRATION_DIR) {
-  // Each paragraph starts where its caption appeared in the take.
+  // Each paragraph starts where its scene began in the take.
   const delays = paragraphStart.map((t) => Math.max(0, Math.round((t - frames[0].t) * 1000)));
   const mix =
     delays.map((ms, i) => `[${i + 1}:a]adelay=${ms}:all=1[a${i}]`).join(";") +
