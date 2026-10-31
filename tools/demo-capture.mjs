@@ -10,7 +10,7 @@
 // A soft cursor drawn in the page's overlay layer glides to what is about to be clicked or
 // focused. Set CHROMIUM_PATH to override /opt/pw-browsers/chromium. Needs ffmpeg on PATH.
 // Not part of the site or CI.
-/* global document, performance, requestAnimationFrame, scrollTo, scrollY, innerHeight */
+/* global document, HTMLElement, performance, requestAnimationFrame, scrollTo, scrollY, innerHeight -- browser code inside page.evaluate */
 import { chromium } from "@playwright/test";
 import { Buffer } from "node:buffer";
 import process from "node:process";
@@ -46,6 +46,14 @@ const ctx = await chromium.launchPersistentContext(`${OUT}/browser-profile`, {
   // Frames come out at 1920x1080 while the page keeps its 1280x720 layout.
   args: [`--force-device-scale-factor=${SCALE}`],
   headless: true,
+});
+// The page moves focus when a ritual ends (back to the offer button), which makes the browser
+// scroll. The camera stays where the take puts it, so focusing never scrolls in this recording.
+await ctx.addInitScript(() => {
+  const focus = HTMLElement.prototype.focus;
+  HTMLElement.prototype.focus = function (options) {
+    return focus.call(this, { ...options, preventScroll: true });
+  };
 });
 const p = ctx.pages()[0] ?? (await ctx.newPage());
 
@@ -227,7 +235,7 @@ await wait(1000);
 // 2. The dark frames.
 await p.evaluate(() => (document.getElementById("dark-frames-section").hidden = false));
 mark("dark_glide_start");
-await glide("#dark-frames-section", 2800, -10);
+await glide("#dark-frames-section", 2800, -50);
 mark("dark_glide_end");
 await wait(3500);
 mark("dark_hold_end");
@@ -265,38 +273,41 @@ await wait(1200);
 
 // 4. GPT-2 on WebAssembly: frame its card while it loads, film from the first word.
 await p.waitForSelector("#ritual:not([hidden])");
-await glide("#ritual-voices", 1400);
+await glide("#ritual-voices", 1400, 90);
 await p.waitForSelector(".token", { timeout: MODEL_TIMEOUT });
 mark("gpt2_first_token");
 await p.waitForFunction(() => document.querySelectorAll(".token").length >= 12, null, {
   timeout: MODEL_TIMEOUT,
 });
-await wait(3500);
-// The ghost words with the likeliest alternatives among the first words: a reading choice,
-// the numbers are the model's own.
+await wait(1200);
+// Two words on screen whose ghost words are the likeliest: a reading choice, the numbers are the
+// model's own.
 const ranked = await p.evaluate(() => {
   const percent = (el) => (el.textContent.startsWith("<") ? 0 : Number.parseFloat(el.textContent));
   return [...document.querySelectorAll(".token")]
-    .slice(0, 12)
-    .map((el, index) => ({
+    .map((el, index) => ({ index, top: el.getBoundingClientRect().top, el }))
+    .filter(({ el, top }) => {
+      const word = el.querySelector(".token-text").textContent;
+      return /^[A-Za-z]{3,}$/.test(word) && top > 140 && top < 520;
+    })
+    .map(({ index, el }) => ({
       index,
-      word: /^[A-Za-z]{3,}$/.test(el.querySelector(".token-text").textContent),
       top: Math.max(...[...el.querySelectorAll(".ghost-p")].map(percent)),
     }))
-    .filter((t) => t.word)
     .sort((x, y) => y.top - x.top)
     .map((t) => t.index);
 });
 if (ranked.length < 2) throw new Error("GPT-2 gave too few plain words to show ghost words on");
 for (const [n, index] of ranked.slice(0, 2).entries()) {
   const token = p.locator(".token").nth(index);
-  const at = await centre(token);
+  // Aim at the word itself, so the cursor does not cover the ghost words under it.
+  const at = await centre(token.locator(".token-text"));
   mark(`ghost${n + 1}_cursor_start`);
-  await cursorTo(at.x, at.y + 4, n === 0 ? 1700 : 1300);
+  await cursorTo(at.x - 10, at.y, n === 0 ? 1700 : 1300);
   await wait(300);
   await token.focus();
   mark(`ghost${n + 1}_focus`);
-  await wait(3300);
+  await wait(n === 0 ? 3000 : 3800);
 }
 mark("ghost_end");
 await hideCursor();
