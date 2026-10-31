@@ -36,6 +36,7 @@
   "medium": {
     "enabled": true,
     "ancestorId": "gemma-4-e2b",
-    "promptFile": "prompts/medium.md"
+    "promptFile": "prompts/medium.md",
+    "numPredict": 1100
   }
 }
