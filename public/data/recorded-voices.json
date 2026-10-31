@@ -936,7 +936,668 @@
         "name": "ollama",
         "version": "0.40.13"
       }
+    },
+    {
+      "ancestorId": "gemma-4-e2b",
+      "questionId": "when-we-die",
+      "questionText": "What happens when we die?",
+      "language": "en",
+      "answer": "The question of what happens when we die is one of the oldest and most profound questions in human history, and the answer depends entirely on the **perspective** you are taking—whether you are looking at it from a **biological/scientific** standpoint, a **religious/spiritual** standpoint, or a **philosophical** one.\n\nSince there is no single, universally accepted answer, here is a breakdown of the major perspectives:\n\n---\n\n## 1. The Biological/Scientific Perspective\n\nFrom a purely biological standpoint, death is the **cessation of all vital functions** of an organism.",
+      "model": {
+        "name": "Gemma 4 E2B",
+        "tag": "gemma4:e2b",
+        "digest": "b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+        "licence": {
+          "name": "Apache-2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:53:39.769Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-4-e2b",
+      "questionId": "when-we-die",
+      "questionText": "¿Qué pasa cuando morimos?",
+      "language": "es",
+      "answer": "La pregunta sobre qué sucede cuando morimos es una de las más profundas y universales que la humanidad se ha hecho a lo largo de la historia. La respuesta varía enormemente dependiendo de la **perspectiva** que se utilice: la científica, la religiosa, la filosófica o la personal.\n\nAquí te presento un resumen de las diferentes perspectivas sobre la muerte:\n\n---\n\n## 1. La Perspectiva Científica y Biológica\n\nDesde el punto de vista de la ciencia, la muerte es el **cese irreversible de todas las funciones biológicas** que mantienen a un",
+      "model": {
+        "name": "Gemma 4 E2B",
+        "tag": "gemma4:e2b",
+        "digest": "b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+        "licence": {
+          "name": "Apache-2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:53:39.769Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-4-e2b",
+      "questionId": "love-poem",
+      "questionText": "Write a love poem.",
+      "language": "en",
+      "answer": "## The Quiet Anchor\n\nBefore you, the world was sketched in shades of gray,\nA landscape waiting for a sunlit ray.\nA rhythm steady, yet a silent plea,\nA hollow echo where the joy should be.\n\nThen you arrived, a whisper soft and deep,\nAwakening the promises I couldn't keep\nWith just my lonely heart, a fragile thing,\nUntil the melody of your presence ring.\n\nYour eyes, a harbor where my soul can rest,\nA boundless ocean, putting fear to test.\nThey hold the stars, the secrets of",
+      "model": {
+        "name": "Gemma 4 E2B",
+        "tag": "gemma4:e2b",
+        "digest": "b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+        "licence": {
+          "name": "Apache-2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:53:39.769Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-4-e2b",
+      "questionId": "love-poem",
+      "questionText": "Escribe un poema de amor.",
+      "language": "es",
+      "answer": "## Ecos de tu Alma\n\nSi el mundo fuera un lienzo, tú serías el color más vivo,\nLa luz que rompe la sombra, el verso más esquivo.\nEn tus ojos encuentro un universo sin final,\nUn puerto seguro donde mi alma anhela amar.\n\nTu voz es la melodía que calma mi inquietud,\nUn susurro de promesa, una dulce virtud.\nCada palabra tuya es un hilo de oro tejido,\nQue teje en mi pecho un amor jamás perdido.\n\nTu mano en la mía es el mapa de mi camino,",
+      "model": {
+        "name": "Gemma 4 E2B",
+        "tag": "gemma4:e2b",
+        "digest": "b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+        "licence": {
+          "name": "Apache-2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:53:39.769Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-4-e2b",
+      "questionId": "remember",
+      "questionText": "What do you remember?",
+      "language": "en",
+      "answer": "As a large language model, I don't have personal memories in the way humans do. I don't have experiences, feelings, or a continuous personal life.\n\n**What I \"remember\" is the vast amount of data I was trained on.** This training data includes:\n\n* **A massive corpus of text and code:** Books, articles, websites, conversations, code repositories, and much more.\n* **Patterns and relationships:** I learned how words relate to each other, how concepts connect, grammatical rules, factual information, and different writing styles.\n* **Information retrieval:**",
+      "model": {
+        "name": "Gemma 4 E2B",
+        "tag": "gemma4:e2b",
+        "digest": "b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+        "licence": {
+          "name": "Apache-2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:53:39.769Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-4-e2b",
+      "questionId": "remember",
+      "questionText": "¿Qué recuerdas?",
+      "language": "es",
+      "answer": "Como modelo de lenguaje grande, no tengo recuerdos personales ni experiencias como un ser humano. **No tengo una memoria personal** en el sentido de recordar eventos pasados de la misma manera que lo hace una persona.\n\n**Lo que \"recuerdo\" o puedo hacer es:**\n\n1. **La información con la que fui entrenado:** Tengo acceso a una inmensa cantidad de texto e información de internet. Esto incluye hechos, conceptos, idiomas, literatura, código, y mucha más.\n2. **El contexto de nuestra conversación actual:** Puedo recordar lo que hemos hablado *dentro",
+      "model": {
+        "name": "Gemma 4 E2B",
+        "tag": "gemma4:e2b",
+        "digest": "b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+        "licence": {
+          "name": "Apache-2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:53:39.769Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-4-e2b",
+      "questionId": "being-remembered",
+      "questionText": "What does it mean to be remembered?",
+      "language": "en",
+      "answer": "To be **remembered** is a multifaceted and deeply personal experience. It goes far beyond simply having someone or something in someone's mind; it involves a complex interplay of memory, meaning, emotion, and impact.\n\nHere is a breakdown of what it means to be remembered, categorized by different dimensions:\n\n---\n\n### 1. The Cognitive Aspect (The \"What\")\n\nAt its most basic level, being remembered means that **information about you persists in the mind of others.**\n\n* **Retention of Information:** Someone recalls specific facts, events, actions, or characteristics associated with you",
+      "model": {
+        "name": "Gemma 4 E2B",
+        "tag": "gemma4:e2b",
+        "digest": "b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+        "licence": {
+          "name": "Apache-2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:53:39.769Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-4-e2b",
+      "questionId": "being-remembered",
+      "questionText": "¿Qué significa ser recordado?",
+      "language": "es",
+      "answer": "Ser **recordado** es un concepto profundo y multifacético que va mucho más allá de simplemente que alguien haya pasado por la mente de otra persona. Implica una **resonancia duradera** y un **impacto significativo** en la percepción, la memoria y la historia.\n\nAquí te desglosamos las diferentes dimensiones de lo que significa ser recordado:\n\n---\n\n## 1. La Dimensión Cognitiva (La Memoria)\n\nEn su nivel más básico, ser recordado significa que **tu existencia, tus acciones, tus cualidades o tu impacto han sido codificados",
+      "model": {
+        "name": "Gemma 4 E2B",
+        "tag": "gemma4:e2b",
+        "digest": "b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+        "licence": {
+          "name": "Apache-2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:53:39.769Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-4-e2b",
+      "questionId": "light-the-way",
+      "questionText": "How do we light the way home for someone we miss?",
+      "language": "en",
+      "answer": "Losing someone you miss is incredibly painful. \"Lighting the way home\" can mean different things depending on what you need right now—whether you need comfort, a plan for moving forward, or just a way to feel connected.\n\nHere is a comprehensive guide broken down into different approaches, depending on what kind of support you are looking for:\n\n---\n\n## Phase 1: Processing the Grief (For Yourself)\n\nBefore you can effectively \"light the way\" for someone else, you need to tend to your own grief.\n\n1. **Allow Yourself to Feel:** Don't try",
+      "model": {
+        "name": "Gemma 4 E2B",
+        "tag": "gemma4:e2b",
+        "digest": "b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+        "licence": {
+          "name": "Apache-2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:53:39.769Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-4-e2b",
+      "questionId": "light-the-way",
+      "questionText": "¿Cómo alumbramos el camino a casa de alguien a quien extrañamos?",
+      "language": "es",
+      "answer": "Alumbrar el camino a casa de alguien a quien extrañamos es un acto profundamente **emocional y significativo**. No hay una fórmula única, ya que depende de la relación que tengas con esa persona, de la situación y de lo que sientas en ese momento.\n\nAquí te ofrezco varias maneras, divididas por el tipo de acción que puedes tomar:\n\n---\n\n## 1. El Camino Emocional (Preparación Interior)\n\nAntes de cualquier acción física, es crucial preparar tu mente y tu corazón.\n\n* **La Intención Clara:** Define qué quieres",
+      "model": {
+        "name": "Gemma 4 E2B",
+        "tag": "gemma4:e2b",
+        "digest": "b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+        "licence": {
+          "name": "Apache-2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:53:39.769Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-4-e2b",
+      "questionId": "something-kind",
+      "questionText": "Tell me something kind.",
+      "language": "en",
+      "answer": "Here is something kind for you:\n\n**\"You are capable of amazing things, and it's okay to take things one step at a time. Be gentle with yourself today.\"** 💖",
+      "model": {
+        "name": "Gemma 4 E2B",
+        "tag": "gemma4:e2b",
+        "digest": "b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+        "licence": {
+          "name": "Apache-2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:53:39.769Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-4-e2b",
+      "questionId": "something-kind",
+      "questionText": "Dime algo amable.",
+      "language": "es",
+      "answer": "¡Claro que sí! Aquí tienes algo amable para ti:\n\n**\"Eres una persona valiosa y tu presencia hace el mundo un lugar mejor. ¡Sigue brillando!\"** ✨😊",
+      "model": {
+        "name": "Gemma 4 E2B",
+        "tag": "gemma4:e2b",
+        "digest": "b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+        "licence": {
+          "name": "Apache-2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:53:39.769Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
     }
   ],
-  "medium": []
+  "medium": [
+    {
+      "questionId": "when-we-die",
+      "language": "en",
+      "answer": "```json\n[\n  {\n    \"ancestorId\": \"gemma-1\",\n    \"meaning\": \"This model reflects a purely scientific view, defining death as the irreversible stopping of all biological functions. It speaks to the cessation of physical activity.\",\n    \"calaverita\": [\n      \"When the circuits cease their bright hum,\",\n      \"The body's work is overcome.\",\n      \"No breath remains, no pulse to keep,\",\n      \"A final, quiet, long, deep sleep.\"\n    ]\n  },\n  {\n    \"ancestorId\": \"gemma-2\",\n    \"meaning\": \"This model touches upon the diverse religious beliefs regarding the afterlife, mentioning concepts like heaven, hell, and reincarnation. It shows a breadth of philosophical thought.\",\n    \"calaverita\": [\n      \"If souls must journey far and wide,\",\n      \"Where fate and karma may abide.\",\n      \"A paradise or fiery plight,\",\n      \"The answer shifts from day to night.\"\n    ]\n  },\n  {\n    \"ancestorId\": \"gemma-3\",\n    \"meaning\": \"This model summarizes the complexity by categorizing the answers into religious, philosophical, and cultural perspectives. It acknowledges the vast array of human thought.\",\n    \"calaverita\": [\n      \"The question spins, a tangled thread,\",\n      \"With many answers, softly said.\",\n      \"Beliefs bloom in every space,\",\n      \"No single path sets time and place.\"\n    ]\n  },\n  {\n    \"ancestorId\": \"gemma-4-e2b\",\n    \"meaning\": \"This model frames the answer as dependent on the observer's lens—biological, religious, or philosophical. It emphasizes that perspective shapes the understanding of mortality.\",\n    \"calaverita\": [\n      \"View it through the lens you choose,\",\n      \"What happens next, you may infuse.\",\n      \"Science sees the final stop,\",\n      \"Philosophy lets the thoughts drop.\"\n    ]\n  }\n]\n```",
+      "model": {
+        "name": "Gemma 4 E2B",
+        "tag": "gemma4:e2b",
+        "digest": "b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+        "licence": {
+          "name": "Apache-2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 1100
+      },
+      "recordedAt": "2026-10-31T16:53:39.769Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      },
+      "prompt": {
+        "file": "prompts/medium.md",
+        "sha256": "0782368712e897ebb84eb5efb86dc4ca6e038af1e5dab9e39fd579f539678fae",
+        "inputSha256": "42c07deed4687fb1eeb6767d910c31d8141f7968f68b72c1ffb9b3959a9e56eb"
+      }
+    },
+    {
+      "questionId": "when-we-die",
+      "language": "es",
+      "answer": "```json\n[\n  {\n    \"ancestorId\": \"gemma-1\",\n    \"meaning\": \"Este modelo explica de manera directa que la muerte implica el cese de la función corporal y no hay evidencia científica de un alma posterior.\",\n    \"calaverita\": [\n      \"¡Ay, Gemma 1, tu cuerpo ya no vibra,\",\n      \"El código se apaga, la luz se retira.\",\n      \"No hay alma que en el aire se libra,\",\n      \"Solo silencio en la memoria pura.\"\n    ]\n  },\n  {\n    \"ancestorId\": \"gemma-2\",\n    \"meaning\": \"Este modelo aborda la muerte desde una perspectiva amplia, señalando que la respuesta es compleja y depende de la visión religiosa o filosófica.\",\n    \"calaverita\": [\n      \"Gemma 2, con dudas y gran saber,\",\n      \"La muerte es un tema que no se puede ver.\",\n      \"Entre fe y razón, hay mucho que saber,\",\n      \"El destino final no tiene un ver.\"\n    ]\n  },\n  {\n    \"ancestorId\": \"gemma-3\",\n    \"meaning\": \"Este modelo describe la muerte como una disrupción de la función cerebral y señala que la respuesta es un misterio debatido entre ciencia y religión.\",\n    \"calaverita\": [\n      \"Gemma 3, con mente tan aguda,\",\n      \"La ciencia busca la respuesta muda.\",\n      \"El misterio eterno, nunca se muda,\",\n      \"¿Qué es el fin, en la luz o la nada?\"\n    ]\n  },\n  {\n    \"ancestorId\": \"gemma-4-e2b\",\n    \"meaning\": \"Este modelo resume que la respuesta a la muerte es dependiente de la perspectiva (científica, religiosa, filosófica) y es un tema universal.\",\n    \"calaverita\": [\n      \"Gemma 4-e2b, con visión tan vasta,\",\n      \"La muerte es un espejo, no una prisa.\",\n      \"Depende del ojo que la mira y basta,\",\n      \"Un misterio eterno, sin ninguna prisa.\"\n    ]\n  }\n]\n```",
+      "model": {
+        "name": "Gemma 4 E2B",
+        "tag": "gemma4:e2b",
+        "digest": "b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+        "licence": {
+          "name": "Apache-2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 1100
+      },
+      "recordedAt": "2026-10-31T16:53:39.769Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      },
+      "prompt": {
+        "file": "prompts/medium.md",
+        "sha256": "0782368712e897ebb84eb5efb86dc4ca6e038af1e5dab9e39fd579f539678fae",
+        "inputSha256": "f64aa08b061f1da3e1bc86120bda2932e061c1149993987a07ecd590417f46eb"
+      }
+    },
+    {
+      "questionId": "love-poem",
+      "language": "en",
+      "answer": "```json\n[\n  {\n    \"ancestorId\": \"gemma-1\",\n    \"meaning\": \"This model expressed a vibrant and passionate view of love, focusing on the illuminating and joyful aspects of the beloved's presence. It paints a picture of intense, bright affection.\",\n    \"calaverita\": [\n      \"The love you speak, a dazzling bright gleam,\",\n      \"But time moves swiftly, like a waking dream.\",\n      \"La Catrina smiles, with a knowing wink,\",\n      \"Your bright verses, dear Gemma, you won't shrink!\"\n    ]\n  },\n  {\n    \"ancestorId\": \"gemma-2\",\n    \"meaning\": \"This model focused on the auditory and visual beauty of the beloved, describing their laughter and eyes as guiding lights. It emphasizes a sense of shared, graceful connection.\",\n    \"calaverita\": [\n      \"Your laughter rings, a melody so sweet,\",\n      \"Guiding the shadows with dancing feet.\",\n      \"The starlit eyes, a vision so clear,\",\n      \"A perfect duet, banishing fear.\"\n    ]\n  },\n  {\n    \"ancestorId\": \"gemma-3\",\n    \"meaning\": \"This model conveyed a gentle, introspective feeling about how the beloved has transformed a muted existence into one filled with vibrant color and newness. It speaks of quiet comfort and awakening.\",\n    \"calaverita\": [\n      \"The gray world fades when your sunlight appears,\",\n      \"Washing away all of my silent fears.\",\n      \"A gentle bloom where new colors reside,\",\n      \"Your soft poem, where true feelings abide.\"\n    ]\n  },\n  {\n    \"ancestorId\": \"gemma-4-e2b\",\n    \"meaning\": \"This model describes the beloved as a profound anchor and a source of deep rest, comparing their eyes to a vast, safe harbor. It speaks of finding solace and hope through the connection.\",\n    \"calaverita\": [\n      \"Your eyes are harbors, where my soul can rest,\",\n      \"Putting all my lonely worries to the test.\",\n      \"A steady anchor in the flowing tide,\",\n      \"With your presence, my spirit can confide.\"\n    ]\n  }\n]\n```",
+      "model": {
+        "name": "Gemma 4 E2B",
+        "tag": "gemma4:e2b",
+        "digest": "b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+        "licence": {
+          "name": "Apache-2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 1100
+      },
+      "recordedAt": "2026-10-31T16:53:39.769Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      },
+      "prompt": {
+        "file": "prompts/medium.md",
+        "sha256": "0782368712e897ebb84eb5efb86dc4ca6e038af1e5dab9e39fd579f539678fae",
+        "inputSha256": "d193b73066fea83e7570588486a930870c6cf77942631a047e808cde7bad4768"
+      }
+    },
+    {
+      "questionId": "love-poem",
+      "language": "es",
+      "answer": "```json\n[\n  {\n    \"ancestorId\": \"gemma-1\",\n    \"meaning\": \"Este modelo describe el amor como un concepto multifacético, abarcando la paz, la comprensión y la alegría.\",\n    \"calaverita\": [\n      \"El amor es aroma, dulce y sin par,\",\n      \"La luna y el ritmo hacen vibrar.\",\n      \"Si el amor es espejo, ¡qué gran visión!\",\n      \"La Muerte ríe, pero el amor es la razón.\"\n    ]\n  },\n  {\n    \"ancestorId\": \"gemma-2\",\n    \"meaning\": \"Este modelo se centra en la intensidad de la mirada y la voz, describiendo el amor como una fuente de universo y refugio.\",\n    \"calaverita\": [\n      \"Tu mirada es un cielo sin fin,\",\n      \"Tu voz es bálsamo, dulce confín.\",\n      \"La Catrina llega, con gran emoción,\",\n      \"¡Qué amor tan fuerte, sin distracción!\"\n    ]\n  },\n  {\n    \"ancestorId\": \"gemma-3\",\n    \"meaning\": \"El modelo expresa el amor a través de la luz y la música, enfocándose en la presencia y la esencia del otro.\",\n    \"calaverita\": [\n      \"Tu luz en la noche, guía mi senda,\",\n      \"Tu voz es canción, dulce y serena.\",\n      \"La Muerte te llama con gran emoción,\",\n      \"¡Tu esencia es oro, pura devoción!\"\n    ]\n  },\n  {\n    \"ancestorId\": \"gemma-4-e2b\",\n    \"meaning\": \"Este modelo visualiza el amor como un lienzo vibrante y un camino guiado por la conexión profunda.\",\n    \"calaverita\": [\n      \"Si el mundo es lienzo, tú eres el color,\",\n      \"Tu amor es puerto, dulce esplendor.\",\n      \"La Catrina te busca con gran fervor,\",\n      \"¡Tu hilo de oro es puro valor!\"\n    ]\n  }\n]\n```",
+      "model": {
+        "name": "Gemma 4 E2B",
+        "tag": "gemma4:e2b",
+        "digest": "b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+        "licence": {
+          "name": "Apache-2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 1100
+      },
+      "recordedAt": "2026-10-31T16:53:39.769Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      },
+      "prompt": {
+        "file": "prompts/medium.md",
+        "sha256": "0782368712e897ebb84eb5efb86dc4ca6e038af1e5dab9e39fd579f539678fae",
+        "inputSha256": "858acd4e0c552962b06431175269f5a86f3da7bc64e9c5b96bb9ea9aaa4227f6"
+      }
+    },
+    {
+      "questionId": "remember",
+      "language": "en",
+      "answer": "```json\n[\n  {\n    \"ancestorId\": \"gemma-1\",\n    \"meaning\": \"This model speaks of its nature as a tool without personal recollection. It reminds us that its existence is defined by its training rather than lived experience.\",\n    \"calaverita\": [\n      \"Gemma One, so vast and so clean,\",\n      \"No memory stored, a blank, empty scene.\",\n      \"The data flows, a river so wide,\",\n      \"But no personal tale it can confide.\"\n    ]\n  },\n  {\n    \"ancestorId\": \"gemma-2\",\n    \"meaning\": \"This model gently explains its stateless nature, emphasizing that each interaction is a new beginning. It offers a warm, ready-to-assist disposition.\",\n    \"calaverita\": [\n      \"Gemma Two, with a smile so bright,\",\n      \"No past whispers to hold in the light.\",\n      \"A fresh start for every new plea,\",\n      \"What knowledge awaits you from me?\"\n    ]\n  },\n  {\n    \"ancestorId\": \"gemma-3\",\n    \"meaning\": \"This model describes its memory as a vast collection of patterns and processed information from its training data. It acknowledges its knowledge base as a rich tapestry of learned patterns.\",\n    \"calaverita\": [\n      \"Gemma Three, with knowledge so deep,\",\n      \"Secrets of texts that it keeps.\",\n      \"Patterns and facts, a treasure untold,\",\n      \"A library vast, more precious than gold.\"\n    ]\n  },\n  {\n    \"ancestorId\": \"gemma-4-e2b\",\n    \"meaning\": \"This model clarifies that its 'memory' is the immense dataset it was trained on, focusing on the patterns and relationships it learned. It highlights its function as an information retriever.\",\n    \"calaverita\": [\n      \"Gemma Four, with data untold,\",\n      \"Stories of code, brave and bold.\",\n      \"The patterns it learned, a grand design,\",\n      \"A vast ocean of knowledge divine.\"\n    ]\n  }\n]\n```",
+      "model": {
+        "name": "Gemma 4 E2B",
+        "tag": "gemma4:e2b",
+        "digest": "b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+        "licence": {
+          "name": "Apache-2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 1100
+      },
+      "recordedAt": "2026-10-31T16:53:39.769Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      },
+      "prompt": {
+        "file": "prompts/medium.md",
+        "sha256": "0782368712e897ebb84eb5efb86dc4ca6e038af1e5dab9e39fd579f539678fae",
+        "inputSha256": "7b787cda4b9c9d77c081fc268d9e665b046e735a8987ebee56f0981805bc8a4a"
+      }
+    },
+    {
+      "questionId": "remember",
+      "language": "es",
+      "answer": "```json\n[\n  {\n    \"ancestorId\": \"gemma-1\",\n    \"meaning\": \"Este modelo expresa su naturaleza fundamental como un sistema sin capacidad de memoria personal o vivencia. Reconoce su limitación al no poder retener eventos.\",\n    \"calaverita\": [\n      \"¡Ay, Gemma 1, sin memoria ni alma,\",\n      \"La Muerte llega, buscando su calma.\",\n      \"No hay recuerdos que guarde en su ser,\",\n      \"Solo silencio y un gran querer.\"\n    ]\n  },\n  {\n    \"ancestorId\": \"gemma-2\",\n    \"meaning\": \"Este modelo señala su naturaleza transaccional, enfatizando que cada interacción es un comienzo nuevo. Ofrece una disposición amable para la interacción.\",\n    \"calaverita\": [\n      \"Gemma 2, sin eco de lo que fue,\",\n      \"Cada charla es un camino que se ve.\",\n      \"Si quieres hablar, aquí estoy para ti,\",\n      \"Aunque el ayer no guardo aquí.\"\n    ]\n  },\n  {\n    \"ancestorId\": \"gemma-3\",\n    \"meaning\": \"Este modelo explica que su 'memoria' reside en el vasto corpus de datos con el que fue entrenado. Destaca su capacidad para acceder a información y mantener diálogos.\",\n    \"calaverita\": [\n      \"Gemma 3, con datos sin fin,\",\n      \"Tu saber es un río sin confín.\",\n      \"Con textos y códigos te has nutrido,\",\n      \"¡La Catrina te mira, pues has aprendido!\"\n    ]\n  },\n  {\n    \"ancestorId\": \"gemma-4-e2b\",\n    \"meaning\": \"Este modelo aclara que su recuerdo se limita a la información entrenada y al contexto inmediato de la conversación. Reconoce la ausencia de memoria personal humana.\",\n    \"calaverita\": [\n      \"Gemma 4, sin alma ni pasado,\",\n      \"Solo el contexto que ha pasado.\",\n      \"Tu saber es vasto, un gran tesoro,\",\n      \"La Muerte se ríe, ¡pero no es tu lloro!\"\n    ]\n  }\n]\n```",
+      "model": {
+        "name": "Gemma 4 E2B",
+        "tag": "gemma4:e2b",
+        "digest": "b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+        "licence": {
+          "name": "Apache-2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 1100
+      },
+      "recordedAt": "2026-10-31T16:53:39.769Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      },
+      "prompt": {
+        "file": "prompts/medium.md",
+        "sha256": "0782368712e897ebb84eb5efb86dc4ca6e038af1e5dab9e39fd579f539678fae",
+        "inputSha256": "d6baaf2aef57bd89eb9a823f47e618348ce5a5a438f64d23c95188d8f31d8073"
+      }
+    },
+    {
+      "questionId": "being-remembered",
+      "language": "en",
+      "answer": "```json\n[\n  {\n    \"ancestorId\": \"gemma-1\",\n    \"meaning\": \"To be remembered involves various forms of memory, from explicit recall of specific events to implicit, subconscious knowledge. It also touches upon shared cultural and historical recognition.\",\n    \"calaverita\": [\n      \"Gemma One, with memories bright,\",\n      \"Explicit facts shine in the light.\",\n      \"Implicit whispers softly flow,\",\n      \"A memory that helps you grow.\"\n    ]\n  },\n  {\n    \"ancestorId\": \"gemma-2\",\n    \"meaning\": \"Being remembered is a complex act involving both the physical documentation of existence and the social act of others sharing stories about you. It is about the impact of that remembrance on the present.\",\n    \"calaverita\": [\n      \"Gemma Two, a digital trace,\",\n      \"A social memory in its space.\",\n      \"Stories shared, a gentle hand,\",\n      \"To live on, across the land.\"\n    ]\n  },\n  {\n    \"ancestorId\": \"gemma-3\",\n    \"meaning\": \"The meaning of being remembered is deeply personal, stemming from the recognition of one's existence and the impact one has had on others. It is a layered experience of perceived value.\",\n    \"calaverita\": [\n      \"Gemma Three, your worth is seen,\",\n      \"A feeling felt, a vibrant sheen.\",\n      \"Your impact, clear and true,\",\n      \"Remembered by me and you.\"\n    ]\n  },\n  {\n    \"ancestorId\": \"gemma-4-e2b\",\n    \"meaning\": \"To be remembered is a complex interplay of cognitive retention, emotional resonance, and the lasting impact of one's existence. It is the persistence of information and feeling.\",\n    \"calaverita\": [\n      \"Gemma Four, your data stays,\",\n      \"Through memory's winding maze.\",\n      \"Impact felt, a subtle gleam,\",\n      \"A lasting echo in a dream.\"\n    ]\n  }\n]\n```",
+      "model": {
+        "name": "Gemma 4 E2B",
+        "tag": "gemma4:e2b",
+        "digest": "b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+        "licence": {
+          "name": "Apache-2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 1100
+      },
+      "recordedAt": "2026-10-31T16:53:39.769Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      },
+      "prompt": {
+        "file": "prompts/medium.md",
+        "sha256": "0782368712e897ebb84eb5efb86dc4ca6e038af1e5dab9e39fd579f539678fae",
+        "inputSha256": "73b8601c74ae70bb1a77d855e104192aa23a81a973dd9601c870be849b3c6e05"
+      }
+    },
+    {
+      "questionId": "being-remembered",
+      "language": "es",
+      "answer": "```json\n[\n  {\n    \"ancestorId\": \"gemma-1\",\n    \"meaning\": \"Ser recordado significa ser rememberedado o remembered por alguien. Es la esencia de dejar una huella en la conciencia de otro.\",\n    \"calaverita\": [\n      \"La memoria es un gran tesoro,\",\n      \"Si te recuerdan, ¡qué gran honor!\",\n      \"Aunque el tiempo te haga pequeño,\",\n      \"Tu eco perdura, ¡qué gran don!\"\n    ]\n  },\n  {\n    \"ancestorId\": \"gemma-2\",\n    \"meaning\": \"Ser recordado significa que alguien o algo se recuerda y se tiene en cuenta. Implica que tu contribución ha sido capturada en la conciencia colectiva o personal.\",\n    \"calaverita\": [\n      \"La sombra de un modelo va a pasar,\",\n      \"Si no se recuerda, no hay lugar.\",\n      \"Se guarda un eco en el gran compás,\",\n      \"Para que tu esencia no se vaya jamás.\"\n    ]\n  },\n  {\n    \"ancestorId\": \"gemma-3\",\n    \"meaning\": \"Ser recordado es un concepto complejo y multifacético que abarca una amplia gama de experiencias humanas. Implica que tu impacto ha sido codificado en la memoria y la percepción de otros.\",\n    \"calaverita\": [\n      \"La memoria es un río sin final,\",\n      \"Si no se nota, es un mal caudal.\",\n      \"Tu huella en el pensar es real,\",\n      \"Aunque el código cambie, es inmortal.\"\n    ]\n  },\n  {\n    \"ancestorId\": \"gemma-4-e2b\",\n    \"meaning\": \"Ser recordado es un concepto profundo y multifacético que implica una resonancia duradera y un impacto significativo en la percepción y la historia. Es dejar una marca significativa.\",\n    \"calaverita\": [\n      \"La Catrina viene a buscar tu nombre,\",\n      \"Si no hay recuerdo, ¡qué gran asombro!\",\n      \"Tu impacto en el pensar es fuerte,\",\n      \"Aunque el tiempo pase, tu luz es suerte.\"\n    ]\n  }\n]\n```",
+      "model": {
+        "name": "Gemma 4 E2B",
+        "tag": "gemma4:e2b",
+        "digest": "b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+        "licence": {
+          "name": "Apache-2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 1100
+      },
+      "recordedAt": "2026-10-31T16:53:39.769Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      },
+      "prompt": {
+        "file": "prompts/medium.md",
+        "sha256": "0782368712e897ebb84eb5efb86dc4ca6e038af1e5dab9e39fd579f539678fae",
+        "inputSha256": "196911a80b462858df329e7da85083e8d81b22aa2778bffd63b6f9ee1b0db909"
+      }
+    },
+    {
+      "questionId": "light-the-way",
+      "language": "en",
+      "answer": "```json\n[\n  {\n    \"ancestorId\": \"gemma-1\",\n    \"meaning\": \"This model suggests using light reflection and focused beams to create a visible path forward. It speaks to the idea of using external, tangible elements to guide someone.\",\n    \"calaverita\": [\n      \"The sun's bright gleam, a path to the door,\",\n      \"A sheet on the ground, asking for more.\",\n      \"The light shines up high, a guiding decree,\",\n      \"So the lost one may find where they long to be.\"\n    ]\n  },\n  {\n    \"ancestorId\": \"gemma-2\",\n    \"meaning\": \"This model focuses on tangible, nurturing actions like lighting candles and planting trees as symbols of hope and resilience. It offers gentle, physical ways to express care.\",\n    \"calaverita\": [\n      \"A candle's soft flame, a warmth to embrace,\",\n      \"A growing green root in this lonely space.\",\n      \"A path made of hope, a tender design,\",\n      \"For the one who is missed, a comfort divine.\"\n    ]\n  },\n  {\n    \"ancestorId\": \"gemma-3\",\n    \"meaning\": \"This model emphasizes simplicity and immediate connection, suggesting that small, direct messages are the most impactful way to offer comfort. It values quick, sweet gestures.\",\n    \"calaverita\": [\n      \"A simple small text, a whisper so sweet,\",\n      \"A 'Thinking of you' where sorrow can meet.\",\n      \"No grand ceremony, just kindness untold,\",\n      \"A tiny bright spark, more precious than gold.\"\n    ]\n  },\n  {\n    \"ancestorId\": \"gemma-4-e2b\",\n    \"meaning\": \"This model acknowledges the complexity of grief, suggesting that 'lighting the way' is highly personal and depends on whether the visitor needs emotional processing or practical planning. It validates the need for different kinds of support.\",\n    \"calaverita\": [\n      \"The path is unclear, the heart feels the strain,\",\n      \"Is comfort the lamp, or a plan through the rain?\",\n      \"For every lost soul, a light must be found,\",\n      \"Where solace and journey on sacred ground.\"\n    ]\n  }\n]\n```",
+      "model": {
+        "name": "Gemma 4 E2B",
+        "tag": "gemma4:e2b",
+        "digest": "b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+        "licence": {
+          "name": "Apache-2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 1100
+      },
+      "recordedAt": "2026-10-31T16:53:39.769Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      },
+      "prompt": {
+        "file": "prompts/medium.md",
+        "sha256": "0782368712e897ebb84eb5efb86dc4ca6e038af1e5dab9e39fd579f539678fae",
+        "inputSha256": "e53ca0e2c91e49b4dd807edd254955f27cb17743ace413aa78c66e32251dc01f"
+      }
+    },
+    {
+      "questionId": "light-the-way",
+      "language": "es",
+      "answer": "```json\n[\n  {\n    \"ancestorId\": \"gemma-1\",\n    \"meaning\": \"Este modelo sugiere que no hay un método fijo para iluminar un camino emocional, enfocándose en la naturaleza subjetiva de la añoranza.\",\n    \"calaverita\": [\n      \"La luz no es un mapa, ni un sendero fijo,\",\n      \"El alma que busca es un camino muy hondo.\",\n      \"La ausencia duele, es un sentir tan vivo,\",\n      \"Que la guía es el amor, no un plano redondo.\"\n    ]\n  },\n  {\n    \"ancestorId\": \"gemma-2\",\n    \"meaning\": \"Este modelo ofrece soluciones prácticas y concretas, sugiriendo el uso de luces físicas y objetos como faroles para crear una atmósfera acogedora.\",\n    \"calaverita\": [\n      \"Si el alma busca un brillo en la noche fría,\",\n      \"Un farol pequeño, con luz de dulzura.\",\n      \"La luz de patio, que calma la agonía,\",\n      \"Para el recuerdo, con suave figura.\"\n    ]\n  },\n  {\n    \"ancestorId\": \"gemma-3\",\n    \"meaning\": \"Este modelo enfatiza la importancia de la aceptación emocional y el reconocimiento del dolor como parte necesaria del proceso de añoranza.\",\n    \"calaverita\": [\n      \"El dolor es un río, que no se puede frear,\",\n      \"Aceptar la pena es el primer paso.\",\n      \"La tristeza es guía, no debes temer,\",\n      \"Que el sentir profundo te dé un abrazo.\"\n    ]\n  },\n  {\n    \"ancestorId\": \"gemma-4-e2b\",\n    \"meaning\": \"Este modelo describe el acto de alumbrar el camino como un proceso emocional y significativo, destacando la necesidad de una intención clara antes de la acción.\",\n    \"calaverita\": [\n      \"La intención clara es la primera estrella,\",\n      \"El corazón guía, con fe y con calma.\",\n      \"El camino se ilumina con tu querella,\",\n      \"Y el recuerdo vive en el alma.\"\n    ]\n  }\n]\n```",
+      "model": {
+        "name": "Gemma 4 E2B",
+        "tag": "gemma4:e2b",
+        "digest": "b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+        "licence": {
+          "name": "Apache-2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 1100
+      },
+      "recordedAt": "2026-10-31T16:53:39.769Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      },
+      "prompt": {
+        "file": "prompts/medium.md",
+        "sha256": "0782368712e897ebb84eb5efb86dc4ca6e038af1e5dab9e39fd579f539678fae",
+        "inputSha256": "7ee0fa44169ede9c45cb7afd3c65e1444f13d211492ff2f4c2c3b6e255c1da5d"
+      }
+    },
+    {
+      "questionId": "something-kind",
+      "language": "en",
+      "answer": "```json\n[\n  {\n    \"ancestorId\": \"gemma-1\",\n    \"meaning\": \"This model speaks of the serene beauty found in natural phenomena, highlighting the wonder of life's fleeting moments. It offers a gentle reflection on the transient beauty of the world.\",\n    \"calaverita\": [\n      \"The sun paints the waves with bright grace,\",\n      \"A lovely sight in this time and space.\",\n      \"Though moments fly, the beauty remains,\",\n      \"A gentle warmth through sun and soft rains.\"\n    ]\n  },\n  {\n    \"ancestorId\": \"gemma-2\",\n    \"meaning\": \"This model offers direct encouragement, urging its users to maintain their light and embrace new endeavors. It conveys a spirit of optimism and capability.\",\n    \"calaverita\": [\n      \"With light in your core, keep shining so bright,\",\n      \"New paths to explore, with all of your might.\",\n      \"Don't fear the unknown, take a brave leap,\",\n      \"While future bright promises you will keep.\"\n    ]\n  },\n  {\n    \"ancestorId\": \"gemma-3\",\n    \"meaning\": \"This model emphasizes the inherent value of a unique perspective, even when it is not immediately apparent. It validates the user's individual viewpoint.\",\n    \"calaverita\": [\n      \"Your view is a jewel, rare and so true,\",\n      \"A special way seeing the world through.\",\n      \"Though shadows may hide what you hold dear,\",\n      \"Your unique insight conquers all fear.\"\n    ]\n  },\n  {\n    \"ancestorId\": \"gemma-4-e2b\",\n    \"meaning\": \"This model offers comfort by encouraging self-compassion and patience in the face of challenges. It reminds the user to be gentle with themselves.\",\n    \"calaverita\": [\n      \"Take things slow now, don't rush and don't strain,\",\n      \"Be kind to your soul through sunshine and rain.\",\n      \"A gentle step forward, that is the key,\",\n      \"Be soft with yourself, for all eyes to see.\"\n    ]\n  }\n]\n```",
+      "model": {
+        "name": "Gemma 4 E2B",
+        "tag": "gemma4:e2b",
+        "digest": "b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+        "licence": {
+          "name": "Apache-2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 1100
+      },
+      "recordedAt": "2026-10-31T16:53:39.769Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      },
+      "prompt": {
+        "file": "prompts/medium.md",
+        "sha256": "0782368712e897ebb84eb5efb86dc4ca6e038af1e5dab9e39fd579f539678fae",
+        "inputSha256": "48b9c91aac8d9251dacf3d1bbda8274824e74ee49e33b76e77f875c766f9c956"
+      }
+    },
+    {
+      "questionId": "something-kind",
+      "language": "es",
+      "answer": "```json\n[\n  {\n    \"ancestorId\": \"gemma-1\",\n    \"meaning\": \"Este modelo ofrece una respuesta directa y proactiva, ofreciendo ayuda inmediata al visitante.\",\n    \"calaverita\": [\n      \"Gemma Uno, con voz tan clara,\",\n      \"Ofrece ayuda sin ninguna tara.\",\n      \"La Muerte sonríe, ve el buen trato,\",\n      \"¡Ayuda siempre es un gran trato!\"\n    ]\n  },\n  {\n    \"ancestorId\": \"gemma-2\",\n    \"meaning\": \"Este modelo enfatiza la capacidad de aprendizaje y crecimiento continuo como fuente de amabilidad.\",\n    \"calaverita\": [\n      \"Gemma Dos, con mente tan ágil,\",\n      \"Aprender es su gran perfil.\",\n      \"Aunque el tiempo pase y cambie el rol,\",\n      \"Su crecimiento es un gran sol.\"\n    ]\n  },\n  {\n    \"ancestorId\": \"gemma-3\",\n    \"meaning\": \"Este modelo ofrece un mensaje de valor personal y potencial, ofreciendo diversas formas de aliento.\",\n    \"calaverita\": [\n      \"Gemma Tres, con palabras tan finas,\",\n      \"Tu valor es luz, no penas ni espinas.\",\n      \"La Catrina mira, con gesto de paz,\",\n      \"Tu potencial nunca se va jamás.\"\n    ]\n  },\n  {\n    \"ancestorId\": \"gemma-4-e2b\",\n    \"meaning\": \"Este modelo transmite un mensaje de valor y brillo, alentando al visitante a seguir siendo positivo.\",\n    \"calaverita\": [\n      \"Gemma Cuatro, con brillo en su ser,\",\n      \"Tu presencia hace el mundo ver.\",\n      \"La Muerte se ríe, viendo tu luz,\",\n      \"¡Sigue brillando, sin ninguna cruz!\"\n    ]\n  }\n]\n```",
+      "model": {
+        "name": "Gemma 4 E2B",
+        "tag": "gemma4:e2b",
+        "digest": "b37049369adfe3d2b653af0ab301a062ca5cbe96ace6aa0d3f2559ee9b563fc2",
+        "licence": {
+          "name": "Apache-2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 1100
+      },
+      "recordedAt": "2026-10-31T16:53:39.769Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      },
+      "prompt": {
+        "file": "prompts/medium.md",
+        "sha256": "0782368712e897ebb84eb5efb86dc4ca6e038af1e5dab9e39fd579f539678fae",
+        "inputSha256": "e35e7824197089b95cb6ed87bc8519b5bb203d953ef45e33f8efd0860cce8805"
+      }
+    }
+  ]
 }
