@@ -96,7 +96,7 @@ test.describe("without WebGPU (REQ-010)", () => {
     await expectNoSeriousViolations(page);
   });
 
-  test("the shipped site (no recordings yet) does not fail", async ({ page }) => {
+  test("the shipped site replays its recordings and does not fail", async ({ page }) => {
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
     // The shipped file pins GPT-2; without the pin the test stays off the network.
@@ -116,7 +116,9 @@ test.describe("without WebGPU (REQ-010)", () => {
     await expect(page.locator("#places > li")).toHaveCount(5);
     await expect(page.locator("#browser-note")).toBeVisible();
     await offer(page, null);
-    await expect(page.locator('.voice[data-state="gathering"]')).toHaveCount(5);
+    // Gemma 1-4 and the medium replay the shipped recordings; nothing is still being gathered.
+    await expect(page.locator('.voice[data-state="recorded"]')).toHaveCount(5);
+    await expect(page.locator('.voice[data-state="gathering"]')).toHaveCount(0);
     await expect(page.locator("#load-error")).toBeHidden();
     expect(errors).toEqual([]);
     await expectNoSeriousViolations(page);
