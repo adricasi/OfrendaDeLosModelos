@@ -140,9 +140,9 @@ describe("the ritual plan for GPT-2", () => {
       type: "load",
       modelId: "gpt-2",
       source: {
-        repositoryId: null,
-        revision: null,
-        dtypes: { webgpu: "fp16", wasm: "q8" },
+        repositoryId: "Xenova/gpt2",
+        revision: "bf2c7f02e0b826c60d03af341171bde20893da66",
+        dtypes: { webgpu: "fp16", wasm: "uint8" },
       },
     });
   });

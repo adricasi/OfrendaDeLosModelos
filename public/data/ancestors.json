@@ -7,12 +7,21 @@
       "year": 2019,
       "size": "124M",
       "kind": "live",
-      "licence": { "name": "MIT", "url": "https://opensource.org/license/mit" },
+      "licence": {
+        "name": "MIT",
+        "url": "https://opensource.org/license/mit"
+      },
       "modelCardUrl": "https://huggingface.co/openai-community/gpt2",
-      "repositoryId": null,
-      "revision": null,
-      "dtypes": { "webgpu": "fp16", "wasm": "q8" },
-      "settings": { "maxTokens": 60, "temperature": 0.7 },
+      "repositoryId": "Xenova/gpt2",
+      "revision": "bf2c7f02e0b826c60d03af341171bde20893da66",
+      "dtypes": {
+        "webgpu": "fp16",
+        "wasm": "uint8"
+      },
+      "settings": {
+        "maxTokens": 60,
+        "temperature": 0.7
+      },
       "verify": "T-001"
     },
     {
@@ -22,7 +31,10 @@
       "year": 2024,
       "size": null,
       "kind": "recorded",
-      "licence": { "name": "Gemma Terms of Use", "url": "https://ai.google.dev/gemma/terms" },
+      "licence": {
+        "name": "Gemma Terms of Use",
+        "url": "https://ai.google.dev/gemma/terms"
+      },
       "modelCardUrl": "https://ai.google.dev/gemma/docs",
       "repositoryId": null,
       "revision": null,
@@ -36,7 +48,10 @@
       "year": 2024,
       "size": null,
       "kind": "recorded",
-      "licence": { "name": "Gemma Terms of Use", "url": "https://ai.google.dev/gemma/terms" },
+      "licence": {
+        "name": "Gemma Terms of Use",
+        "url": "https://ai.google.dev/gemma/terms"
+      },
       "modelCardUrl": "https://ai.google.dev/gemma/docs",
       "repositoryId": null,
       "revision": null,
@@ -50,7 +65,10 @@
       "year": 2025,
       "size": null,
       "kind": "recorded",
-      "licence": { "name": "Gemma Terms of Use", "url": "https://ai.google.dev/gemma/terms" },
+      "licence": {
+        "name": "Gemma Terms of Use",
+        "url": "https://ai.google.dev/gemma/terms"
+      },
       "modelCardUrl": "https://ai.google.dev/gemma/docs",
       "repositoryId": null,
       "revision": null,
@@ -64,13 +82,24 @@
       "year": 2026,
       "size": "E2B",
       "kind": "live",
-      "licence": { "name": "Apache-2.0", "url": "https://www.apache.org/licenses/LICENSE-2.0" },
+      "licence": {
+        "name": "Apache-2.0",
+        "url": "https://www.apache.org/licenses/LICENSE-2.0"
+      },
       "modelCardUrl": "https://ai.google.dev/gemma/docs",
-      "repositoryId": null,
-      "revision": null,
-      "dtypes": { "webgpu": { "embed_tokens": "q4", "decoder_model_merged": "q4" } },
-      "downloadBytes": null,
-      "settings": { "maxTokens": 160, "temperature": 0.7 },
+      "repositoryId": "onnx-community/gemma-4-E2B-it-ONNX",
+      "revision": "6f21c99d7e18237f8d2ce92aadfdbfeba877f63a",
+      "dtypes": {
+        "webgpu": {
+          "embed_tokens": "q4f16",
+          "decoder_model_merged": "q4f16"
+        }
+      },
+      "downloadBytes": 3130551313,
+      "settings": {
+        "maxTokens": 160,
+        "temperature": 0.7
+      },
       "verify": "T-001"
     }
   ]

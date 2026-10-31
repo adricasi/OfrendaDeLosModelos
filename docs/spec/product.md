@@ -81,7 +81,7 @@ the Machine"), and a small open-source project people can keep using each 1 Nove
   recorded demo.
 - Language: English interface with the ritual's Spanish words; the medium answers in the
   visitor's language.
-- Name: **Ofrenda de los Modelos**, tagline "Closed models die. Open weights come home."
+- Name: **Ofrenda de los Modelos**, tagline "Closed models fade. Open weights can always come back."
 - Must be a new project (challenge rule, to verify on the Week 4 page).
 
 ## Glossary

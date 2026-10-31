@@ -78,7 +78,7 @@ export function formatDownloadSize(bytes: number): string {
 /** AC-006.2: what the visitor reads before Gemma 4 is downloaded. */
 export function consentMessage(request: ConsentRequest): string {
   const size = `It is a download of about ${formatDownloadSize(request.bytes)}.`;
-  return `${request.modelName} is not stored on this device yet. ${size} It stays in your browser for later visits, and nothing you write leaves your device.`;
+  return `${request.modelName} is not stored on this device yet. ${size} It stays in your browser for later visits, and you can remove it any time from About. Nothing you write leaves your device.`;
 }
 
 function renderNote(note: MediumNote, ancestorName: string | undefined): HTMLElement {

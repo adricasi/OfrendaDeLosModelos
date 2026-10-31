@@ -523,9 +523,6 @@
 
 /* The votive at each place: out until the ancestor speaks. */
 .place-candle {
-  position: absolute;
-  left: 8%;
-  bottom: 0.45rem;
   --jar-w: 1rem;
   --h: 1.7rem;
 }
@@ -563,8 +560,13 @@
   font-size: calc(1rem * var(--s, 1));
 }
 
+/* After .candle, so its position: relative cannot win: the candle sits centred at the
+   bottom of the portrait, under the emblem. */
 .place-candle {
-  margin-top: 0;
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0.45rem;
+  margin: 0 auto;
   font-size: 1rem;
 }
 

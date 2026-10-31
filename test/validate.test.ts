@@ -53,7 +53,20 @@ describe("shipped data files", () => {
       "gpt-2",
       "gemma-4-e2b",
     ]);
-    for (const ancestor of ancestors) {
+    expect(ancestors.filter((a) => a.kind === "live")).toMatchObject([
+      {
+        repositoryId: "Xenova/gpt2",
+        revision: "bf2c7f02e0b826c60d03af341171bde20893da66",
+        dtypes: { webgpu: "fp16", wasm: "uint8" },
+      },
+      {
+        repositoryId: "onnx-community/gemma-4-E2B-it-ONNX",
+        revision: "6f21c99d7e18237f8d2ce92aadfdbfeba877f63a",
+        downloadBytes: 3_130_551_313,
+        dtypes: { webgpu: { embed_tokens: "q4f16", decoder_model_merged: "q4f16" } },
+      },
+    ]);
+    for (const ancestor of ancestors.filter((a) => a.kind !== "live")) {
       expect(ancestor.repositoryId).toBeNull();
       expect(ancestor.revision).toBeNull();
     }

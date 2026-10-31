@@ -138,6 +138,7 @@ describe("recording tool (REQ-013)", () => {
       model: "gemma:2b",
       prompt: "What happens when we die?",
       stream: false,
+      think: false,
       options: { temperature: 0, seed: 42, num_predict: 120 },
     });
   });
@@ -279,9 +280,17 @@ describe("medium phase (AC-007.5)", () => {
     expect(entry?.model.tag).toBe("gemma4:e2b");
     expect(entry?.prompt.file).toBe("prompts/medium.md");
     expect(entry?.prompt.sha256).toMatch(/^[0-9a-f]{64}$/);
+    // The medium has its own token budget, and its provenance says so.
+    expect(entry?.settings).toEqual({ temperature: 0, seed: 42, numPredict: 1100 });
     // The medium prompt carried the recorded answers of the ancestors.
     const mediumRequest = fake.requests.find((r) => promptOf(r).includes("Write a calaverita."));
     expect(String(mediumRequest?.body?.["prompt"])).toContain("answer from gemma:2b");
+    expect(mediumRequest?.body?.["think"]).toBe(false);
+    expect(mediumRequest?.body?.["options"]).toEqual({
+      temperature: 0,
+      seed: 42,
+      num_predict: 1100,
+    });
   });
 
   it("skips the medium with a message while the prompt file does not exist", async () => {
@@ -336,7 +345,7 @@ describe("loopback only", () => {
 });
 
 describe("shipped config and data", () => {
-  it("lists the four recorded ancestors consistent with ancestors.json, tags unverified", () => {
+  it("lists the four recorded ancestors consistent with ancestors.json, tags verified", () => {
     const config = parseRecorderConfig(shippedConfig());
     const ancestors = parseAncestors(JSON.parse(shippedText("public/data/ancestors.json")));
     expect(config.ancestors.map((a) => a.tag)).toEqual([
@@ -349,14 +358,15 @@ describe("shipped config and data", () => {
       const match = ancestors.find((a) => a.id === entry.id);
       expect(match?.name).toBe(entry.name);
       expect(match?.licence).toEqual(entry.licence);
-      expect(entry.verified).toBe(false);
+      expect(entry.verified).toBe(true);
     }
     expect(config.generation).toEqual({ temperature: 0, seed: 42, numPredict: 120 });
+    expect(config.medium.numPredict).toBe(1100);
   });
 
-  it("the committed placeholder recorded-voices.json is valid and empty", () => {
+  it("the committed recorded-voices.json is valid", () => {
     const file = parseRecordedVoices(JSON.parse(shippedText("public/data/recorded-voices.json")));
-    expect(file).toEqual(emptyRecordedVoices());
+    expect(file.schemaVersion).toBe(1);
   });
 });
 
@@ -539,8 +549,13 @@ describe("re-runs, failures and stale ids", () => {
   });
 
   it("refuses unverified tags without allowUnverified", async () => {
+    const config = configFor("http://127.0.0.1:11434");
+    const unverified: RecorderConfig = {
+      ...config,
+      ancestors: config.ancestors.map((a) => ({ ...a, verified: false })),
+    };
     await expect(
-      recordVoicesStrict(configFor("http://127.0.0.1:11434"), emptyRecordedVoices(), {
+      recordVoicesStrict(unverified, emptyRecordedVoices(), {
         readText,
       }),
     ).rejects.toThrow(/--allow-unverified/);

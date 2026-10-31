@@ -253,7 +253,11 @@ describe("the ritual without WebGPU (AC-010.1, AC-010.2, AC-006.3, AC-007.5)", (
         type: "load",
         modelId: "gpt-2",
         backend: "wasm",
-        source: expect.objectContaining({ repositoryId: null, revision: null }) as unknown,
+        source: {
+          repositoryId: "Xenova/gpt2",
+          revision: "bf2c7f02e0b826c60d03af341171bde20893da66",
+          dtypes: { webgpu: "fp16", wasm: "uint8" },
+        },
       },
     ]);
     expect(view.started).toEqual([
