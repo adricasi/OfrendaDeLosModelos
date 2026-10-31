@@ -27,7 +27,7 @@ import type {
   WorkerToUiMessage,
 } from "../src/worker/protocol.js";
 import { withFakeDownloadSize } from "../src/fake/bootstrap.js";
-import { loadTestData, settle } from "./helpers.js";
+import { loadTestData, settle, withUnpinned } from "./helpers.js";
 
 const offered: Question = { text: "What do you remember?", offeredId: "remember", lang: "en" };
 const own: Question = { text: "¿Me oyes?", offeredId: null, lang: "es" };
@@ -101,7 +101,7 @@ async function run(
   { sized = true, log }: { sized?: boolean; log?: (message: string) => void } = {},
 ) {
   const loaded = await loadTestData();
-  const data = sized ? withFakeDownloadSize(loaded) : loaded;
+  const data = sized ? loaded : withUnpinned(loaded, ["downloadBytes"]);
   const worker = createFakeWorker(workerOptions);
   const posted: UiToWorkerMessage[] = [];
   const spy: ModelWorkerPort = {
@@ -129,7 +129,7 @@ describe("Gemma 4 speaks with consent (AC-006.1, AC-006.2)", () => {
     expect(view.consents).toHaveLength(1);
     expect(view.consents[0]).toMatchObject({
       stepId: "gemma-4-e2b",
-      request: { modelName: "Gemma 4 E2B", bytes: 1_900_000_000 },
+      request: { modelName: "Gemma 4 E2B", bytes: 3_130_551_313 },
     });
   });
 
@@ -261,7 +261,7 @@ describe("Gemma 4 fails (AC-006.4)", () => {
   }
 
   it("falls back to the recordings, without asking, when Gemma 4 is not pinned (AC-006.3, AC-007.5)", async () => {
-    const data = withFakeDownloadSize(await loadTestData());
+    const data = withFakeDownloadSize(withUnpinned(await loadTestData()));
     const logs: string[] = [];
     const steps = buildRitualPlan(data.ancestors, {
       worker: realHost(),
@@ -282,7 +282,7 @@ describe("Gemma 4 fails (AC-006.4)", () => {
   });
 
   it("an own question gets the unavailable line for Gemma 4 and the medium's not-invited line", async () => {
-    const data = withFakeDownloadSize(await loadTestData());
+    const data = withFakeDownloadSize(withUnpinned(await loadTestData()));
     const steps = buildRitualPlan(data.ancestors, {
       worker: realHost(),
       recorded,

@@ -11,7 +11,7 @@ import type { StepInfo } from "../src/ritual/types.js";
 import { consentMessage, createRitualView, formatDownloadSize } from "../src/ui/ritual-view.js";
 import { createInferenceHost, type ModelRuntime } from "../src/worker/inference-host.js";
 import type { WorkerToUiMessage } from "../src/worker/protocol.js";
-import { loadTestData, mountPage, read, settle } from "./helpers.js";
+import { loadTestData, mountPage, read, settle, withUnpinned } from "./helpers.js";
 
 const gemma: StepInfo = {
   id: "gemma-4-e2b",
@@ -191,16 +191,16 @@ describe("the worker's probe (AC-006.2, AC-003.3)", () => {
 describe("Gemma 4 data and the development override", () => {
   const SHA = "0123456789abcdef0123456789abcdef01234567";
 
-  it("keeps Gemma 4 unpinned until T-001 with a per-session dtype map", async () => {
+  it("pins Gemma 4 to its revision, size and a per-session dtype map", async () => {
     const data = await loadTestData();
     const g = data.ancestors.find((a) => a.id === "gemma-4-e2b");
     expect(g).toMatchObject({
-      repositoryId: null,
-      revision: null,
+      repositoryId: "onnx-community/gemma-4-E2B-it-ONNX",
+      revision: "6f21c99d7e18237f8d2ce92aadfdbfeba877f63a",
       verify: "T-001",
-      downloadBytes: null,
+      downloadBytes: 3_130_551_313,
     });
-    expect(g?.dtypes?.webgpu).toEqual({ embed_tokens: "q4", decoder_model_merged: "q4" });
+    expect(g?.dtypes?.webgpu).toEqual({ embed_tokens: "q4f16", decoder_model_merged: "q4f16" });
   });
 
   it("validates downloadBytes and dtype maps", () => {
@@ -230,7 +230,7 @@ describe("Gemma 4 data and the development override", () => {
   });
 
   it("applies to Gemma 4 only", async () => {
-    const data = await loadTestData();
+    const data = withUnpinned(await loadTestData());
     const result = applyModelOverrides(data.ancestors, `?model-gemma4=o/m@${SHA}`);
     expect(result.filter((a) => a.revision !== null).map((a) => a.id)).toEqual(["gemma-4-e2b"]);
   });
