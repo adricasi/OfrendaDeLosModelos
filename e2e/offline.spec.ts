@@ -95,3 +95,41 @@ test("a stopped ritual does not start the service worker", async ({ page }) => {
     await page.evaluate(async () => (await navigator.serviceWorker.getRegistrations()).length),
   ).toBe(0);
 });
+
+test("Forget the models removes only the model cache and the altar still opens offline (AC-011.2)", async ({
+  page,
+  context,
+  baseURL,
+}) => {
+  const origin = new URL(baseURL ?? "http://localhost:4173").origin;
+  await page.goto(START);
+  await completeRitual(page);
+  await expect(page.locator("#offline-note")).toHaveText(OFFLINE_NOTE);
+
+  await page.evaluate(async () => {
+    const cache = await caches.open("transformers-cache");
+    await cache.put(
+      "https://huggingface.co/fake/model.onnx",
+      new Response("x", { headers: { "Content-Length": "1900000000" } }),
+    );
+  });
+
+  await page.getByRole("link", { name: "About, credits and licences" }).click();
+  await expect(page.locator("#stored-models-status")).toHaveText("Stored now: about 1.9 GB.");
+  await page.getByRole("button", { name: "Forget the models" }).click();
+  await expect(page.locator("#stored-models-result")).toHaveText("Removed about 1.9 GB.");
+  await expect(page.locator("#stored-models-status")).toHaveText("Nothing stored.");
+
+  const names = await page.evaluate(() => caches.keys());
+  expect(names).not.toContain("transformers-cache");
+  expect(names.some((name) => name.startsWith("ofrenda-shell-"))).toBe(true);
+
+  await context.setOffline(true);
+  try {
+    const offline = await context.newPage();
+    await offline.goto(`${origin}${START}`);
+    await expect(offline.locator("#places > li")).toHaveCount(5);
+  } finally {
+    await context.setOffline(false);
+  }
+});

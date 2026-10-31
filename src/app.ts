@@ -6,6 +6,7 @@ import { NO_WEBGPU_MESSAGE } from "./ritual/gpu.js";
 import { renderAltar, showBrowserNote, showLoadError } from "./ui/altar.js";
 import { wireOffering } from "./ui/offering.js";
 import { createRitualView } from "./ui/ritual-view.js";
+import { wireStoredModels, type CacheStorageLike } from "./ui/stored-models.js";
 import { withDebugLogging } from "./debug/debug-log.js";
 import inferenceWorkerUrl from "./worker/inference.worker.ts?worker&url";
 import { knownScripts, workerScriptUrl, type KnownScripts } from "./worker/trusted-worker.js";
@@ -50,8 +51,10 @@ export function startAltar(
   data: AltarData,
   deps: RitualDependencies,
   onRitualCompleted?: () => void,
+  cacheStorage: CacheStorageLike | undefined = typeof caches === "undefined" ? undefined : caches,
 ): void {
   renderAltar(doc, data);
+  const storedModels = wireStoredModels(doc, cacheStorage);
   if (deps.webgpu === false) showBrowserNote(doc, NO_WEBGPU_MESSAGE);
   const runner = new RitualRunner(buildRitualPlan(data.ancestors, deps), createRitualView(doc));
   const form = wireOffering(doc, data.questions, {
@@ -59,6 +62,7 @@ export function startAltar(
       const ritual = runner.start(question);
       if (ritual === null) return;
       form.setRunning(true);
+      storedModels.setBusy(true);
       ritual
         .then((end) => {
           if (end === "completed") onRitualCompleted?.();
@@ -68,6 +72,7 @@ export function startAltar(
         })
         .finally(() => {
           form.setRunning(false);
+          storedModels.setBusy(false);
         });
     },
     onStop() {
