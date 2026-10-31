@@ -355,7 +355,7 @@ describe("the medium writes for each ancestor (AC-007.1, AC-007.2, AC-007.4)", (
     expect(notes?.every((n) => n.calaverita.length === 4)).toBe(true);
     // The JSON is not streamed to the visitor while it is written.
     expect(view.tokens.get("medium")).toBeUndefined();
-    expect(view.statuses).toContain("Writing for each ancestor…");
+    expect(view.statuses).toContain("Writing for each model…");
   });
 
   it("asks for the question's language and treats the answers as data", async () => {

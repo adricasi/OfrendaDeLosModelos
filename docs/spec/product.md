@@ -11,8 +11,8 @@ relied on it lose it overnight (in 2025 about two hundred people held a real fun
 retired closed model). Open-weight models can't die that way: their weights can be kept and
 run by anyone, on their own machine.
 
-Día de los Muertos is a tradition of remembering: the dead return when someone sets a place
-for them. Nothing today lets people *visit* the open models that came before (GPT-2, the
+Día de Muertos is a Mexican tradition of remembering; in many ofrendas a place is set for the
+dead. This project is an artistic interpretation inspired by it, not the tradition itself. Nothing today lets people *visit* the open models that came before (GPT-2, the
 early Gemmas) side by side with the newest one, or shows in a felt way why openness is what
 makes that possible.
 
@@ -33,7 +33,9 @@ the Machine"), and a small open-source project people can keep using each 1 Nove
   their own device.
 - G-3: Make Gemma 4 the living centre of the altar, using what only an open, on-device model
   can do (local inference, any language, Apache 2.0, image understanding as a stretch).
-- G-4: Honour Día de los Muertos accurately and respectfully.
+- G-4: Honour Día de Muertos accurately and respectfully, and say plainly that the altar is an
+  artistic interpretation, not a Mexican ritual (founder's editorial review, 2026-10-31; cultural
+  review by a reader of Mexican background still pending).
 - G-5: Ship a working entry and its post before the challenge deadline.
 
 ## Success metrics
@@ -85,13 +87,13 @@ the Machine"), and a small open-source project people can keep using each 1 Nove
 ## Glossary
 | Term | Meaning |
 |---|---|
-| Ofrenda | The altar set up for Día de los Muertos to welcome the dead home |
+| Ofrenda | The altar set up for Día de Muertos to welcome the dead home |
 | Ancestor | An earlier open-weight model shown on the altar |
 | Recorded voice | An ancestor's answer recorded offline beforehand, replayed on the altar |
 | Ghost words | The alternatives a model almost chose at each word (its top candidate tokens) |
 | La que cuida el altar | "The one who tends the altar": Gemma 4's role as medium |
-| Calaverita literaria | A short, affectionate, rhyming mock-epitaph, a Día de los Muertos tradition |
-| Dark frame | A frame for a retired closed model that cannot come home |
+| Calaverita literaria | A short, playful rhyming verse in the Mexican literary tradition of the calavera: it often teases and personifies La Muerte; here it plays with a model's own "mortality" (retirement, being superseded, its quirks), in exactly four lines |
+| Dark frame | An empty frame for a closed model whose weights were never released: inaccessible digital history, not a death |
 | Open-weight | Weights published for anyone to run; not necessarily open source (training data, code) |
 
 ## Open questions

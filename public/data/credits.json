@@ -1,5 +1,5 @@
 {
-  "assets": "All art on this page is original CSS and SVG, made for this project and MIT-licensed with the code. It uses your system fonts. No third-party images, fonts or scripts are included.",
+  "assets": "All art on this page is original CSS and SVG, made for this project and MIT-licensed with the code. The only third-party assets are the two fonts below, self-hosted and licensed under the SIL Open Font License 1.1. No third-party images or scripts are included.",
   "culturalReviewPending": true,
   "sources": [
     {
@@ -14,7 +14,7 @@
       "title": "Making an Ofrenda",
       "publisher": "Maxwell Museum of Anthropology, University of New Mexico",
       "url": "https://maxwellmuseum.unm.edu/sites/default/files/public/Making%20an%20Ofrenda.pdf",
-      "usedFor": "The four elements: earth, wind (papel picado), fire (candles) and water"
+      "usedFor": "One interpretation of the four elements: earth, wind (papel picado), fire (candles) and water"
     },
     {
       "id": "kut",
@@ -28,7 +28,7 @@
       "title": "Connections: Learning Objectives",
       "publisher": "Detroit Institute of Arts",
       "url": "https://dia.org/sites/default/files/2022-07/Connections-Learning%20Objectives.pdf",
-      "usedFor": "Altar levels, which vary by region"
+      "usedFor": "Altar levels, which vary by region and family"
     },
     {
       "id": "natgeo",

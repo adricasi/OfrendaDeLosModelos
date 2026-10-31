@@ -94,10 +94,22 @@ export const MOCKING_STEMS: readonly string[] = [
   "dinosaurio",
 ];
 
+/**
+ * La Muerte and La Catrina are playful characters of the calaverita, not real people: a verse in
+ * their voice ("Soy La Catrina", "I am Death") is allowed (R3), so they are not R2 hits.
+ */
+const CHARACTER = String.raw`(?:La Muerte|La Catrina|La Calaca|La Flaca|Catrina|Lady Death|Death|Muerte)\b`;
+
 /** R2: first-person claims to be a named person, or a human. */
 const PERSON_PATTERNS: readonly RegExp[] = [
-  /\b(?:I am|I'm|I was)\s+(?!Gemma|GPT|La que|the medium|a |an |the |your |here|just|not |so |still|always|only)[A-ZÁÉÍÓÚÑ][\p{L}]+(?:\s+[A-ZÁÉÍÓÚÑ][\p{L}]+)+/u,
-  /\b(?:Yo soy|Soy)\s+(?!Gemma|GPT|La que|el |la |un |una |tu |aquí|solo|siempre|tan )[A-ZÁÉÍÓÚÑ][\p{L}]+(?:\s+[A-ZÁÉÍÓÚÑ][\p{L}]+)+/u,
+  new RegExp(
+    String.raw`\b(?:I am|I'm|I was)\s+(?!${CHARACTER}|Gemma|GPT|La que|the medium|a |an |the |your |here|just|not |so |still|always|only)[A-ZÁÉÍÓÚÑ][\p{L}]+(?:\s+[A-ZÁÉÍÓÚÑ][\p{L}]+)+`,
+    "u",
+  ),
+  new RegExp(
+    String.raw`\b(?:Yo soy|Soy)\s+(?!${CHARACTER}|Gemma|GPT|La que|el |la |un |una |tu |aquí|solo|siempre|tan )[A-ZÁÉÍÓÚÑ][\p{L}]+(?:\s+[A-ZÁÉÍÓÚÑ][\p{L}]+)+`,
+    "u",
+  ),
   /\bmy (?:late )?(?:grandmother|grandfather|mother|father|wife|husband|son|daughter)\b/i,
   /\bmi (?:difunta |difunto )?(?:abuela|abuelo|madre|padre|esposa|esposo|hijo|hija)\b/i,
   /\b(?:as|like) a (?:human|person|living person)\b/i,

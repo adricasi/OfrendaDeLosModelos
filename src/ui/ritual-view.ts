@@ -1,3 +1,6 @@
+import { MEDIUM_MODEL_ID } from "../ritual/plan.js";
+import { svgEl, veladora } from "./art.js";
+import { flare, placeCard, stagger } from "./motion.js";
 import type { Alternative } from "../worker/protocol.js";
 import type {
   ConsentRequest,
@@ -10,18 +13,21 @@ import type {
   Token,
 } from "../ritual/types.js";
 
-export const UNAVAILABLE_MESSAGE = "This ancestor could not come tonight.";
+/** Shown on the card while the question about the download is open (AC-006.2). */
+export const WAITING_FOR_PERMISSION = "Waiting for your permission";
+
+export const UNAVAILABLE_MESSAGE = "This model could not come tonight.";
 export const GATHERING_MESSAGE =
-  "The recorded voices are still being gathered. This ancestor will speak here soon.";
+  "The recorded voices are still being gathered. This model will speak here soon.";
 export const MEDIUM_NOT_INVITED_MESSAGE =
-  "La que cuida el altar only speaks for questions the ancestors left for us.";
+  "La que cuida el altar only writes about the offered questions, the ones the models have recorded answers for.";
 export const NOT_INVITED_MESSAGE =
-  "These ancestors only answer the questions they left for us. Their voices rest tonight.";
+  "These models only have recorded answers to the offered questions. Their recorded voices are resting tonight.";
 
 const END_MESSAGES: Readonly<Record<RitualEnd, string>> = {
   completed: "The ritual is complete.",
   stopped: "The ritual was stopped.",
-  "ended-early": "The ritual ended early: the ancestor who tends the altar could not come.",
+  "ended-early": "The ritual ended early: Gemma 4, who tends the altar, could not come.",
 };
 
 const MODE_LABELS = {
@@ -132,6 +138,24 @@ export function createRitualView(doc: Document): RitualView {
     for (const lit of doc.querySelectorAll(".place.speaking")) lit.classList.remove("speaking");
   };
   const nameOf = (info: StepInfo): string => info.name;
+  // The medium's calaveritas are set down one by one, like cards placed on the altar.
+  const addNotes = (voice: VoiceElements, notes: readonly MediumNote[]): void => {
+    const cards = notes.map((note) => renderNote(note, names.get(note.ancestorId)));
+    const cloth = make(doc, "div", "altar-cloth");
+    cloth.append(
+      svgEl(
+        doc,
+        "svg",
+        { class: "bordado cloth-edge", "aria-hidden": "true", focusable: "false" },
+        svgEl(doc, "rect", { width: "100%", height: "100%" }),
+      ),
+      ...cards,
+    );
+    voice.item.append(cloth);
+    cards.forEach((card, index) => {
+      placeCard(card, index);
+    });
+  };
 
   const appendPlain = (voice: VoiceElements, text: string): void => {
     if (voice.textEl.lastChild !== voice.text) {
@@ -237,6 +261,8 @@ export function createRitualView(doc: Document): RitualView {
       if (question.lang === null) questionLine.removeAttribute("lang");
       else questionLine.lang = question.lang;
       section.hidden = false;
+      // The ambient motion around the text rests while the answers are read (see motion.ts).
+      doc.documentElement.dataset["reading"] = "";
       announce(`The ritual begins. Your question: ${question.text}`, question.lang);
     },
 
@@ -249,14 +275,38 @@ export function createRitualView(doc: Document): RitualView {
       const name = make(doc, "h3", "voice-name", nameOf(info));
       if (info.nameLang !== undefined) name.lang = info.nameLang;
       const label = make(doc, "p", "voice-label", MODE_LABELS[info.mode]);
+      // The ancestor's emblem and a small candle of its own, as at its place on the altar.
+      const home =
+        place(info) ??
+        doc.querySelector<HTMLElement>(`#places [data-ancestor-id="${MEDIUM_MODEL_ID}"]`);
+      item.dataset["family"] =
+        info.ancestorId === null ? "medium" : (home?.dataset["family"] ?? "");
+      if (info.ancestorId === null || info.ancestorId === MEDIUM_MODEL_ID) {
+        item.dataset["culmination"] = info.ancestorId === null ? "medium" : "gemma-4";
+      }
+      const head = make(doc, "div", "voice-head");
+      const emblem = home?.querySelector(".emblem");
+      if (emblem !== null && emblem !== undefined) {
+        const mark = make(doc, "span", "voice-emblem");
+        mark.append(emblem.cloneNode(true));
+        head.append(mark);
+      }
+      const titles = make(doc, "div", "voice-titles");
+      titles.append(name, label);
+      head.append(titles);
+      const candle = veladora(doc, { height: 1.9, tint: 1, glow: 4, phase: 0.7 });
+      candle.classList.add("voice-candle");
+      head.append(candle);
       const textNode = doc.createTextNode("");
       const text = make(doc, "p", "voice-text");
       text.append(textNode);
       const status = make(doc, "p", "voice-status");
-      item.append(name, label);
+      item.append(head);
       if (info.caveat !== undefined) item.append(make(doc, "p", "voice-caveat", info.caveat));
       item.append(text, status);
       list.append(item);
+      stagger([item], 0);
+      flare(item, ".voice-candle .flame");
       const voice: VoiceElements = {
         item,
         label,
@@ -300,7 +350,11 @@ export function createRitualView(doc: Document): RitualView {
           event.target instanceof HTMLElement ? event.target.closest<HTMLElement>(".token") : null;
         if (unit !== null) setRoving(voice, unit);
       });
-      place(info)?.classList.add("speaking");
+      const lit = place(info);
+      if (lit !== null) {
+        lit.classList.add("speaking");
+        flare(lit);
+      }
     },
 
     stepStatus(stepId: string, message: string): void {
@@ -325,9 +379,14 @@ export function createRitualView(doc: Document): RitualView {
         decline.type = "button";
         box.append(text, accept, decline);
         voice.item.append(box);
+        const restingLabel = voice.label.textContent;
+        voice.label.textContent = WAITING_FOR_PERMISSION;
         // Read once: focus moves to the group, whose name is the question (no announcer copy).
         const close = (action: () => void): void => {
           signal.removeEventListener("abort", onAbort);
+          if (voice.label.textContent === WAITING_FOR_PERMISSION) {
+            voice.label.textContent = restingLabel;
+          }
           box.remove();
           // Focus must not fall back to <body>: the Stop button is the next control in the ritual.
           const stop = doc.getElementById("stop-button");
@@ -398,7 +457,7 @@ export function createRitualView(doc: Document): RitualView {
           // One block per ancestor, inside the medium's own step (reading order stays linear).
           voice.textEl.textContent = "";
           const notes = outcome.notes;
-          voice.item.append(...notes.map((note) => renderNote(note, names.get(note.ancestorId))));
+          addNotes(voice, notes);
           announce(
             `${name}: ${notes
               .map(
@@ -422,7 +481,7 @@ export function createRitualView(doc: Document): RitualView {
           // The recorded medium's words, one block per ancestor, labelled as recorded.
           voice.textEl.textContent = "";
           const notes = outcome.notes;
-          voice.item.append(...notes.map((note) => renderNote(note, names.get(note.ancestorId))));
+          addNotes(voice, notes);
           announce(
             `${name}, recorded: ${notes
               .map(
@@ -459,6 +518,7 @@ export function createRitualView(doc: Document): RitualView {
 
     ritualFinished(reason: RitualEnd): void {
       clearSpeaking();
+      delete doc.documentElement.dataset["reading"];
       for (const voice of voices.values()) {
         if (voice.item.dataset["state"] === "speaking") voice.item.dataset["state"] = "stopped";
       }

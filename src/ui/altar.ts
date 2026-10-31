@@ -1,14 +1,26 @@
 import type { AltarData } from "../data/load.js";
 import type { Ancestor, CreditSource, DarkFrame } from "../data/validate.js";
 import { MEDIUM_MODEL_ID } from "../ritual/plan.js";
+import {
+  emblemSvg,
+  renderArchLegs,
+  renderArchTop,
+  renderDefinitions,
+  renderMarigoldBed,
+  renderOfferings,
+  renderPapelPicado,
+  renderPetalPath,
+  renderTopCandles,
+  veladora,
+} from "./art.js";
+import { startPetalDrift } from "./motion.js";
 
 /**
  * Renders the static altar from validated data. Every data string goes in through
  * textContent / setAttribute on elements we create: never as HTML (design.md, Security).
  */
 
-const SVG_NS = "http://www.w3.org/2000/svg";
-const PETAL_COUNT = 18;
+const PETAL_COUNT = 46;
 
 function byId(doc: Document, id: string): HTMLElement {
   const element = doc.getElementById(id);
@@ -34,55 +46,38 @@ function link(doc: Document, href: string, text: string): HTMLAnchorElement {
   return anchor;
 }
 
-function portraitSvg(doc: Document): SVGSVGElement {
-  // An abstract silhouette: ancestors here are models, so there is no face to draw.
-  const svg = doc.createElementNS(SVG_NS, "svg");
-  svg.setAttribute("viewBox", "0 0 60 72");
-  svg.setAttribute("aria-hidden", "true");
-  svg.setAttribute("focusable", "false");
-  const head = doc.createElementNS(SVG_NS, "circle");
-  head.setAttribute("cx", "30");
-  head.setAttribute("cy", "26");
-  head.setAttribute("r", "11");
-  const shoulders = doc.createElementNS(SVG_NS, "path");
-  shoulders.setAttribute("d", "M8 72c0-18 10-26 22-26s22 8 22 26Z");
-  svg.append(head, shoulders);
-  return svg;
-}
-
 function kindLabel(ancestor: Ancestor): string {
   return ancestor.kind === "live" ? "Speaks live, on your device" : "Speaks through recordings";
 }
 
-function renderPlace(doc: Document, ancestor: Ancestor): HTMLLIElement {
-  const item = el(doc, "li", `place place-${ancestor.kind}`);
+function renderPlace(doc: Document, ancestor: Ancestor, index: number): HTMLLIElement {
+  // The one who tends the altar (Gemma 4) has the top level, near the candles.
+  const tends = ancestor.id === MEDIUM_MODEL_ID;
+  const item = el(doc, "li", `place place-${ancestor.kind}${tends ? " place-medium" : ""}`);
   item.dataset["ancestorId"] = ancestor.id;
+  item.dataset["family"] = ancestor.family.toLowerCase();
   const figure = el(doc, "figure", "frame");
   const portrait = el(doc, "div", "portrait");
-  portrait.append(portraitSvg(doc));
+  portrait.append(emblemSvg(doc, ancestor.family, ancestor.id));
+  // The candle lights while this ancestor speaks (see ritual-view.ts).
+  portrait.append(
+    veladora(doc, { height: 1.7, tint: index % 4, glow: 4.5, phase: index * 0.9 + 0.3 }),
+  );
+  portrait.lastElementChild?.classList.add("place-candle");
   const caption = el(doc, "figcaption");
+  caption.append(el(doc, "strong", "name", ancestor.name));
+  if (tends) {
+    const role = el(doc, "span", "role", "La que cuida el altar");
+    role.lang = "es";
+    caption.append(role);
+  }
   caption.append(
-    el(doc, "strong", "name", ancestor.name),
     el(doc, "span", "year", String(ancestor.year)),
     el(doc, "span", "kind", kindLabel(ancestor)),
   );
-  // The candle flickers while this ancestor speaks (see ritual-view.ts).
-  const candle = el(doc, "span", "candle place-candle");
-  candle.setAttribute("aria-hidden", "true");
-  candle.append(el(doc, "span", "flame"));
-  figure.append(portrait, candle, caption);
+  figure.append(portrait, caption);
   item.append(figure);
   return item;
-}
-
-function renderPetals(doc: Document, container: HTMLElement): void {
-  container.replaceChildren();
-  for (let index = 0; index < PETAL_COUNT; index += 1) {
-    const petal = el(doc, "span", "petal");
-    // CSSOM (not a style attribute) so it stays valid under style-src 'self'.
-    petal.style.setProperty("--i", String(index));
-    container.append(petal);
-  }
 }
 
 function renderDarkFrame(doc: Document, frame: DarkFrame): HTMLLIElement {
@@ -148,10 +143,33 @@ function renderSourceLine(doc: Document, source: CreditSource): HTMLLIElement {
   return item;
 }
 
+/** The decoration around the places: papel picado, the arch, candles, offerings, the petal path. */
+function renderScene(doc: Document): void {
+  const defs = byId(doc, "art-defs") as unknown as SVGSVGElement;
+  renderDefinitions(doc, defs);
+  const definitions = defs.querySelector("defs");
+  if (definitions !== null) renderArchLegs(doc, definitions, [76, 44]);
+  renderPapelPicado(doc, byId(doc, "papel-picado") as unknown as SVGSVGElement);
+  renderArchTop(doc, byId(doc, "arch-top") as unknown as SVGSVGElement);
+  renderTopCandles(doc, byId(doc, "top-candles"));
+  renderOfferings(doc, byId(doc, "offerings"));
+  renderMarigoldBed(doc, byId(doc, "marigold-bed"));
+  renderPetalPath(doc, byId(doc, "petals"), PETAL_COUNT);
+  byId(doc, "unlit-candle").replaceChildren(
+    veladora(doc, { height: 2.6, tint: 3, glow: 0.1, phase: 0 }),
+  );
+}
+
+/** Starts the drifting petals. Called once by the page, not by tests (no canvas in jsdom). */
+export function startAltarMotion(doc: Document): void {
+  const canvas = doc.getElementById("petal-drift");
+  if (canvas instanceof HTMLCanvasElement) startPetalDrift(canvas);
+}
+
 export function renderAltar(doc: Document, data: AltarData): void {
   const places = byId(doc, "places");
-  places.replaceChildren(...data.ancestors.map((a) => renderPlace(doc, a)));
-  renderPetals(doc, byId(doc, "petals"));
+  places.replaceChildren(...data.ancestors.map((a, index) => renderPlace(doc, a, index)));
+  renderScene(doc);
 
   const darkSection = byId(doc, "dark-frames-section");
   byId(doc, "dark-frames").replaceChildren(...data.darkFrames.map((f) => renderDarkFrame(doc, f)));
@@ -174,6 +192,14 @@ export function showBrowserNote(doc: Document, message: string): void {
   const note = byId(doc, "browser-note");
   note.textContent = message;
   note.hidden = false;
+}
+
+/** REQ-011: said once, after a complete ritual, when the service worker has the shell ready. */
+export const OFFLINE_READY_MESSAGE = "This altar now works offline on this device.";
+
+export function showOfflineNote(doc: Document): void {
+  const note = byId(doc, "offline-note");
+  note.textContent = OFFLINE_READY_MESSAGE;
 }
 
 export function showLoadError(doc: Document, error: unknown): void {
