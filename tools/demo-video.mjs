@@ -5,6 +5,8 @@
 //   node tools/demo-video.mjs http://localhost:4173/OfrendaDeLosModelos/ <out-dir> --live
 //   It runs one ritual online first so the models and the service worker are cached (kept in
 //   <out-dir>/browser-profile), then switches the browser offline and films the whole take.
+// Add --narration <dir> with narration_01.mp3 … narration_07.mp3 (one per paragraph below):
+//   each scene then lasts at least as long as its paragraph, and the voice is mixed in.
 // Needs ffmpeg on PATH. Not part of the site or CI.
 /* global document, navigator, performance, requestAnimationFrame, scrollTo, scrollY, setTimeout -- browser code inside page.evaluate */
 import { chromium } from "@playwright/test";
@@ -19,6 +21,8 @@ const LIVE = process.argv.includes("--live");
 const URL = LIVE ? BASE : `${BASE}?fake-models&fake-uncached&fake-delay=70`;
 // Real models can take minutes on a first download; the stand-ins answer in seconds.
 const MODEL_TIMEOUT = LIVE ? 30 * 60_000 : 90_000;
+const narrationArg = process.argv.indexOf("--narration");
+const NARRATION_DIR = narrationArg > 0 ? process.argv[narrationArg + 1] : null;
 
 const NARRATION = [
   "In August 2025, about two hundred people held a funeral for an AI model. Its makers had switched it off, and there was nothing else anyone could do.",
@@ -29,6 +33,28 @@ const NARRATION = [
   "And finally Gemma 4, the first Gemma under Apache 2.0. Running on your own device, it tends the altar, and writes each ancestor a calaverita.",
   "Nothing you write leaves your machine.",
 ];
+// The last audio file also says the end card's line ("Closed models die. Open weights come
+// home."); the card appears in the pause before it.
+const END_CARD_AFTER = 2.4;
+const PAUSE_AFTER_PARAGRAPH = 0.5;
+
+const narrationFiles = NARRATION.map((_, i) => `${NARRATION_DIR}/narration_0${i + 1}.mp3`);
+const narrationSeconds = NARRATION_DIR
+  ? narrationFiles.map((file) =>
+      Number(
+        execFileSync("ffprobe", [
+          "-v",
+          "error",
+          "-show_entries",
+          "format=duration",
+          "-of",
+          "csv=p=0",
+          file,
+        ]).toString(),
+      ),
+    )
+  : null;
+const paragraphStart = [];
 
 const frames = [];
 // bypassCSP only lets the video layer add its own stylesheet; the site itself is unchanged.
@@ -159,6 +185,17 @@ const glide = (target, ms) =>
     [target, ms],
   );
 const wait = (ms) => p.waitForTimeout(ms);
+const now = () => Date.now() / 1000;
+// A paragraph starts with its caption; with narration, the scene holds until it is spoken.
+const say = async (i) => {
+  paragraphStart[i] = now();
+  await caption(NARRATION[i]);
+};
+const hold = async (i) => {
+  if (!narrationSeconds) return;
+  const left = paragraphStart[i] + narrationSeconds[i] + PAUSE_AFTER_PARAGRAPH - now();
+  if (left > 0) await wait(left * 1000);
+};
 
 const offerQuestion = async (pause = 0) => {
   await p.getByLabel("What happens when we die?").check();
@@ -211,7 +248,7 @@ await wait(2600);
 
 // 1. The altar.
 await card(null, false);
-await caption(NARRATION[0]);
+await say(0);
 await glide(0, 10);
 await wait(1500);
 await glide("#places", 6500);
@@ -219,14 +256,15 @@ await wait(2500);
 
 // 2. The dark frames.
 await p.evaluate(() => (document.getElementById("dark-frames-section").hidden = false));
-await caption(NARRATION[1]);
+await hold(0);
+await say(1);
 await glide("#dark-frames-section", 2600);
 await wait(4200);
-
-await p.evaluate(() => (document.getElementById("dark-frames-section").hidden = true));
+await hold(1);
 
 // 3. The offering.
-await caption(NARRATION[2]);
+await p.evaluate(() => (document.getElementById("dark-frames-section").hidden = true));
+await say(2);
 await glide("#offering", 2400);
 await wait(1800);
 await offerQuestion(1600);
@@ -235,7 +273,8 @@ await wait(400);
 // 4. GPT-2 and the ghost words.
 await p.waitForSelector(".token", { timeout: MODEL_TIMEOUT });
 await glide("#ritual", 1400);
-await caption(NARRATION[3]);
+await hold(2);
+await say(3);
 await wait(3600);
 await p
   .locator(".token")
@@ -245,7 +284,8 @@ await p
 await wait(3200);
 
 // 5. Gemma 1 to 3.
-await caption(NARRATION[4]);
+await hold(3);
+await say(4);
 await glide('.voice[data-step-id="gemma-1"]', 1800);
 await wait(1200);
 await glide('.voice[data-step-id="gemma-3"]', 1800);
@@ -254,7 +294,8 @@ await glide('.voice[data-step-id="gemma-3"]', 1800);
 await p.waitForSelector('.consent, .voice[data-step-id="gemma-4-e2b"]', {
   timeout: MODEL_TIMEOUT,
 });
-await caption(NARRATION[5]);
+await hold(4);
+await say(5);
 if (await p.locator(".consent").isVisible()) {
   await glide(".consent", 1500);
   await wait(1500);
@@ -263,12 +304,13 @@ await acceptConsentIfAsked();
 await glide('.voice[data-step-id="gemma-4-e2b"]', 1500);
 await p.waitForSelector("#ritual-end:not(:empty)", { timeout: MODEL_TIMEOUT });
 await glide('.voice[data-step-id="medium"]', 2200);
-await wait(3800);
+await wait(narrationSeconds ? 1800 : 3800);
 
 // 7. Offline: in the live take the whole ritual above ran with the network off.
-await caption(NARRATION[6]);
+await hold(5);
+await say(6);
 if (DRAFT) await note("[Final cut: the laptop with Wi-Fi off, the ritual still running]", true);
-await wait(3400);
+await wait(narrationSeconds ? END_CARD_AFTER * 1000 : 3400);
 
 // 8. End card.
 await caption("");
@@ -282,7 +324,8 @@ await card(
   ],
   true,
 );
-await wait(4500);
+await hold(6);
+await wait(narrationSeconds ? 1500 : 4500);
 await cdp.send("Page.stopScreencast");
 await ctx.close();
 await ctx.browser()?.close(); // the draft launches its own browser; the live context owns none
@@ -301,6 +344,7 @@ frames.forEach((f, i) => {
 list += `file 'f${String(frames.length - 1).padStart(5, "0")}.jpg'\n`;
 writeFileSync(`${dir}/list.txt`, list);
 const mp4 = `${OUT}/demo${DRAFT ? "-draft" : ""}.mp4`;
+const silent = NARRATION_DIR ? `${OUT}/video-only.mp4` : mp4;
 execFileSync("ffmpeg", [
   "-y",
   "-loglevel",
@@ -321,6 +365,38 @@ execFileSync("ffmpeg", [
   "22",
   "-movflags",
   "+faststart",
-  mp4,
+  silent,
 ]);
+if (NARRATION_DIR) {
+  // Each paragraph starts where its caption appeared in the take.
+  const delays = paragraphStart.map((t) => Math.max(0, Math.round((t - frames[0].t) * 1000)));
+  const mix =
+    delays.map((ms, i) => `[${i + 1}:a]adelay=${ms}:all=1[a${i}]`).join(";") +
+    `;${delays.map((_, i) => `[a${i}]`).join("")}amix=inputs=${delays.length}:normalize=0,apad[voice]`;
+  execFileSync("ffmpeg", [
+    "-y",
+    "-loglevel",
+    "error",
+    "-i",
+    silent,
+    ...narrationFiles.flatMap((file) => ["-i", file]),
+    "-filter_complex",
+    mix,
+    "-map",
+    "0:v",
+    "-map",
+    "[voice]",
+    "-c:v",
+    "copy",
+    "-c:a",
+    "aac",
+    "-b:a",
+    "160k",
+    "-shortest",
+    "-movflags",
+    "+faststart",
+    mp4,
+  ]);
+  rmSync(silent);
+}
 console.log(`${frames.length} frames → ${mp4}`);
