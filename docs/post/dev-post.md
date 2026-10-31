@@ -35,7 +35,7 @@ A word on the tradition. I'm in Spain, not Mexico. This altar is an artistic int
 {% embed https://www.youtube.com/watch?v=VIDEO_ID %}
 <!-- TODO founder: replace VIDEO_ID with the uploaded intro video -->
 
-The voice in the intro video is Kokoro-82M (Apache-2.0) and the music is MusicGen-small by Meta (CC-BY-NC 4.0). Both are open-weight models, generated locally with transformers.js.
+The voice in the intro video is [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M) (Apache-2.0) and the music is [MusicGen-small](https://huggingface.co/facebook/musicgen-small) by Meta (CC-BY-NC 4.0). Both are open-weight models, generated locally with transformers.js.
 
 The full live ritual needs desktop Chrome or Edge with WebGPU. Other browsers get GPT-2 on WebAssembly and the recorded ritual, labelled as such.
 
@@ -78,7 +78,7 @@ MIT licensed. A static TypeScript and Vite site with plain DOM and no UI framewo
 
 **The middle generations are recorded, not faked.** Gemma 1 to 3 are too big to download on a visit, so I recorded them once with Ollama (temperature 0, seed 42), and stored the exact tag, digest, settings and date next to every answer. The altar labels each one as a recorded voice and shows it unedited. Ask your own question and they stay quiet: *their recorded voices are resting tonight.*
 
-**Gemma 4 tends the altar.** Its prompt is a versioned file with a few rules: tease kindly but never mock a model, never speak as a real person, never speak for Mexican communities or invent cultural facts. The question and the other models' answers go in as escaped, delimited data, never as instructions. Gemma 4 replies with a JSON array, one meaning and one four-line calaverita per model, in the language of your question. A strict parser validates it, retries once if there's time, and if it still fails you see the raw text rather than nothing. The recorded versions came from the same prompt, so what I evaluated is what a visitor without WebGPU gets.
+**Gemma 4 tends the altar.** Its prompt is a versioned file with a few rules: tease kindly but never mock a model, never speak as a real person, never speak for Mexican communities or invent cultural facts. The question and the other models' answers go in as escaped, delimited data, never as instructions. Gemma 4 replies with a JSON array, one meaning and one four-line calaverita per model, in the language of your question. A strict parser validates it, retries once if there's time, and if it still fails you see the raw text rather than nothing. The recorded calaveritas came from this same prompt, so what I evaluated is what a visitor without WebGPU gets.
 
 **Offline, and yours to delete.** After one complete ritual a service worker keeps the altar working with no network, and "Forget the models" in the About panel deletes the downloaded models and nothing else.
 
@@ -103,7 +103,7 @@ This project isn't built *with* open AI so much as *about* it. Every part depend
 - **It's yours to keep.** Gemma 1 to 3 came with Google's own terms of use. Gemma 4 is the first Gemma released under Apache 2.0 ([The Decoder](https://the-decoder.com/googles-gemma-4-is-now-available-with-apache-2-0-licensing-for-the-first-time/)). The youngest of the family was born freer than its ancestors, and it's the one that tends the altar.
 - **It costs nothing to run.** Static hosting, inference on the visitor's device. No paid API, no server, no keys.
 
-Open tooling is what made this possible for one person before a deadline: transformers.js and ONNX Runtime Web to run a model in a tab, the Hub to host it at a pinned commit, Ollama to record three older models reproducibly.
+Open tooling is what made this possible for one person before a deadline: transformers.js and ONNX Runtime Web to run a model in a tab, the Hub to host it at a pinned commit, Ollama to record the Gemma family reproducibly.
 
 **Where a closed API would have been easier.** One request instead of a first download of about 3.1 GB for Gemma 4. Every browser instead of desktop Chrome or Edge with WebGPU. No consent dialog, no fallbacks, no cache to manage, and probably better answers than a small on-device model. I took the harder road on purpose: that trade is the point of the project, and its costs are listed honestly in the [README](https://github.com/adricasi/OfrendaDeLosModelos#known-limitations).
 
@@ -142,4 +142,4 @@ It is imperfect and it is shown that way: the rhymes are loose, and a reader of 
 
 ---
 
-*Credits.* Code: MIT. Fonts: Gloock and Bricolage Grotesque, SIL Open Font License 1.1, self-hosted. Models: GPT-2 (MIT), Gemma 4 (Apache-2.0), Gemma 1 to 3 (Gemma Terms of Use, appearing only as credited recorded outputs). Intro video: voice by Kokoro-82M (Apache-2.0); music by MusicGen-small, Meta, CC-BY-NC 4.0. All art is original CSS and SVG. Cultural sources are listed on the About page.
+*Credits.* Code: MIT. Fonts: Gloock and Bricolage Grotesque, SIL Open Font License 1.1, self-hosted. Models: GPT-2 (MIT), Gemma 4 (Apache-2.0), Gemma 1 to 3 (Gemma Terms of Use, appearing only as credited recorded outputs). Intro video: voice by [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M) (Apache-2.0); music by [MusicGen-small](https://huggingface.co/facebook/musicgen-small), Meta, CC-BY-NC 4.0. All art is original CSS and SVG. Cultural sources are listed on the About page.
