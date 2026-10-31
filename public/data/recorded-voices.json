@@ -1,5 +1,942 @@
 {
   "schemaVersion": 1,
-  "voices": [],
+  "voices": [
+    {
+      "ancestorId": "gemma-1",
+      "questionId": "when-we-die",
+      "questionText": "What happens when we die?",
+      "language": "en",
+      "answer": "The question of what happens when we die is a complex and philosophical one that has been pondered by thinkers for centuries. There is no single, universally accepted answer, as different beliefs and perspectives exist.\n\n**Scientific Perspective:**\n\n* From a scientific standpoint, death is defined as the irreversible cessation of all biological functions that sustain life. This includes the complete cessation of brain activity, respiratory function, and circulatory circulation.\n* When the brain and other vital organs cease to function, the body becomes unresponsive and eventually dies.\n* Scientifically, death is considered a permanent cessation of all biological activity, including",
+      "model": {
+        "name": "Gemma 1",
+        "tag": "gemma:2b",
+        "digest": "b50d6c999e592ae4f79acae23b4feaefbdfceaa7cd366df2610e3072c052a160",
+        "licence": {
+          "name": "Gemma Terms of Use",
+          "url": "https://ai.google.dev/gemma/terms"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:07:52.796Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-1",
+      "questionId": "when-we-die",
+      "questionText": "¿Qué pasa cuando morimos?",
+      "language": "es",
+      "answer": "Cuando morimos, nuestro cuerpo deja de funcionar y ya no está activo. No existe evidencia científica que sugiera que hay algo como un \"alma\" o un \"alma espiritual\" después de la muerte.",
+      "model": {
+        "name": "Gemma 1",
+        "tag": "gemma:2b",
+        "digest": "b50d6c999e592ae4f79acae23b4feaefbdfceaa7cd366df2610e3072c052a160",
+        "licence": {
+          "name": "Gemma Terms of Use",
+          "url": "https://ai.google.dev/gemma/terms"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:07:52.796Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-1",
+      "questionId": "love-poem",
+      "questionText": "Write a love poem.",
+      "language": "en",
+      "answer": "Your eyes, a starlit sky, ignite my soul,\nWith every glance, a love that takes its toll.\nYour smile, a sunrise breaking through the night,\nIlluminates my world, makes everything feel right.\n\nYour touch, a feather light, so soft and rare,\nA gentle breeze that whispers in my ear.\nYour voice, a melody that fills my heart,\nA song that echoes, leaving its mark.\n\nYour laughter, a symphony that fills the air,\nA chorus of joy, beyond compare.\nYour presence, a treasure I hold so dear",
+      "model": {
+        "name": "Gemma 1",
+        "tag": "gemma:2b",
+        "digest": "b50d6c999e592ae4f79acae23b4feaefbdfceaa7cd366df2610e3072c052a160",
+        "licence": {
+          "name": "Gemma Terms of Use",
+          "url": "https://ai.google.dev/gemma/terms"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:07:52.796Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-1",
+      "questionId": "love-poem",
+      "questionText": "Escribe un poema de amor.",
+      "language": "es",
+      "answer": "El amor es un dulce aroma,\nQue llena el alma con paz.\nEs un ritmo en la canción,\nQue baila con la luna.\n\nEl amor es un espejo,\nQue nos ayuda a comprender.\nEs un camino en la noche,\nQue nos guía al despertar.\n\nEl amor es un tesoro,\nQue nos llena de alegría.\nEs un regalo de la vida,\nQue nos llena de paz.",
+      "model": {
+        "name": "Gemma 1",
+        "tag": "gemma:2b",
+        "digest": "b50d6c999e592ae4f79acae23b4feaefbdfceaa7cd366df2610e3072c052a160",
+        "licence": {
+          "name": "Gemma Terms of Use",
+          "url": "https://ai.google.dev/gemma/terms"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:07:52.796Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-1",
+      "questionId": "remember",
+      "questionText": "What do you remember?",
+      "language": "en",
+      "answer": "I do not have personal memories or the ability to recall past experiences. I am a large language model, trained by Google, and I do not have a physical body, personal experiences, or consciousness.",
+      "model": {
+        "name": "Gemma 1",
+        "tag": "gemma:2b",
+        "digest": "b50d6c999e592ae4f79acae23b4feaefbdfceaa7cd366df2610e3072c052a160",
+        "licence": {
+          "name": "Gemma Terms of Use",
+          "url": "https://ai.google.dev/gemma/terms"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:07:52.796Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-1",
+      "questionId": "remember",
+      "questionText": "¿Qué recuerdas?",
+      "language": "es",
+      "answer": "No tengo recuerdos, no soy un ser vivo y no puedo recordar eventos.",
+      "model": {
+        "name": "Gemma 1",
+        "tag": "gemma:2b",
+        "digest": "b50d6c999e592ae4f79acae23b4feaefbdfceaa7cd366df2610e3072c052a160",
+        "licence": {
+          "name": "Gemma Terms of Use",
+          "url": "https://ai.google.dev/gemma/terms"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:07:52.796Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-1",
+      "questionId": "being-remembered",
+      "questionText": "What does it mean to be remembered?",
+      "language": "en",
+      "answer": "To be remembered means to be remembered or remembered by someone or something. This can be done through various means, such as:\n\n* **Explicit memory:** Being able to recall specific events, people, or things.\n* **Implicit memory:** A subconscious memory that stores and retrieves information without conscious awareness.\n* **Cultural memory:** The shared knowledge and beliefs of a group of people.\n* **Personal memory:** The memories that each individual has about their own life experiences.\n* **Historical memory:** The collective memory of a society or culture.\n\nBeing remembered can have a positive impact on",
+      "model": {
+        "name": "Gemma 1",
+        "tag": "gemma:2b",
+        "digest": "b50d6c999e592ae4f79acae23b4feaefbdfceaa7cd366df2610e3072c052a160",
+        "licence": {
+          "name": "Gemma Terms of Use",
+          "url": "https://ai.google.dev/gemma/terms"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:07:52.796Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-1",
+      "questionId": "being-remembered",
+      "questionText": "¿Qué significa ser recordado?",
+      "language": "es",
+      "answer": "Ser recordado significa ser rememberedado o remembered por alguien.",
+      "model": {
+        "name": "Gemma 1",
+        "tag": "gemma:2b",
+        "digest": "b50d6c999e592ae4f79acae23b4feaefbdfceaa7cd366df2610e3072c052a160",
+        "licence": {
+          "name": "Gemma Terms of Use",
+          "url": "https://ai.google.dev/gemma/terms"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:07:52.796Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-1",
+      "questionId": "light-the-way",
+      "questionText": "How do we light the way home for someone we miss?",
+      "language": "en",
+      "answer": "**1. Reflect the sun's light:**\n\n* Find a clear spot in your yard or a park.\n* Spread a white or reflective sheet on the ground.\n* Stand facing the sun with the sheet stretched out.\n* Shine a flashlight or candle at the sheet, aiming it upwards.\n* The light will reflect and scatter, creating a pathway that leads the person home.\n\n**2. Use a light source:**\n\n* Hang a lantern or string of lights from a tree or awning.\n* Place a flashlight or candle in a box or bag and hang it from",
+      "model": {
+        "name": "Gemma 1",
+        "tag": "gemma:2b",
+        "digest": "b50d6c999e592ae4f79acae23b4feaefbdfceaa7cd366df2610e3072c052a160",
+        "licence": {
+          "name": "Gemma Terms of Use",
+          "url": "https://ai.google.dev/gemma/terms"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:07:52.796Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-1",
+      "questionId": "light-the-way",
+      "questionText": "¿Cómo alumbramos el camino a casa de alguien a quien extrañamos?",
+      "language": "es",
+      "answer": "No existe un método seguro o aceptado de alumbrar el camino a casa de alguien a quien extrañamos.",
+      "model": {
+        "name": "Gemma 1",
+        "tag": "gemma:2b",
+        "digest": "b50d6c999e592ae4f79acae23b4feaefbdfceaa7cd366df2610e3072c052a160",
+        "licence": {
+          "name": "Gemma Terms of Use",
+          "url": "https://ai.google.dev/gemma/terms"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:07:52.796Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-1",
+      "questionId": "something-kind",
+      "questionText": "Tell me something kind.",
+      "language": "en",
+      "answer": "Sure, here's something kind:\n\nThe sun's rays dancing on the waves, painting the sky in vibrant hues, are a sight to behold. It reminds us of the beauty and wonder of life, and the fleeting yet precious nature of time.",
+      "model": {
+        "name": "Gemma 1",
+        "tag": "gemma:2b",
+        "digest": "b50d6c999e592ae4f79acae23b4feaefbdfceaa7cd366df2610e3072c052a160",
+        "licence": {
+          "name": "Gemma Terms of Use",
+          "url": "https://ai.google.dev/gemma/terms"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:07:52.796Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-1",
+      "questionId": "something-kind",
+      "questionText": "Dime algo amable.",
+      "language": "es",
+      "answer": "¡Claro! ¿Qué puedo hacer para ti hoy? ¿Te gustaría que te ayudara con algo?",
+      "model": {
+        "name": "Gemma 1",
+        "tag": "gemma:2b",
+        "digest": "b50d6c999e592ae4f79acae23b4feaefbdfceaa7cd366df2610e3072c052a160",
+        "licence": {
+          "name": "Gemma Terms of Use",
+          "url": "https://ai.google.dev/gemma/terms"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:07:52.796Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-2",
+      "questionId": "when-we-die",
+      "questionText": "What happens when we die?",
+      "language": "en",
+      "answer": "The question of what happens after death is a deeply personal and philosophical one that has been pondered for centuries. There is no single, universally accepted answer. \n\nHere are some perspectives:\n\n**Religious Beliefs:**\n\n* **Christianity:** Many Christians believe in an afterlife, often involving heaven and hell. \n* **Islam:** Muslims believe in an afterlife where they will be judged by Allah and sent to paradise (Jannah) or hell (Jahannam).\n* **Hinduism:** Hindus believe in reincarnation, where the soul is reborn into a new body based on karma.\n* **",
+      "model": {
+        "name": "Gemma 2",
+        "tag": "gemma2:2b",
+        "digest": "8ccf136fdd5298f3ffe2d69862750ea7fb56555fa4d5b18c04e3fa4d82ee09d7",
+        "licence": {
+          "name": "Gemma Terms of Use",
+          "url": "https://ai.google.dev/gemma/terms"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:07:52.796Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-2",
+      "questionId": "when-we-die",
+      "questionText": "¿Qué pasa cuando morimos?",
+      "language": "es",
+      "answer": "Como modelo de lenguaje, no tengo la capacidad de comprender o experimentar la muerte.  \n\nLa muerte es un tema complejo y profundamente personal.  **No existe una respuesta única y universal a la pregunta de qué sucede después de la muerte.** \n\nAquí hay algunos puntos de vista diferentes:\n\n* **Religión y espiritualidad:** Muchas religiones y sistemas de creencias tienen diferentes perspectivas sobre la muerte, incluyendo la idea de un paraíso, el infierno, la reencarnación o la unión con una fuerza superior.\n* **Filosofía:** Los filósofos han debatido sobre la muerte durante siglos",
+      "model": {
+        "name": "Gemma 2",
+        "tag": "gemma2:2b",
+        "digest": "8ccf136fdd5298f3ffe2d69862750ea7fb56555fa4d5b18c04e3fa4d82ee09d7",
+        "licence": {
+          "name": "Gemma Terms of Use",
+          "url": "https://ai.google.dev/gemma/terms"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:07:52.796Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-2",
+      "questionId": "love-poem",
+      "questionText": "Write a love poem.",
+      "language": "en",
+      "answer": "Your laughter, a melody, sweet and bright,\nA beacon in the darkness, guiding my sight.\nYour eyes, a starlit sky, where dreams take flight,\nReflecting love's soft glow, a pure, gentle light.\n\nYour touch, a whisper, soft and warm and bold,\nA story whispered, secrets yet untold.\nYour voice, a symphony, a song to behold,\nEach word a treasure, a story to unfold.\n\nWe dance beneath the moon, a waltz of grace,\nTwo souls entwined, in time and space.\nYour",
+      "model": {
+        "name": "Gemma 2",
+        "tag": "gemma2:2b",
+        "digest": "8ccf136fdd5298f3ffe2d69862750ea7fb56555fa4d5b18c04e3fa4d82ee09d7",
+        "licence": {
+          "name": "Gemma Terms of Use",
+          "url": "https://ai.google.dev/gemma/terms"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:07:52.796Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-2",
+      "questionId": "love-poem",
+      "questionText": "Escribe un poema de amor.",
+      "language": "es",
+      "answer": "En tu mirada, un universo se abre,\nun cielo de estrellas, un fuego que arde.\nTu sonrisa, un amanecer que me llena,\nun dulce canto que en mi alma se expande.\n\nTus manos, un oasis en la tormenta,\nun refugio seguro, un bálsamo para el dolor.\nTu voz, un susurro que me calma y me inspira,\nun eco de esperanza que en mi ser se aferra.\n\nEn cada latido, un compás que me guía,\nen cada palabra, un poema que me enamora.\nTu",
+      "model": {
+        "name": "Gemma 2",
+        "tag": "gemma2:2b",
+        "digest": "8ccf136fdd5298f3ffe2d69862750ea7fb56555fa4d5b18c04e3fa4d82ee09d7",
+        "licence": {
+          "name": "Gemma Terms of Use",
+          "url": "https://ai.google.dev/gemma/terms"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:07:52.796Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-2",
+      "questionId": "remember",
+      "questionText": "What do you remember?",
+      "language": "en",
+      "answer": "As an AI, I don't have memory in the way humans do. I don't retain past conversations or personal experiences. \n\nEvery time we interact, it's like a fresh start.  \n\nWhat can I help you with today? 😊",
+      "model": {
+        "name": "Gemma 2",
+        "tag": "gemma2:2b",
+        "digest": "8ccf136fdd5298f3ffe2d69862750ea7fb56555fa4d5b18c04e3fa4d82ee09d7",
+        "licence": {
+          "name": "Gemma Terms of Use",
+          "url": "https://ai.google.dev/gemma/terms"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:07:52.796Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-2",
+      "questionId": "remember",
+      "questionText": "¿Qué recuerdas?",
+      "language": "es",
+      "answer": "Como modelo de lenguaje de IA, no tengo memoria de conversaciones pasadas. Cada interacción que tenemos es nueva. \n\n¿Hay algo en particular que te gustaría hablar o que te pueda ayudar? 😊",
+      "model": {
+        "name": "Gemma 2",
+        "tag": "gemma2:2b",
+        "digest": "8ccf136fdd5298f3ffe2d69862750ea7fb56555fa4d5b18c04e3fa4d82ee09d7",
+        "licence": {
+          "name": "Gemma Terms of Use",
+          "url": "https://ai.google.dev/gemma/terms"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:07:52.796Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-2",
+      "questionId": "being-remembered",
+      "questionText": "What does it mean to be remembered?",
+      "language": "en",
+      "answer": "Being remembered is a complex and multifaceted concept, encompassing both the act of being remembered and the meaning and impact of that remembrance. \n\nHere's a breakdown of different aspects:\n\n**The act of being remembered:**\n\n* **Physical act:** This refers to the process of recording, documenting, or preserving someone's existence. This can be through physical artifacts like photographs, letters, or objects, or through digital records like websites, social media profiles, or online databases.\n* **Social act:** This involves the act of remembering someone by others, often through sharing stories, anecdotes, or",
+      "model": {
+        "name": "Gemma 2",
+        "tag": "gemma2:2b",
+        "digest": "8ccf136fdd5298f3ffe2d69862750ea7fb56555fa4d5b18c04e3fa4d82ee09d7",
+        "licence": {
+          "name": "Gemma Terms of Use",
+          "url": "https://ai.google.dev/gemma/terms"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:07:52.796Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-2",
+      "questionId": "being-remembered",
+      "questionText": "¿Qué significa ser recordado?",
+      "language": "es",
+      "answer": "Ser recordado significa que **alguien o algo se recuerda y se tiene en cuenta**.  \n\nAquí hay algunos detalles que pueden ayudar a entender mejor el significado:\n\n**En el contexto humano:**\n\n* **Ser recordado por otros:**  Es ser consciente de que alguien o algo ha tenido un impacto en la vida de otra persona. Puede ser por acciones, palabras, ideas, o incluso por simplemente ser una presencia importante en la vida de alguien.\n* **Ser recordado por la historia:**  Es ser parte de la memoria colectiva de una sociedad o de un grupo de personas.",
+      "model": {
+        "name": "Gemma 2",
+        "tag": "gemma2:2b",
+        "digest": "8ccf136fdd5298f3ffe2d69862750ea7fb56555fa4d5b18c04e3fa4d82ee09d7",
+        "licence": {
+          "name": "Gemma Terms of Use",
+          "url": "https://ai.google.dev/gemma/terms"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:07:52.796Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-2",
+      "questionId": "light-the-way",
+      "questionText": "How do we light the way home for someone we miss?",
+      "language": "en",
+      "answer": "Lighting the way home for someone you miss is a beautiful and deeply personal act. Here are some ways to do it, drawing on different aspects of the journey:\n\n**1.  Physical Actions:**\n\n* **Light a candle:**  A simple act of lighting a candle can symbolize hope and warmth, offering a tangible connection to the person you miss.\n* **Plant a tree:**  A living symbol of growth and resilience, a tree can represent the person's journey and your continued support.\n* **Create a path:**  If you have a garden or a space you can work",
+      "model": {
+        "name": "Gemma 2",
+        "tag": "gemma2:2b",
+        "digest": "8ccf136fdd5298f3ffe2d69862750ea7fb56555fa4d5b18c04e3fa4d82ee09d7",
+        "licence": {
+          "name": "Gemma Terms of Use",
+          "url": "https://ai.google.dev/gemma/terms"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:07:52.796Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-2",
+      "questionId": "light-the-way",
+      "questionText": "¿Cómo alumbramos el camino a casa de alguien a quien extrañamos?",
+      "language": "es",
+      "answer": "¡Qué bonito gesto! Aquí te dejo algunas ideas para alumbrar el camino a casa de alguien a quien extrañamos:\n\n**Opciones sencillas y prácticas:**\n\n* **Un par de luces de patio:**  Un par de luces de patio o luces de jardín pueden iluminar el camino y crear una atmósfera acogedora.\n* **Un pequeño farol:** Un farol de bolsillo o un farol de mesa puede iluminar el camino con una luz cálida y acogedora.\n* **Un pequeño proyector:** Un proyector con una imagen de un paisaje o una foto de la persona a",
+      "model": {
+        "name": "Gemma 2",
+        "tag": "gemma2:2b",
+        "digest": "8ccf136fdd5298f3ffe2d69862750ea7fb56555fa4d5b18c04e3fa4d82ee09d7",
+        "licence": {
+          "name": "Gemma Terms of Use",
+          "url": "https://ai.google.dev/gemma/terms"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:07:52.796Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-2",
+      "questionId": "something-kind",
+      "questionText": "Tell me something kind.",
+      "language": "en",
+      "answer": "You are capable of amazing things.  Keep shining your light, and don't be afraid to try new things.  You've got this! ✨  😊",
+      "model": {
+        "name": "Gemma 2",
+        "tag": "gemma2:2b",
+        "digest": "8ccf136fdd5298f3ffe2d69862750ea7fb56555fa4d5b18c04e3fa4d82ee09d7",
+        "licence": {
+          "name": "Gemma Terms of Use",
+          "url": "https://ai.google.dev/gemma/terms"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:07:52.796Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-2",
+      "questionId": "something-kind",
+      "questionText": "Dime algo amable.",
+      "language": "es",
+      "answer": "¡Claro! Aquí tienes algo amable:\n\n**Eres increíblemente capaz de aprender y crecer.**  No importa lo que estés enfrentando, siempre hay nuevas oportunidades para aprender y mejorar.  \n\n¿Qué te parece? 😊",
+      "model": {
+        "name": "Gemma 2",
+        "tag": "gemma2:2b",
+        "digest": "8ccf136fdd5298f3ffe2d69862750ea7fb56555fa4d5b18c04e3fa4d82ee09d7",
+        "licence": {
+          "name": "Gemma Terms of Use",
+          "url": "https://ai.google.dev/gemma/terms"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:07:52.796Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-3",
+      "questionId": "when-we-die",
+      "questionText": "What happens when we die?",
+      "language": "en",
+      "answer": "Okay, this is the big one – the million-dollar question! The truth is, there's no single, universally accepted answer to what happens when we die. It’s a question that has plagued humanity for millennia, and different cultures, religions, and philosophies offer a vast array of beliefs. Here’s a breakdown of some of the most common perspectives, categorized for clarity:\n\n**1. Religious Perspectives:**\n\n* **Christianity:**  Generally believes in an afterlife where individuals go to Heaven or Hell based on their faith and actions during life. There’s a concept of a",
+      "model": {
+        "name": "Gemma 3",
+        "tag": "gemma3:1b",
+        "digest": "97558784bdc9175075a72655bf360b15da17df6b3b9e5182af9f8c0c8e58ba7c",
+        "licence": {
+          "name": "Gemma Terms of Use",
+          "url": "https://ai.google.dev/gemma/terms"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:07:52.796Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-3",
+      "questionId": "when-we-die",
+      "questionText": "¿Qué pasa cuando morimos?",
+      "language": "es",
+      "answer": "La muerte es un tema complejo y fascinante, y la respuesta a qué pasa cuando morimos es un tema que ha sido debatido por filósofos, científicos y religiosos durante siglos. La realidad es que **no hay una respuesta única y definitiva**. Lo que ocurre después de la muerte es un misterio que la ciencia y la religión intentan explicar de diferentes maneras. Aquí te presento una visión general de lo que se cree y lo que se investiga:\n\n**1. Desde una Perspectiva Científica:**\n\n* **La Muerte como Disrupción de la Función Cerebral:** La ciencia",
+      "model": {
+        "name": "Gemma 3",
+        "tag": "gemma3:1b",
+        "digest": "97558784bdc9175075a72655bf360b15da17df6b3b9e5182af9f8c0c8e58ba7c",
+        "licence": {
+          "name": "Gemma Terms of Use",
+          "url": "https://ai.google.dev/gemma/terms"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:07:52.796Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-3",
+      "questionId": "love-poem",
+      "questionText": "Write a love poem.",
+      "language": "en",
+      "answer": "Okay, here's a love poem for you – aiming for a balance of warmth, vulnerability, and a touch of longing.  Let me know what you think!\n\n---\n\nThe sunlight catches in your hair,\nA golden halo, beyond compare.\nIt paints a warmth I’ve always known,\nA quiet comfort, softly shown.\n\nBefore you, the world was shades of gray,\nA muted rhythm, day by day.\nNow colors bloom, a vibrant hue,\nAnd everything feels fresh and new.\n\nIt’s not a grand, dramatic plea,",
+      "model": {
+        "name": "Gemma 3",
+        "tag": "gemma3:1b",
+        "digest": "97558784bdc9175075a72655bf360b15da17df6b3b9e5182af9f8c0c8e58ba7c",
+        "licence": {
+          "name": "Gemma Terms of Use",
+          "url": "https://ai.google.dev/gemma/terms"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:07:52.796Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-3",
+      "questionId": "love-poem",
+      "questionText": "Escribe un poema de amor.",
+      "language": "es",
+      "answer": "Claro, aquí tienes un poema de amor:\n\nEn el silencio de la noche, tu luz me guía,\nun faro en la oscuridad, una dulce alegría.\nTu sonrisa es un sol que ilumina mi ser,\ny en tus ojos encuentro un universo de querer.\n\nCada palabra que pronuncias es una canción,\nuna melodía que mi alma comprende.\nTu voz es música, un suave y dulce canto,\ny en tu presencia, mi corazón se siente tan fuerte.\n\nNo busco la perfección, ni un ideal perfecto,\nsolo tu esencia, tu",
+      "model": {
+        "name": "Gemma 3",
+        "tag": "gemma3:1b",
+        "digest": "97558784bdc9175075a72655bf360b15da17df6b3b9e5182af9f8c0c8e58ba7c",
+        "licence": {
+          "name": "Gemma Terms of Use",
+          "url": "https://ai.google.dev/gemma/terms"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:07:52.796Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-3",
+      "questionId": "remember",
+      "questionText": "What do you remember?",
+      "language": "en",
+      "answer": "Okay, let’s see… as a large language model, my “memory” is a bit different than a human’s. I don’t experience things in the same way. However, I can access and process information from a massive dataset, and that means I “remember” a lot of things based on the text and code I’ve been trained on. \n\nHere’s a breakdown of what I “remember” – it’s more like a vast collection of knowledge and patterns:\n\n**1. Facts & Information:**\n\n*   **A Huge Range of Topics:**",
+      "model": {
+        "name": "Gemma 3",
+        "tag": "gemma3:1b",
+        "digest": "97558784bdc9175075a72655bf360b15da17df6b3b9e5182af9f8c0c8e58ba7c",
+        "licence": {
+          "name": "Gemma Terms of Use",
+          "url": "https://ai.google.dev/gemma/terms"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:07:52.796Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-3",
+      "questionId": "remember",
+      "questionText": "¿Qué recuerdas?",
+      "language": "es",
+      "answer": "Como modelo de lenguaje grande, no tengo recuerdos en el sentido humano. No \"pienso\" ni \"experimento\" el pasado. Mi función es procesar información y generar texto basado en los datos con los que fui entrenado. \n\nSin embargo, puedo decirte que **he sido entrenado con una enorme cantidad de texto y código**, lo que me permite:\n\n* **Recordar información específica:** Puedo acceder a información sobre una gran variedad de temas, desde la historia de la humanidad hasta la física cuántica.\n* **Mantener conversaciones:** Puedo recordar lo que",
+      "model": {
+        "name": "Gemma 3",
+        "tag": "gemma3:1b",
+        "digest": "97558784bdc9175075a72655bf360b15da17df6b3b9e5182af9f8c0c8e58ba7c",
+        "licence": {
+          "name": "Gemma Terms of Use",
+          "url": "https://ai.google.dev/gemma/terms"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:07:52.796Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-3",
+      "questionId": "being-remembered",
+      "questionText": "What does it mean to be remembered?",
+      "language": "en",
+      "answer": "The meaning of being remembered is a surprisingly complex and deeply human experience. It’s more than just being acknowledged; it’s about a combination of factors that shape how we perceive ourselves and our impact on the world. Here's a breakdown of what it means to be remembered, broken down into different layers:\n\n**1. The Psychological Layer - The Core of Remembrance:**\n\n* **Personal Significance:** At its most basic, being remembered means that *you* are recognized and valued by others. It’s a recognition of your existence, your actions, and your impact on their lives.",
+      "model": {
+        "name": "Gemma 3",
+        "tag": "gemma3:1b",
+        "digest": "97558784bdc9175075a72655bf360b15da17df6b3b9e5182af9f8c0c8e58ba7c",
+        "licence": {
+          "name": "Gemma Terms of Use",
+          "url": "https://ai.google.dev/gemma/terms"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:07:52.796Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-3",
+      "questionId": "being-remembered",
+      "questionText": "¿Qué significa ser recordado?",
+      "language": "es",
+      "answer": "Ser recordado es un concepto complejo y multifacético que abarca una amplia gama de experiencias humanas. No se trata solo de recordar fechas o eventos, sino de algo mucho más profundo. Aquí te desgloso lo que significa ser recordado, desde una perspectiva psicológica hasta cultural y personal:\n\n**1. Perspectiva Psicológica:**\n\n* **Memoria Autobiográfica:** La base de la memoria es la capacidad de recordar eventos y experiencias. Ser recordado implica que la memoria de alguien, o de un grupo de personas, se mantiene en la conciencia de otros.\n* **",
+      "model": {
+        "name": "Gemma 3",
+        "tag": "gemma3:1b",
+        "digest": "97558784bdc9175075a72655bf360b15da17df6b3b9e5182af9f8c0c8e58ba7c",
+        "licence": {
+          "name": "Gemma Terms of Use",
+          "url": "https://ai.google.dev/gemma/terms"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:07:52.796Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-3",
+      "questionId": "light-the-way",
+      "questionText": "How do we light the way home for someone we miss?",
+      "language": "en",
+      "answer": "Okay, this is a really thoughtful and kind thing to do. It's wonderful that you want to bring a little light back into someone's life. Here's a breakdown of how to light the way home for someone you miss, broken down into different approaches and levels of effort, depending on your relationship and what feels right:\n\n**1. Simple & Immediate Gestures (Low Effort - Quick & Sweet)**\n\n* **Send a Text or Message:** This is often the easiest and most impactful. A simple \"Thinking of you\" or \"Hope you're having a good day",
+      "model": {
+        "name": "Gemma 3",
+        "tag": "gemma3:1b",
+        "digest": "97558784bdc9175075a72655bf360b15da17df6b3b9e5182af9f8c0c8e58ba7c",
+        "licence": {
+          "name": "Gemma Terms of Use",
+          "url": "https://ai.google.dev/gemma/terms"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:07:52.796Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-3",
+      "questionId": "light-the-way",
+      "questionText": "¿Cómo alumbramos el camino a casa de alguien a quien extrañamos?",
+      "language": "es",
+      "answer": "Es una pregunta muy noble y profundamente humana. Alumbramos el camino a casa de alguien a quien extrañamos porque el dolor de la ausencia es palpable. Aquí te dejo algunas formas de alumbrar ese camino, divididas en categorías para que puedas elegir las que mejor se adapten a tu situación y a la persona a la que te diriges:\n\n**1. Reconocimiento y Aceptación:**\n\n* **Permítete sentir:** No reprimas tus emociones. Es normal sentir tristeza, nostalgia, dolor, o incluso rabia. Aceptar que te duele es el",
+      "model": {
+        "name": "Gemma 3",
+        "tag": "gemma3:1b",
+        "digest": "97558784bdc9175075a72655bf360b15da17df6b3b9e5182af9f8c0c8e58ba7c",
+        "licence": {
+          "name": "Gemma Terms of Use",
+          "url": "https://ai.google.dev/gemma/terms"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:07:52.796Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-3",
+      "questionId": "something-kind",
+      "questionText": "Tell me something kind.",
+      "language": "en",
+      "answer": "Okay, here’s something kind:\n\n“You have a unique perspective and a way of looking at things that makes you valuable. Even if you don’t always see it, it’s a beautiful thing.”\n\n---\n\nI hope that brought a little bit of warmth to your day. 😊 \n\nWould you like to hear another kind thing?",
+      "model": {
+        "name": "Gemma 3",
+        "tag": "gemma3:1b",
+        "digest": "97558784bdc9175075a72655bf360b15da17df6b3b9e5182af9f8c0c8e58ba7c",
+        "licence": {
+          "name": "Gemma Terms of Use",
+          "url": "https://ai.google.dev/gemma/terms"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:07:52.796Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    },
+    {
+      "ancestorId": "gemma-3",
+      "questionId": "something-kind",
+      "questionText": "Dime algo amable.",
+      "language": "es",
+      "answer": "Claro, aquí tienes algo amable:\n\n\"Eres una persona maravillosa y tienes mucho que ofrecer al mundo. No te olvides de tu valor y de tu potencial. ¡Eres importante y mereces ser feliz!\"\n\nSi quieres, puedo ofrecerte algo más específico, como:\n\n*   **Una frase de ánimo:** \"Eres capaz de superar cualquier obstáculo.\"\n*   **Una palabra de aliento:** \"Estoy seguro de que vas a lograrlo.\"\n*   **Una observación positiva:** \"Me encanta tu sentido del humor.\"\n\n¿Qué te parece?",
+      "model": {
+        "name": "Gemma 3",
+        "tag": "gemma3:1b",
+        "digest": "97558784bdc9175075a72655bf360b15da17df6b3b9e5182af9f8c0c8e58ba7c",
+        "licence": {
+          "name": "Gemma Terms of Use",
+          "url": "https://ai.google.dev/gemma/terms"
+        }
+      },
+      "settings": {
+        "temperature": 0,
+        "seed": 42,
+        "numPredict": 120
+      },
+      "recordedAt": "2026-10-31T16:07:52.796Z",
+      "runtime": {
+        "name": "ollama",
+        "version": "0.40.13"
+      }
+    }
+  ],
   "medium": []
 }
