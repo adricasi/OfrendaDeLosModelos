@@ -169,6 +169,10 @@ Terms (ancestor, recorded voice, ghost words, dark frame, ...) are defined in th
 - Acceptance criteria:
   - AC-011.1: WHEN the visitor returns with no network after one complete ritual THE SYSTEM SHALL
     load the altar and run a full ritual (GPT-2, recorded voices, Gemma 4, medium).
+  - AC-011.2: WHEN the visitor chooses "Forget the models" in the about panel THE SYSTEM SHALL
+    remove the downloaded models from this browser (and nothing else), say how much space was
+    freed, ask for consent and download again at the next ritual, and still open the altar with
+    no network. The control is disabled while a ritual runs.
 
 ### REQ-012: Photo offering (stretch)
 - Story: As a visitor, I want to place a photo of a real offering on the altar, so that Gemma 4
