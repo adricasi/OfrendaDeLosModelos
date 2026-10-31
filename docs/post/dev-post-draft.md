@@ -25,21 +25,23 @@ a drawer, for as long as you like — and bring home once a year.
 
 So I built an altar for them.
 
-**Ofrenda de los Modelos** is an ofrenda for Día de los Muertos where open-weight AI models come
-home. You leave one question on the altar. The ancestors answer it, oldest first:
+**Ofrenda de los Modelos** is an artistic tribute to the memory of AI models, inspired by the
+Mexican tradition of Día de Muertos. Calling the models "ancestors" is a metaphor for digital memory:
+they are software, not anyone's dead. You leave one question on the altar, and the models answer it,
+oldest first:
 
 - **GPT-2 (2019)** speaks live, in your browser. Beneath every word float its **ghost words**: the
   words it almost said, with the probability it gave each one.
 - **Gemma 1, 2 and 3** answer in their recorded voices.
 - **Gemma 4** answers live, on your own device, and then tends the altar. As *la que cuida el altar*
-  — the one who tends the altar — it explains, kindly, what each ancestor was trying to say, and
-  writes each one a **calaverita literaria**, the short rhyming epitaph that is part of the
-  tradition.
+  — the one who tends the altar — it explains, kindly, what each model was trying to say, and
+  writes each one a **calaverita literaria**: a short, playful rhyming verse in which La Muerte
+  comes to collect it, a Mexican literary form that laughs at mortality.
 
 At the top of the altar there are frames that stay dark: Claude 3 Sonnet, Claude 2, the PaLM API,
 GPT-4o in ChatGPT. Each has a date and a link to the official notice of its retirement, and one
-line: *its weights were never released.* They cannot come home. The first frame is the model from
-that funeral.
+line: *its weights were never released.* They cannot return: not dead, just digital history nobody can reach. The
+first frame is the model from that funeral.
 
 The whole thing runs on your device. There is no server. Nothing you write leaves your machine.
 
@@ -79,12 +81,13 @@ it isn't on the altar.
 **The middle generations are recorded, not faked.** Gemma 1–3 are too large to download on a
 visit, so I recorded their answers once, on my laptop, with [Ollama](https://ollama.com), with
 the exact model tag, digest, settings and date stored next to every answer. The altar labels
-each one as a recorded voice. Ask your own question, and they stay quiet: *these ancestors only
-answer the questions they left for us.*
+each one as a recorded voice. Ask your own question, and they stay quiet: *their recorded voices
+are resting tonight.*
 
-**Gemma 4 tends the altar.** Its prompt is a versioned file with three rules: be kind and never
-mock a model; never speak as a real person; one meaning and one four-line calaverita per
-ancestor. The question and the ancestors' answers go in as delimited data, never as instructions.
+**Gemma 4 tends the altar.** Its prompt is a versioned file with four rules: tease kindly but never
+mock a model; never speak as a real person; one meaning and one four-line calaverita per model,
+playful and ironic, in the tradition; and never speak for Mexican communities, invent cultural facts
+or present one region's custom as universal. The question and the models' answers go in as delimited data, never as instructions.
 Its JSON reply is validated before anything is shown; if it doesn't parse, you see its words as
 they are. The same prompt produced the recordings, so what I evaluated is what visitors get.
 
@@ -137,12 +140,14 @@ browser instead of WebGPU ones. That trade is the point of the project.
 ## A note on the tradition
 
 I'm in Spain, not Mexico. Here, 1 November is Todos los Santos: we visit the cemetery, bring
-flowers, eat *huesos de santo*. Día de los Muertos is its own, living tradition — Mexican, with
+flowers, eat *huesos de santo*. Día de Muertos is its own, living tradition — Mexican, with
 Indigenous roots, recognised by [UNESCO](https://ich.unesco.org/en/RL/the-indigenous-festivity-dedicated-to-the-dead-00054).
-I've tried to honour it rather than borrow it as a costume: the altar uses the ofrenda's real
-elements — cempasúchil to light the way, papel picado for the wind, candles for fire, water for the
-thirst of the souls — following the sources credited on the page.
-[TODO: thank the cultural reviewer, or keep "cultural review pending" visible on the page]
+This altar is an artistic interpretation, not a Mexican ritual, and it doesn't speak for the
+communities that keep the tradition. I've tried to honour it rather than borrow it as a costume:
+the altar follows one possible arrangement — three levels, cempasúchil to light the way, papel
+picado, candles, copal, water, salt and pan de muerto — drawn from the sources credited on the page.
+Real ofrendas vary by region and family. The cultural details haven't yet been reviewed by someone
+of Mexican background, and the page says so; corrections are very welcome.
 
 ## Prize categories
 
@@ -150,4 +155,4 @@ Best Use of Gemma — Gemma 4 runs on the visitor's device, in
 the browser, as the medium who interprets the whole family and writes in the visitor's language;
 the project's argument rests on Gemma 4 being the first Gemma under Apache 2.0.
 
-*Closed models die. Open weights come home.*
+*Closed models fade. Open weights can always come back.*
