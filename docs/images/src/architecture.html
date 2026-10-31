@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Architecture overview</title>
+    <link rel="stylesheet" href="diagram.css" />
+    <style>
+      .canvas {
+        width: 1600px;
+        height: 1040px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="canvas" id="canvas">
+      <div class="title">Everything thinks in the visitor's browser</div>
+      <div class="subtitle">
+        A static site, two open-weight models run live, and recordings made once, offline.
+      </div>
+
+      <div class="box" style="left: 48px; top: 130px; width: 340px; height: 440px">
+        <h3>Static host</h3>
+        <h2>GitHub Pages</h2>
+        <p class="muted">Built and published by <code>pages.yml</code> on every push to main.</p>
+        <ul style="margin-top: 8px">
+          <li><code>index.html</code>, hashed JS and CSS</li>
+          <li>the inference worker bundle</li>
+          <li><code>sw.js</code> (offline shell)</li>
+          <li><code>data/*.json</code>, including <code>recorded-voices.json</code></li>
+          <li><code>ort/</code>: ONNX Runtime WebAssembly, self-hosted</li>
+          <li><code>fonts/</code>: two OFL fonts</li>
+        </ul>
+      </div>
+
+      <div class="box big" style="left: 470px; top: 110px; width: 770px; height: 620px">
+        <h3>The visitor's device</h3>
+        <h2>Browser tab</h2>
+      </div>
+
+      <div class="box" style="left: 500px; top: 190px; width: 300px; height: 328px">
+        <h3>Main thread</h3>
+        <h2>Altar UI</h2>
+        <ul>
+          <li>offering form and the altar's art</li>
+          <li>ritual sequencer, one step per voice</li>
+          <li>recorded voices, replayed as recorded</li>
+          <li>ghost words, calaverita cards</li>
+          <li>everything written with <code>textContent</code></li>
+        </ul>
+      </div>
+
+      <div class="box rosa" style="left: 900px; top: 190px; width: 310px; height: 328px">
+        <h3>Web Worker</h3>
+        <h2>Inference worker</h2>
+        <ul>
+          <li>inference host: load, probe, generate</li>
+          <li>transformers.js 4.3.1 (pinned)</li>
+          <li>logits processor for ghost words</li>
+        </ul>
+        <div style="margin-top: 10px">
+          <span class="chip">ONNX Runtime Web</span><br />
+          <span class="chip teal">WebGPU</span><span class="chip rosa">WebAssembly</span>
+        </div>
+      </div>
+
+      <div class="box dashed" style="left: 500px; top: 541px; width: 710px; height: 160px">
+        <h3>Stored in this browser</h3>
+        <ul>
+          <li>
+            <code>transformers-cache</code>: model files (GPT-2, Gemma 4), removable with "Forget
+            the models"
+          </li>
+          <li><code>ofrenda-shell-*</code>: page, data and ONNX Runtime files, for offline use</li>
+          <li>no question, answer or photo is ever stored</li>
+        </ul>
+      </div>
+
+      <div class="box violet" style="left: 1320px; top: 130px; width: 232px; height: 330px">
+        <h3>Model host</h3>
+        <h2>Hugging Face Hub</h2>
+        <p class="muted" style="margin-top: 4px">Pinned to exact commits:</p>
+        <ul>
+          <li><code>Xenova/gpt2</code><br /><span class="muted">bf2c7f0…</span></li>
+          <li>
+            <code>onnx-community/<br />gemma-4-E2B-it-ONNX</code><br /><span class="muted"
+              >6f21c99…</span
+            >
+          </li>
+        </ul>
+      </div>
+
+      <div class="box dashed" style="left: 48px; top: 780px; width: 1130px; height: 220px">
+        <h3>Recording studio: the builder's machine, offline, not part of the site</h3>
+      </div>
+      <div class="box" style="left: 78px; top: 850px; width: 270px; height: 120px">
+        <h2 style="font-size: 20px"><code>npm run record-voices</code></h2>
+        <p class="muted" style="font-size: 15px">
+          6 offered questions, English and Spanish, temperature 0, seed 42
+        </p>
+      </div>
+      <div class="box" style="left: 420px; top: 850px; width: 330px; height: 120px">
+        <h2 style="font-size: 20px">Ollama <span class="muted">on 127.0.0.1</span></h2>
+        <p class="muted" style="font-size: 15px">
+          <code>gemma:2b</code> <code>gemma2:2b</code> <code>gemma3:1b</code>
+          <code>gemma4:e2b</code>
+        </p>
+      </div>
+      <div class="box" style="left: 820px; top: 850px; width: 330px; height: 120px">
+        <h2 style="font-size: 20px"><code>recorded-voices.json</code></h2>
+        <p class="muted" style="font-size: 15px">
+          48 answers and 12 medium entries, each with tag, digest, settings, date
+        </p>
+      </div>
+
+      <div
+        class="box"
+        style="
+          left: 1230px;
+          top: 780px;
+          width: 322px;
+          height: 220px;
+          border-color: var(--marigold-light);
+        "
+      >
+        <h3>What never exists</h3>
+        <ul>
+          <li>no backend</li>
+          <li>no analytics, no cookies</li>
+          <li>nothing the visitor writes leaves the device</li>
+        </ul>
+      </div>
+
+      <svg class="arrows" width="1600" height="1040" viewBox="0 0 1600 1040">
+        <defs>
+          <marker id="h" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+            <path d="M1 1 L11 6 L1 11 Z" class="head" />
+          </marker>
+          <marker id="hd" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+            <path d="M1 1 L11 6 L1 11 Z" class="head dim" />
+          </marker>
+        </defs>
+        <!-- Pages -> browser -->
+        <path class="line" d="M390 380 H466" marker-end="url(#h)" />
+        <!-- UI <-> worker -->
+        <path class="line" d="M802 320 H896" marker-end="url(#h)" />
+        <path class="line" d="M896 360 H804" marker-end="url(#h)" />
+        <!-- HF -> worker -->
+        <path class="line" d="M1318 340 H1214" marker-end="url(#h)" />
+        <!-- recording pipeline -->
+        <path class="line dim" d="M350 910 H416" marker-end="url(#hd)" />
+        <path class="line dim" d="M752 910 H816" marker-end="url(#hd)" />
+        <path class="line dim" d="M985 848 V765 H218 V576" marker-end="url(#hd)" />
+      </svg>
+
+      <div class="label" style="left: 392px; top: 330px; width: 76px">page, data, ORT files</div>
+      <div class="label" style="left: 802px; top: 266px; width: 94px">typed messages</div>
+      <div class="label" style="left: 1244px; top: 296px; width: 72px; font-size: 14px">
+        model files, once
+      </div>
+      <div class="label" style="left: 250px; top: 738px; width: 700px; text-align: left">
+        committed to the repository, then published with the site
+      </div>
+    </div>
+  </body>
+</html>

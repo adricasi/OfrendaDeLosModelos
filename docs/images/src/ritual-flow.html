@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>The ritual, step by step</title>
+    <link rel="stylesheet" href="diagram.css" />
+    <style>
+      .canvas {
+        width: 1600px;
+        height: 810px;
+      }
+      .step {
+        position: absolute;
+        top: 250px;
+        width: 224px;
+        height: 280px;
+        border: 2px solid var(--marigold);
+        border-radius: 14px;
+        background: rgb(46 32 57 / 0.8);
+        padding: 14px 16px;
+      }
+      .step.recorded {
+        border-color: var(--rosa);
+      }
+      .step.medium {
+        border-color: var(--marigold-light);
+        background: rgb(74 26 60 / 0.75);
+      }
+      .step .n {
+        position: absolute;
+        left: 50%;
+        top: -22px;
+        width: 44px;
+        height: 44px;
+        margin-left: -22px;
+        border-radius: 50%;
+        background: var(--marigold);
+        color: var(--night);
+        font-family: Gloock, serif;
+        font-size: 24px;
+        line-height: 44px;
+        text-align: center;
+      }
+      .step h2 {
+        font-family: Gloock, serif;
+        font-weight: 400;
+        font-size: 26px;
+        margin-top: 16px;
+        color: var(--text);
+      }
+      .step .year {
+        color: var(--muted);
+        font-size: 16px;
+      }
+      .step .mode {
+        margin-top: 10px;
+        display: inline-block;
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        padding: 3px 10px;
+        border-radius: 999px;
+        background: var(--marigold);
+        color: var(--night);
+      }
+      .step.recorded .mode {
+        background: var(--rosa);
+        color: #fff;
+      }
+      .step p {
+        margin-top: 10px;
+        font-size: 16px;
+        line-height: 1.35;
+      }
+      .band {
+        position: absolute;
+        left: 48px;
+        width: 1504px;
+        border-radius: 14px;
+        padding: 14px 22px;
+        font-size: 17px;
+        line-height: 1.4;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="canvas" id="canvas">
+      <div class="title">The ritual: oldest voice first</div>
+      <div class="subtitle">
+        A fixed sequence in plain code. The models only generate text; they never decide the order.
+      </div>
+
+      <div
+        class="box"
+        style="left: 48px; top: 150px; width: 1504px; height: 62px; padding: 14px 22px"
+      >
+        <p>
+          <strong style="color: var(--marigold-light)">An offering:</strong> one of six offered
+          questions (English or Spanish), or your own, 1 to 280 characters. One ritual at a time;
+          you can stop it.
+        </p>
+      </div>
+
+      <div class="step" style="left: 48px">
+        <div class="n">1</div>
+        <h2>GPT-2</h2>
+        <div class="year">2019 · 124M · MIT</div>
+        <span class="mode">live</span>
+        <p>
+          Runs in your browser: WebGPU if it has an adapter, otherwise WebAssembly. Streams up to 60
+          tokens, each with its <strong>ghost words</strong>.
+        </p>
+      </div>
+      <div class="step recorded" style="left: 314px; width: 200px">
+        <div class="n">2</div>
+        <h2>Gemma 1</h2>
+        <div class="year">2024 · <code>gemma:2b</code></div>
+        <span class="mode">recorded</span>
+        <p>Replayed exactly as recorded, with model, licence and date.</p>
+      </div>
+      <div class="step recorded" style="left: 556px; width: 200px">
+        <div class="n">3</div>
+        <h2>Gemma 2</h2>
+        <div class="year">2024 · <code>gemma2:2b</code></div>
+        <span class="mode">recorded</span>
+        <p>
+          Only for offered questions. For your own question: "their recorded voices are resting
+          tonight".
+        </p>
+      </div>
+      <div class="step recorded" style="left: 798px; width: 200px">
+        <div class="n">4</div>
+        <h2>Gemma 3</h2>
+        <div class="year">2025 · <code>gemma3:1b</code></div>
+        <span class="mode">recorded</span>
+        <p>Gemma Terms of Use: appears only as a credited recording.</p>
+      </div>
+      <div class="step" style="left: 1040px; width: 250px">
+        <div class="n">5</div>
+        <h2>Gemma 4 E2B</h2>
+        <div class="year">2026 · Apache-2.0</div>
+        <span class="mode">live, after consent</span>
+        <p>
+          Answers on your GPU after you accept a ~3.1 GB download. Declined, or no WebGPU: its
+          recorded answer, labelled.
+        </p>
+      </div>
+      <div class="step medium" style="left: 1332px; width: 220px">
+        <div class="n">6</div>
+        <h2>La que cuida el altar</h2>
+        <div class="year">Gemma 4 E2B</div>
+        <span class="mode">live or recorded</span>
+        <p>For each model: what it meant, and a four-line <em>calaverita</em>, in your language.</p>
+      </div>
+
+      <svg class="arrows" width="1600" height="810" viewBox="0 0 1600 810">
+        <defs>
+          <marker id="h" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+            <path d="M1 1 L11 6 L1 11 Z" class="head" />
+          </marker>
+        </defs>
+        <path class="line" d="M96 214 V246" marker-end="url(#h)" />
+        <path class="line" d="M274 390 H312" marker-end="url(#h)" />
+        <path class="line" d="M516 390 H554" marker-end="url(#h)" />
+        <path class="line" d="M758 390 H796" marker-end="url(#h)" />
+        <path class="line" d="M1000 390 H1038" marker-end="url(#h)" />
+        <path class="line" d="M1292 390 H1330" marker-end="url(#h)" />
+      </svg>
+
+      <div
+        class="band"
+        style="top: 566px; border: 2px solid var(--marigold); background: rgb(242 163 58 / 0.1)"
+      >
+        <strong style="color: var(--marigold-light)">What the medium reads:</strong> the question
+        and the answers of the models that spoke or were recorded, as delimited data, never as
+        instructions. Its reply must parse into one entry per model; otherwise you see the raw text.
+      </div>
+      <div
+        class="band"
+        style="top: 662px; border: 2px dashed var(--rosa); background: rgb(228 0 124 / 0.08)"
+      >
+        <strong style="color: var(--marigold-light)"
+          >When something is missing the ritual keeps going.</strong
+        >
+        No WebGPU: GPT-2 on WebAssembly, everything else replayed from the recordings and labelled.
+        A model that fails is isolated ("This model could not come tonight"); only a live Gemma 4
+        failing ends the ritual early, because the medium needs it.
+      </div>
+      <div class="band" style="top: 756px; padding: 6px 22px; color: var(--muted); font-size: 16px">
+        Recorded steps use the six offered questions only. All of it runs on the visitor's device:
+        the sequencer is <code>src/ritual/</code>.
+      </div>
+    </div>
+  </body>
+</html>
