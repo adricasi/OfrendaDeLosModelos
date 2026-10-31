@@ -99,6 +99,18 @@ test.describe("without WebGPU (REQ-010)", () => {
   test("the shipped site (no recordings yet) does not fail", async ({ page }) => {
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
+    // The shipped file pins GPT-2; without the pin the test stays off the network.
+    await page.route("**/data/ancestors.json", async (route) => {
+      const response = await route.fetch();
+      const body = (await response.json()) as {
+        ancestors: { repositoryId: string | null; revision: string | null }[];
+      };
+      for (const ancestor of body.ancestors) {
+        ancestor.repositoryId = null;
+        ancestor.revision = null;
+      }
+      await route.fulfill({ response, json: body });
+    });
     await stubWebGpu(page, false);
     await page.goto("/OfrendaDeLosModelos/");
     await expect(page.locator("#places > li")).toHaveCount(5);
