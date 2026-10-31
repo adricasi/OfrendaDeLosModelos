@@ -32,10 +32,9 @@ A word on the tradition. I'm in Spain, not Mexico. This altar is an artistic int
 
 **Try it: [adricasi.github.io/OfrendaDeLosModelos](https://adricasi.github.io/OfrendaDeLosModelos/)**
 
-{% embed https://www.youtube.com/watch?v=VIDEO_ID %}
-<!-- TODO founder: replace VIDEO_ID with the uploaded intro video -->
+{% embed https://youtu.be/42jm8VKl6aY %}
 
-The voice in the intro video is [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M) (Apache-2.0) and the music is [MusicGen-small](https://huggingface.co/facebook/musicgen-small) by Meta (CC-BY-NC 4.0). Both are open-weight models, generated locally with transformers.js.
+Everything in the video is the real site, recorded in a browser without a GPU: GPT-2 speaks live, and Gemma 1 to 4 and the calaveritas play their recordings, labelled as such. The narration was voiced with [ElevenLabs](https://elevenlabs.io).
 
 The full live ritual needs desktop Chrome or Edge with WebGPU. Other browsers get GPT-2 on WebAssembly and the recorded ritual, labelled as such.
 
@@ -109,8 +108,6 @@ Open tooling is what made this possible for one person before a deadline: transf
 
 ## My Agent Session
 
-<!-- TODO founder: add the DevRelay session with the agent_session tag (see the challenge page) -->
-
 I worked **spec-first**. Before any code, a discovery pass produced a product brief, then a specification: requirements with testable acceptance criteria and stable IDs (`REQ-004`, `AC-004.1`, `NFR-002`), a design and a task plan. Decisions are written down as ADRs. Commits refer to those IDs.
 
 Then **Claude Code implemented it one task at a time**: tests written from the acceptance criteria first, then the code, then **independent review passes on each pull request** for code quality, security, and UX and accessibility. Pre-commit checks and CI ran on every change (formatting, lint, types, unit and end-to-end tests, licence check, audit, secret scan). I read, steered and merged. The agent proposed, built, and was reviewed. The list of bugs above is where that paid off.
@@ -142,4 +139,4 @@ It is imperfect and it is shown that way: the rhymes are loose, and a reader of 
 
 ---
 
-*Credits.* Code: MIT. Fonts: Gloock and Bricolage Grotesque, SIL Open Font License 1.1, self-hosted. Models: GPT-2 (MIT), Gemma 4 (Apache-2.0), Gemma 1 to 3 (Gemma Terms of Use, appearing only as credited recorded outputs). Intro video: voice by [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M) (Apache-2.0); music by [MusicGen-small](https://huggingface.co/facebook/musicgen-small), Meta, CC-BY-NC 4.0. All art is original CSS and SVG. Cultural sources are listed on the About page.
+*Credits.* Code: MIT. Fonts: Gloock and Bricolage Grotesque, SIL Open Font License 1.1, self-hosted. Models: GPT-2 (MIT), Gemma 4 (Apache-2.0), Gemma 1 to 3 (Gemma Terms of Use, appearing only as credited recorded outputs). Video narration voiced with [ElevenLabs](https://elevenlabs.io). All art is original CSS and SVG. Cultural sources are listed on the About page.
