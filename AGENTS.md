@@ -1,6 +1,6 @@
 # Ofrenda de los Modelos
 
-An altar where open-weight AI models come home for Día de los Muertos; Gemma 4 tends it on your device.
+An artistic tribute to the memory of AI models, inspired by the Mexican tradition of Día de Muertos; Gemma 4 tends the altar on your device.
 *Closed models die. Open weights come home.*
 
 > Global engineering standards are loaded automatically from `~/ai-toolkit/AGENTS.md`
@@ -13,11 +13,11 @@ REQ/AC IDs), `design.md` (how), `tasks.md` (plan). Build with the `implement-tas
 change the spec first (`spec` skill) when requirements change. Reference IDs in commits.
 
 ## Project overview
-A static web page (GitHub Pages) where the visitor leaves a question on a Día de los Muertos
+A static web page (GitHub Pages) where the visitor leaves a question on a Día de Muertos
 altar and open-weight models answer, oldest first: GPT-2 live with "ghost words" (the words it
 almost said), recorded voices of Gemma 1–3, then Gemma 4 live on the visitor's device, which
-tends the altar and writes a calaverita for each ancestor. Retired closed models appear as dark
-frames. Entry for DEV's Hacktoberfest Week 4 challenge; code freeze Oct 31 18:00 Spain time.
+tends the altar and writes a calaverita for each ancestor. Closed models with unreleased weights appear
+as dark frames. Entry for DEV's Hacktoberfest Week 4 challenge; code freeze Oct 31 18:00 Spain time.
 Details: [product.md](docs/spec/product.md).
 
 ## Stack
@@ -56,8 +56,14 @@ npm audit --audit-level=high             # dependency vulnerabilities
 - Never invent ghost words: they come only from the model's own probabilities at that step.
 - Recorded voices are shown exactly as recorded and always labelled as recorded, with model,
   version, licence and date. A dark frame needs an official retirement source.
-- Ancestors "have passed on"; only closed models are lost. The medium is kind, never mocks a
-  model, never speaks as a real person; the altar receives photos of objects, never people.
+- "Ancestors" is a metaphor for earlier models: they are software, never equated with dead people
+  or anyone's family; dark frames mean inaccessible digital history, not death. The medium may
+  tease but never mocks or demeans a model, never speaks as a real person; the altar receives
+  photos of objects, never people.
+- The altar is an artistic interpretation, not a Mexican ritual, and one possible arrangement of
+  an ofrenda (not the standard). Never claim cultural approval while `culturalReviewPending` is
+  `true` in `public/data/credits.json`; the founder's review is editorial, not Mexican cultural
+  approval.
 - Cultural accuracy: use the ofrenda's real elements and cite sources; no Halloween or
   sugar-skull costume styling; Spanish is written properly (NFR-010).
 - Licences: shipped code and models are permissive (MIT, Apache-2.0, BSD, ISC). Gemma 1–3

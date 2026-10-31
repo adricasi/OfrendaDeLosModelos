@@ -202,6 +202,19 @@ a:focus-visible,
   text-wrap: balance;
 }
 
+.interpretation-note {
+  max-width: 38rem;
+  margin: 0 auto var(--space-2);
+  color: var(--text-muted);
+  font-size: 0.9375rem;
+  font-style: italic;
+  text-wrap: balance;
+}
+
+.about-framing {
+  max-width: 44rem;
+}
+
 main {
   max-width: 64rem;
   margin: 0 auto;

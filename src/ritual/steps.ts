@@ -375,7 +375,7 @@ export class MediumStep implements RitualStep {
       answers: words,
     });
     const now = this.options.now ?? Date.now;
-    context.reportStatus?.("Writing for each ancestor…");
+    context.reportStatus?.("Writing for each model…");
     const started = now();
     let raw = await generateText(this.options, this.info.id, context, prompt, false);
     let parsed = parseMedium(raw, ids);

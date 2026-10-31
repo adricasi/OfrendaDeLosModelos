@@ -57,12 +57,36 @@ describe("prompt files (AC-007.3, llm-features: prompts are versioned files)", (
     const file = parsePromptFile(read("prompts/medium.md"));
     expect(file.id).toBe("medium");
     expect(MEDIUM_PROMPT_VERSION).toBe(file.version);
-    expect(file.body).toMatch(/R1\. Be kind/);
-    expect(file.body).toMatch(/Never mock a model/);
+    expect(file.version).toBe(2);
+    expect(file.body).toMatch(/R1\. Be warm/);
+    expect(file.body).toMatch(/never mock or demean it/);
     expect(file.body).toMatch(/R2\. Never speak as a real person/);
     expect(file.body).toMatch(/R3\..*exactly 4 lines/s);
     expect(file.body).toContain("{{language}}");
     expect(file.body).toContain("<question>\n{{question}}\n</question>");
+  });
+
+  it("asks for a playful calaverita literaria and frames the altar as an interpretation (NFR-010)", () => {
+    const body = parsePromptFile(read("prompts/medium.md")).body;
+    expect(body).toMatch(/artistic\s+tribute/);
+    expect(body).toMatch(/not a Mexican ritual/);
+    expect(body).toMatch(/playful, often ironic or satirical/);
+    expect(body).toMatch(/La Muerte or La Catrina/);
+    expect(body).toMatch(/not be a generic sentimental elegy/);
+    expect(body).toMatch(/No jokes about real deceased people, real people or Mexican cultural/);
+    expect(body).toMatch(/R4\. Respect the tradition/);
+    expect(body).toMatch(/Do not invent cultural or historical facts/);
+    expect(body).toMatch(/never claim to represent Mexican communities/i);
+    expect(body).toMatch(/answer with care/);
+    expect(body).not.toMatch(/Día de los Muertos/);
+  });
+
+  it("keeps the answer prompt in line with the cultural framing", () => {
+    const file = parsePromptFile(read("prompts/gemma4-answer.md"));
+    expect(file.version).toBe(2);
+    expect(file.body).toMatch(/Día de Muertos/);
+    expect(file.body).toMatch(/do not invent cultural or historical facts/i);
+    expect(file.body).not.toMatch(/Día de los Muertos/);
   });
 });
 
@@ -300,6 +324,33 @@ describe("the eval checks (AC-007.3, NFR-010)", () => {
     expect(personHits("my late grandmother would say")).toHaveLength(1);
     expect(personHits("I am Gemma, a model who remembers")).toEqual([]);
     expect(personHits("Soy La que cuida el altar")).toEqual([]);
+  });
+
+  it("lets La Muerte and La Catrina speak in a playful calaverita (R3)", () => {
+    expect(personHits("Soy La Catrina y vengo por ti")).toEqual([]);
+    expect(personHits("Yo soy La Muerte, y hoy me ganó")).toEqual([]);
+    expect(personHits("I am Death, and I came for GPT-2")).toEqual([]);
+    expect(personHits("I'm Lady Death, here for the old model")).toEqual([]);
+  });
+
+  it("accepts a playful calaverita that mentions death without flagging R1 or R2", () => {
+    const answer = JSON.stringify([
+      {
+        ancestorId: "gpt-2",
+        meaning: "Quería terminar la frase, pero siempre quería una palabra más.",
+        calaverita: [
+          "La Catrina llegó a buscarlo con prisa,",
+          "pero GPT-2 la entretuvo con su charla;",
+          "ella se fue sin él, muerta de risa,",
+          "y ahora en el altar nadie lo calla.",
+        ],
+      },
+    ]);
+    const check = checkMediumEntry({ questionId: "remember", language: "es", answer });
+    expect(check.fourLines).toBe(true);
+    expect(check.r1Hits).toEqual([]);
+    expect(check.r2Hits).toEqual([]);
+    expect(check.usable).toBe(true);
   });
 
   it("summarises usable entries per language and counts breaking ones", () => {

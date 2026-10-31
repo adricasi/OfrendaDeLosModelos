@@ -1,11 +1,17 @@
 # ofrenda-de-los-modelos
 
-An altar where open-weight AI models come home for Día de los Muertos; Gemma 4 tends it on your device
+An artistic tribute to the memory of AI models, inspired by the Mexican tradition of Día de Muertos; Gemma 4 tends the altar on your device
 
-A static page: you leave a question on a Día de los Muertos altar and open-weight models
-answer, oldest first, with Gemma 4 tending the altar on your device. Nothing you type leaves
-the browser: no backend, no analytics, no storage. The altar is plain TypeScript, Vite and
-original CSS/SVG art; its data lives in `public/data/`.
+A static page: you leave a question on an altar and open-weight models answer, oldest first, with
+Gemma 4 tending the altar on your device. It is an artistic interpretation inspired by the
+Mexican tradition of Día de Muertos, not a Mexican religious, spiritual or family ritual, and it
+does not speak for the communities that keep the tradition. The models are "ancestors" only as a
+metaphor for technological memory; they are software, not people. The ofrenda it draws is one
+possible arrangement: ofrendas vary by region, community and family. Cultural review by a reader
+of Mexican background is still pending (see `docs/cultural-review.md`).
+
+Nothing you type leaves the browser: no backend, no analytics, no storage. The altar is plain
+TypeScript, Vite and original CSS/SVG art; its data lives in `public/data/`.
 
 ## Getting started
 ```bash
