@@ -47,6 +47,8 @@ export interface RecorderConfig {
     readonly enabled: boolean;
     readonly ancestorId: string;
     readonly promptFile: string;
+    /** The medium writes a meaning and a four-line calaverita per model: it needs more room. */
+    readonly numPredict: number;
   };
 }
 
@@ -164,6 +166,7 @@ export function parseRecorderConfig(input: unknown): RecorderConfig {
       enabled: medium["enabled"],
       ancestorId: mediumAncestorId,
       promptFile: cStr(medium, "promptFile", ".medium"),
+      numPredict: cInt(medium, "numPredict", ".medium"),
     },
   };
 }
@@ -378,7 +381,10 @@ async function recordMedium(
         language,
         answers,
       });
-      const stamp = provenance(ancestor, digest, config, run.runAt, version);
+      const stamp = {
+        ...provenance(ancestor, digest, config, run.runAt, version),
+        settings: { ...config.generation, numPredict: config.medium.numPredict },
+      };
       const promptInfo = {
         file: config.medium.promptFile,
         sha256: promptHash,
@@ -394,7 +400,12 @@ async function recordMedium(
         log(`KEEP medium / ${question.id} / ${language} (unchanged)`);
         continue;
       }
-      const answer = (await run.client.generate(ancestor.tag, prompt, config.generation)).trim();
+      const answer = (
+        await run.client.generate(ancestor.tag, prompt, {
+          ...config.generation,
+          numPredict: config.medium.numPredict,
+        })
+      ).trim();
       if (answer === "") {
         log(`WARN medium gave empty words for "${question.id}" (${language}).`);
         continue;

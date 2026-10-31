@@ -217,6 +217,7 @@ export function wireAboutPanel(doc: Document): void {
     panel.hidden = !open;
     trigger.setAttribute("aria-expanded", String(open));
     if (open) {
+      panel.dispatchEvent(new Event("about-opened"));
       panel.tabIndex = -1;
       panel.focus();
     } else {

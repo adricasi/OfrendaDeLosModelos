@@ -1,7 +1,7 @@
 # Ofrenda de los Modelos
 
 An artistic tribute to the memory of AI models, inspired by the Mexican tradition of Día de Muertos; Gemma 4 tends the altar on your device.
-*Closed models die. Open weights come home.*
+*Closed models fade. Open weights can always come back.*
 
 > Global engineering standards are loaded automatically from `~/ai-toolkit/AGENTS.md`
 > (Claude Code via `~/.claude/CLAUDE.md`, Gemini via `~/.gemini/AGENTS.md`).
@@ -30,7 +30,8 @@ Details: [product.md](docs/spec/product.md).
   WebGPU inside a Web Worker (ADR-0003). ONNX Runtime WebAssembly files are self-hosted.
 - Data is static JSON in `public/data/` (ancestors, offered questions, recorded voices, dark
   frames, credits), validated at load.
-- Recorded voices are made on the builder's laptop with Ollama (`npm run record-voices`).
+- Recorded voices are made with Ollama on loopback (`npm run record-voices`): on the builder's laptop
+  or in a build session (the 2026-10-31 recordings were made in a cloud session, on CPU).
 - Full design: [design.md](docs/spec/design.md).
 
 ## Commands

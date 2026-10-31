@@ -2,7 +2,7 @@
  * Minimal Ollama HTTP client for the recording tool. Fields used, from Ollama's docs/api.md:
  *   GET  /api/version -> { version }
  *   GET  /api/tags    -> { models: [{ name, model, digest, ... }] }
- *   POST /api/generate { model, prompt, stream: false, options: { temperature, seed, num_predict } }
+ *   POST /api/generate { model, prompt, stream: false, think: false, options: { temperature, seed, num_predict } }
  *        -> { model, response, done, ... }
  */
 
@@ -148,6 +148,9 @@ export class OllamaClient {
         model: tag,
         prompt,
         stream: false,
+        // Gemma 4 thinks first by default and spends num_predict on it, leaving an empty answer;
+        // the older Gemma models accept the flag and answer the same.
+        think: false,
         options: {
           temperature: options.temperature,
           seed: options.seed,

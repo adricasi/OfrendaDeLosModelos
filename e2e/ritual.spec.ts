@@ -296,6 +296,18 @@ test("the real worker build: GPT-2 without a pinned revision cannot come, and no
   page,
   baseURL,
 }) => {
+  // The shipped file pins GPT-2; serve a copy without the pin to exercise the unpinned path.
+  await page.route("**/data/ancestors.json", async (route) => {
+    const response = await route.fetch();
+    const body = (await response.json()) as {
+      ancestors: { repositoryId: string | null; revision: string | null }[];
+    };
+    for (const ancestor of body.ancestors) {
+      ancestor.repositoryId = null;
+      ancestor.revision = null;
+    }
+    await route.fulfill({ response, json: body });
+  });
   const traffic = trackRequests(page);
   const logged: string[] = [];
   page.on("console", (message) => logged.push(message.text()));

@@ -138,7 +138,7 @@ for technological memory and digital heritage, not as an equivalence with dead p
 | "An artistic tribute to the memory of AI models, inspired by the Mexican tradition of Día de Muertos. Open-weight models answer your question, oldest first; Gemma 4 tends the altar on your device." | Statement under the title; same positioning in `<meta name="description">`, README and `package.json` |
 | "An artistic interpretation, not a Mexican ritual: it does not speak for the communities that keep the tradition." | Visible line under the statement |
 | "About, credits and licences" | Link, about panel heading |
-| "Everything runs on your device. No question or photo is sent anywhere: there is no server, no analytics and nothing is stored." | About panel |
+| "Everything runs on your device. No question or photo is sent anywhere: there is no server, no analytics, and nothing you write is stored." | About panel |
 | "This altar is an artistic interpretation inspired by the Mexican tradition of Día de Muertos. It is not a Mexican religious, spiritual or family ritual, and it does not speak for the communities that keep the tradition. The AI models are called "ancestors" only as a metaphor for technological memory and digital heritage: they are software, not people, and they are not equated with anyone's dead or family." | About panel (framing) |
 | "Cultural review pending: the Spanish texts and cultural details of this altar have not yet been reviewed or approved by anyone of Mexican background. This editorial review was done by the project's founder, who is based in Spain. Corrections are welcome." | About panel, visible while the flag is true |
 | "The models, the altar's "ancestors"" | About panel heading |

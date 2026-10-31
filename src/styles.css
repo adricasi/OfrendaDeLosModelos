@@ -815,6 +815,25 @@ textarea:focus-visible {
   margin-bottom: var(--space-2);
 }
 
+.stored-models-actions {
+  margin: var(--space-2) 0;
+}
+
+.stored-models-actions button {
+  min-height: 2.5rem;
+  padding: var(--space-1) var(--space-3);
+}
+
+.stored-models-note,
+.stored-models-result {
+  margin: var(--space-1) 0;
+}
+
+.stored-models-note:empty,
+.stored-models-result:empty {
+  display: none;
+}
+
 #about-link {
   display: inline-block;
   padding: var(--space-1) var(--space-2);
