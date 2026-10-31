@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>How ghost words are made</title>
+    <link rel="stylesheet" href="diagram.css" />
+    <style>
+      .canvas {
+        width: 1600px;
+        height: 650px;
+      }
+      .stage {
+        position: absolute;
+        top: 150px;
+        width: 330px;
+        height: 262px;
+        border: 2px solid var(--marigold);
+        border-radius: 14px;
+        background: rgb(46 32 57 / 0.8);
+        padding: 14px 18px;
+      }
+      .stage h2 {
+        font-family: Gloock, serif;
+        font-weight: 400;
+        font-size: 24px;
+        color: var(--marigold-light);
+        margin-bottom: 6px;
+      }
+      .stage p,
+      .stage li {
+        font-size: 17px;
+        line-height: 1.35;
+      }
+      .stage .n {
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+        text-transform: uppercase;
+      }
+      .tok {
+        display: inline-block;
+        margin: 4px 6px 0 0;
+        padding: 3px 10px;
+        border-radius: 8px;
+        border: 1.5px solid var(--muted);
+        font-size: 16px;
+        color: var(--muted);
+      }
+      .tok.chosen {
+        border-color: var(--marigold);
+        color: var(--text);
+        background: rgb(242 163 58 / 0.18);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="canvas" id="canvas">
+      <div class="title">Ghost words come from the model's own numbers</div>
+      <div class="subtitle">
+        One pass per generated token, inside the worker, in <code>src/worker/ghost-words.ts</code>.
+      </div>
+
+      <div class="stage" style="left: 48px">
+        <div class="n">1 · The model speaks</div>
+        <h2>Logits</h2>
+        <p>
+          At each step GPT-2 produces one score (a logit) for every token in its vocabulary. A
+          logits processor sees them before the next token is drawn.
+        </p>
+      </div>
+      <div class="stage" style="left: 436px">
+        <div class="n">2 · Probabilities</div>
+        <h2>Softmax over everything</h2>
+        <p>
+          The step's logits are divided by the temperature (0.7) and turned into probabilities over
+          the <strong>full vocabulary</strong>. The best eight are kept, so unreadable tokens can be
+          skipped.
+        </p>
+      </div>
+      <div class="stage" style="left: 824px">
+        <div class="n">3 · The same distribution</div>
+        <h2>Drawn from the same</h2>
+        <p>
+          The library's temperature stays at 1 and <code>top_k</code> is <code>0</code>, so it does
+          not narrow the choice to 50 tokens: what is shown is what was sampled from.
+        </p>
+      </div>
+      <div class="stage" style="left: 1212px; width: 340px">
+        <div class="n">4 · On the altar</div>
+        <h2>Three ghosts per word</h2>
+        <p>
+          The chosen token is removed; up to three alternatives remain, fainter, each with its
+          probability on hover and focus.
+        </p>
+        <div style="margin-top: 8px">
+          <span class="tok chosen">doing</span><br />
+          <span class="tok">ice 55%</span><span class="tok">rain 17%</span
+          ><span class="tok">snow 6.2%</span>
+        </div>
+      </div>
+
+      <svg class="arrows" width="1600" height="650" viewBox="0 0 1600 650">
+        <defs>
+          <marker id="h" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+            <path d="M1 1 L11 6 L1 11 Z" class="head" />
+          </marker>
+        </defs>
+        <path class="line" d="M380 280 H434" marker-end="url(#h)" />
+        <path class="line" d="M768 280 H822" marker-end="url(#h)" />
+        <path class="line" d="M1156 280 H1210" marker-end="url(#h)" />
+      </svg>
+
+      <div
+        class="box"
+        style="left: 48px; top: 440px; width: 740px; height: 170px; border-color: var(--teal)"
+      >
+        <h3>Why <code>top_k: 0</code> matters</h3>
+        <p>
+          transformers.js samples from the 50 best tokens by default and renormalises them. Showing
+          probabilities over the whole vocabulary while sampling from 50 would be a small lie,
+          caught in review and fixed. Now the two agree.
+        </p>
+      </div>
+      <div
+        class="box"
+        style="left: 812px; top: 440px; width: 740px; height: 170px; border-color: var(--rosa)"
+      >
+        <h3>What is never invented</h3>
+        <ul>
+          <li>a ghost word is always one of the model's own most likely tokens at that step</li>
+          <li>the one-line list of blocked words only removes tokens; it adds none</li>
+          <li>screen readers get "almost: X, Y, Z" as text, outside the live answer</li>
+          <li>
+            the first word of an answer can show the end-of-text token, because it was a candidate
+          </li>
+        </ul>
+      </div>
+    </div>
+  </body>
+</html>

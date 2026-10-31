@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>The roles of Gemma</title>
+    <link rel="stylesheet" href="diagram.css" />
+    <style>
+      .canvas {
+        width: 1600px;
+        height: 800px;
+      }
+      .col-title {
+        position: absolute;
+        font-family: Gloock, serif;
+        font-size: 26px;
+        color: var(--marigold-light);
+      }
+      .row {
+        position: absolute;
+        left: 48px;
+        width: 700px;
+        height: 96px;
+        padding: 12px 18px;
+        border: 2px solid var(--rosa);
+        border-radius: 14px;
+        background: rgb(46 32 57 / 0.8);
+      }
+      .row b {
+        font-family: Gloock, serif;
+        font-weight: 400;
+        font-size: 24px;
+      }
+      .row .meta {
+        font-size: 16px;
+        color: var(--muted);
+        margin-top: 4px;
+        line-height: 1.3;
+      }
+      .role {
+        position: absolute;
+        left: 850px;
+        width: 702px;
+        padding: 14px 20px;
+        border: 2px solid var(--marigold);
+        border-radius: 14px;
+        background: rgb(46 32 57 / 0.8);
+        font-size: 17px;
+        line-height: 1.35;
+      }
+      .role h2 {
+        font-family: Gloock, serif;
+        font-weight: 400;
+        font-size: 24px;
+        color: var(--text);
+        margin-bottom: 4px;
+      }
+      .role .where {
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--marigold-light);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="canvas" id="canvas">
+      <div class="title">The Gemma family on the altar</div>
+      <div class="subtitle">
+        Three older generations as recorded voices; the newest as a live voice and as the medium.
+      </div>
+
+      <div class="col-title" style="left: 48px; top: 140px">Recorded once, with Ollama</div>
+      <div class="muted" style="position: absolute; left: 48px; top: 176px; font-size: 16px">
+        2026-10-31 · Ollama 0.40.13 · temperature 0, seed 42 · 6 questions × English, Spanish
+      </div>
+
+      <div class="row" style="top: 214px">
+        <b>Gemma 1</b> <span class="muted">· 2024</span>
+        <div class="meta"><code>gemma:2b</code> · Gemma Terms of Use · credited recording only</div>
+      </div>
+      <div class="row" style="top: 324px">
+        <b>Gemma 2</b> <span class="muted">· 2024</span>
+        <div class="meta">
+          <code>gemma2:2b</code> · Gemma Terms of Use · credited recording only
+        </div>
+      </div>
+      <div class="row" style="top: 434px">
+        <b>Gemma 3</b> <span class="muted">· 2025</span>
+        <div class="meta">
+          <code>gemma3:1b</code> · Gemma Terms of Use · credited recording only
+        </div>
+      </div>
+      <div class="row" style="top: 544px; border-color: var(--marigold)">
+        <b>Gemma 4 E2B</b> <span class="muted">· 2026</span>
+        <div class="meta">
+          <code>gemma4:e2b</code> · Apache-2.0 · its answers, and the medium's words (1100 tokens)
+        </div>
+      </div>
+      <div
+        class="box dashed"
+        style="left: 48px; top: 664px; width: 700px; height: 100px; font-size: 17px"
+      >
+        <p>
+          Shown exactly as recorded, labelled <em>Recorded voice</em> with model, tag, licence and
+          date. Replayed when the browser has no WebGPU, when the visitor declines the 3.1 GB
+          download, or for any ancestor that is not live.
+        </p>
+      </div>
+
+      <div class="col-title" style="left: 850px; top: 140px">Gemma 4 E2B, live in the browser</div>
+      <div class="muted" style="position: absolute; left: 850px; top: 176px; font-size: 16px">
+        transformers.js on WebGPU · <code>q4f16</code> · Apache-2.0 · only after consent
+      </div>
+
+      <div class="role" style="top: 214px; height: 170px">
+        <div class="where">Role 1 · a voice in the family</div>
+        <h2>Answers the visitor's question</h2>
+        <p>
+          Prompt <code>prompts/gemma4-answer.md</code>: at most four short sentences, in the
+          question's language, warm and honest, never as a real person, no invented cultural facts.
+          160 tokens at temperature 0.7, streamed to the page.
+        </p>
+      </div>
+      <div
+        class="role"
+        style="
+          top: 404px;
+          height: 340px;
+          border-color: var(--marigold-light);
+          background: rgb(74 26 60 / 0.7);
+        "
+      >
+        <div class="where">Role 2 · la que cuida el altar, the medium</div>
+        <h2>Interprets each model and writes its calaverita</h2>
+        <p>
+          Prompt <code>prompts/medium.md</code> (version 2) is filled with the question and every
+          answer as escaped, delimited data. Gemma 4 replies with a JSON array:
+        </p>
+        <p style="margin-top: 8px">
+          <code>[{"ancestorId", "meaning", "calaverita": [4 lines]}]</code>
+        </p>
+        <ul style="margin-top: 8px">
+          <li>strict parser: one entry per model, exactly four lines each</li>
+          <li>one retry with the validation error if the first try was quick</li>
+          <li>otherwise the raw text is shown as one message, never nothing</li>
+          <li>1100 tokens at temperature 0.5, not streamed; the same prompt made the recordings</li>
+        </ul>
+      </div>
+    </div>
+  </body>
+</html>
