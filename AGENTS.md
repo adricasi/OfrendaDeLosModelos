@@ -30,7 +30,8 @@ Details: [product.md](docs/spec/product.md).
   WebGPU inside a Web Worker (ADR-0003). ONNX Runtime WebAssembly files are self-hosted.
 - Data is static JSON in `public/data/` (ancestors, offered questions, recorded voices, dark
   frames, credits), validated at load.
-- Recorded voices are made on the builder's laptop with Ollama (`npm run record-voices`).
+- Recorded voices are made with Ollama on loopback (`npm run record-voices`): on the builder's laptop
+  or in a build session (the 2026-10-31 recordings were made in a cloud session, on CPU).
 - Full design: [design.md](docs/spec/design.md).
 
 ## Commands
