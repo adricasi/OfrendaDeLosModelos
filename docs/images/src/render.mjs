@@ -1,5 +1,13 @@
 // Renders the diagram pages in this folder to ../*.png (device scale factor 2).
 // Run from anywhere: node docs/images/src/render.mjs
+// The committed PNGs were also reduced to 256 colours to keep the repository small.
+//
+// The screenshot-*.png files are not made by this script. They are real captures of the production
+// build (npm run build, then npx vite preview with the base path), taken with Playwright in headless
+// Chromium without a GPU (so GPT-2 ran on WebAssembly and downloaded its files from Hugging Face),
+// then downscaled and palette-reduced. The recorded calaverita cards are the recordings in
+// public/data/recorded-voices.json.
+//
 // Needs @playwright/test (a dev dependency) and a Chromium: set PLAYWRIGHT_CHROMIUM_EXECUTABLE
 // to its path, or let Playwright use the browser it installed.
 import { chromium } from "@playwright/test";
