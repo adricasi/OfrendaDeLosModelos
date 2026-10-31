@@ -5,36 +5,52 @@
 //   node tools/demo-video.mjs http://localhost:4173/OfrendaDeLosModelos/ <out-dir> --live
 //   It runs one ritual online first so the models and the service worker are cached (kept in
 //   <out-dir>/browser-profile), then switches the browser offline and films the whole take.
+// Real site in headless Chromium, no fake models (no GPU needed): npm run build, then
+//   npx vite preview --outDir dist --port 4196 --strictPort and
+//   node tools/demo-video.mjs http://localhost:4196/OfrendaDeLosModelos/ <out-dir> --real
+//   It runs one unrecorded ritual first (kept in <out-dir>/browser-profile) so GPT-2 is cached,
+//   then films the take: title slide, the site, two diagram slides (docs/images) and an end
+//   slide. Without WebGPU GPT-2 runs live on WebAssembly and the Gemma voices replay their
+//   recordings, labelled as such. Set CHROMIUM_PATH to override /opt/pw-browsers/chromium.
 // Add --narration <dir> with narration_01.mp3 … narration_07.mp3 (one per paragraph below):
 //   each scene then lasts at least as long as its paragraph, and the voice is mixed in.
 // Needs ffmpeg on PATH. Not part of the site or CI.
 /* global document, navigator, performance, requestAnimationFrame, scrollTo, scrollY, setTimeout -- browser code inside page.evaluate */
 import { chromium } from "@playwright/test";
 import { Buffer } from "node:buffer";
+import path from "node:path";
 import process from "node:process";
 import { execFileSync } from "node:child_process";
-import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 
 const [BASE, OUT] = process.argv.slice(2);
 const DRAFT = process.argv.includes("--draft");
 const LIVE = process.argv.includes("--live");
-const URL = LIVE ? BASE : `${BASE}?fake-models&fake-uncached&fake-delay=70`;
+const REAL = process.argv.includes("--real");
+const URL = LIVE || REAL ? BASE : `${BASE}?fake-models&fake-uncached&fake-delay=70`;
 // Real models can take minutes on a first download; the stand-ins answer in seconds.
-const MODEL_TIMEOUT = LIVE ? 30 * 60_000 : 90_000;
+const MODEL_TIMEOUT = LIVE || REAL ? 30 * 60_000 : 90_000;
+const QUESTION = REAL ? "What do you remember?" : "What happens when we die?";
+// Slides for --real: full-screen diagrams from the repository, loaded into the page as data: URIs.
+const SLIDE_FILES = {
+  roles: "docs/images/diagram-gemma-roles.png",
+  architecture: "docs/images/diagram-architecture.png",
+};
 const narrationArg = process.argv.indexOf("--narration");
 const NARRATION_DIR = narrationArg > 0 ? process.argv[narrationArg + 1] : null;
 
 const NARRATION = [
   "In August 2025, about two hundred people held a funeral for an AI model. Its makers had switched it off, and there was nothing else anyone could do.",
-  "Closed models fade like that. Their weights were never released. They cannot return.",
+  "Their weights were never released.",
   "But some models can. This is an ofrenda for open-weight models. You leave one question, and the ancestors answer, oldest first.",
   "GPT-2, from 2019, speaks live in your browser. Beneath its words float the ghost words: the ones it almost said.",
   "Then the Gemma family, generation by generation.",
   "And finally Gemma 4, the first Gemma under Apache 2.0. Running on your own device, it tends the altar, and writes each ancestor a calaverita.",
   "Nothing you write leaves your machine.",
 ];
-// The last audio file also says the end card's line ("Closed models fade. Open weights can
-// always come back."); the card appears in the pause before it.
+// With the older, longer last audio file (--draft/--live) it also says the end card's line
+// ("Closed models fade. Open weights can always come back."); the card appears in the pause
+// before it. With --real the file is trimmed and the end card is silent.
 const END_CARD_AFTER = 2.4;
 const PAUSE_AFTER_PARAGRAPH = 0.5;
 
@@ -64,18 +80,24 @@ const contextOptions = {
   bypassCSP: true,
 };
 // Live: installed Chrome, headed so WebGPU uses the real GPU, with a profile that keeps the
-// model cache between runs.
-const ctx = LIVE
+// model cache between runs. Real: headless Chromium (no WebGPU), same persistent profile.
+const ctx = REAL
   ? await chromium.launchPersistentContext(`${OUT}/browser-profile`, {
       ...contextOptions,
-      channel: "chrome",
-      headless: false,
+      executablePath: process.env.CHROMIUM_PATH ?? "/opt/pw-browsers/chromium",
+      headless: true,
     })
-  : await (
-      await chromium.launch(
-        process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {},
-      )
-    ).newContext(contextOptions);
+  : LIVE
+    ? await chromium.launchPersistentContext(`${OUT}/browser-profile`, {
+        ...contextOptions,
+        channel: "chrome",
+        headless: false,
+      })
+    : await (
+        await chromium.launch(
+          process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {},
+        )
+      ).newContext(contextOptions);
 const p = ctx.pages()[0] ?? (await ctx.newPage());
 const cdp = await ctx.newCDPSession(p);
 cdp.on("Page.screencastFrame", async (f) => {
@@ -85,8 +107,14 @@ cdp.on("Page.screencastFrame", async (f) => {
 
 // Video chrome (title and end cards, badges) lives in one fixed layer above the page.
 async function installLayer() {
+  const slides = Object.fromEntries(
+    Object.entries(SLIDE_FILES).map(([key, file]) => [
+      key,
+      `data:image/png;base64,${readFileSync(path.join(import.meta.dirname, "..", file)).toString("base64")}`,
+    ]),
+  );
   await p.evaluate(
-    ([draft, offline]) => {
+    ([draft, offline, slideImages]) => {
       const css = document.createElement("style");
       css.textContent = `
       #demo-layer{position:fixed;inset:0;pointer-events:none;z-index:2147483647;font-family:var(--font)}
@@ -96,6 +124,9 @@ async function installLayer() {
       #demo-card h1{font-family:var(--font-display);font-weight:400;font-size:64px;margin:0;color:var(--marigold-light)}
       #demo-card p{font-size:26px;margin:0;max-width:900px}
       #demo-card small{font-size:19px;opacity:.75}
+      #demo-slide{position:absolute;inset:0;display:grid;place-items:center;opacity:0;transition:opacity .9s;
+        background:radial-gradient(circle at 50% 40%,#2b1630,#0f0810 75%)}
+      #demo-slide img{position:absolute;max-width:100%;max-height:100%;object-fit:contain;opacity:0}
       #demo-draft{position:absolute;top:14px;right:16px;padding:5px 12px;border-radius:6px;font-size:15px;
         background:#b3261e;color:#fff;letter-spacing:.04em}
       #demo-note{position:absolute;inset:0;display:grid;place-content:center;opacity:0;transition:opacity .6s;
@@ -103,6 +134,16 @@ async function installLayer() {
       document.head.append(css);
       const layer = document.createElement("div");
       layer.id = "demo-layer";
+      const slide = document.createElement("div");
+      slide.id = "demo-slide";
+      for (const [key, src] of Object.entries(slideImages)) {
+        const img = document.createElement("img");
+        img.dataset.slide = key;
+        img.alt = "";
+        img.src = src;
+        slide.append(img);
+      }
+      layer.append(slide);
       for (const id of ["demo-card", "demo-note"]) {
         const div = document.createElement("div");
         div.id = id;
@@ -122,7 +163,11 @@ async function installLayer() {
       }
       document.body.append(layer);
     },
-    [DRAFT, LIVE],
+    [DRAFT, LIVE, slides],
+  );
+  // Decode both diagrams now so a slide never pops in half-drawn.
+  await p.evaluate(() =>
+    Promise.all([...document.querySelectorAll("#demo-slide img")].map((img) => img.decode())),
   );
 }
 // Card content is a list of [tag, text] lines; text only, never HTML.
@@ -140,6 +185,13 @@ const card = (lines, show) =>
     },
     [lines, show],
   );
+// A full-screen diagram slide: pass its key to show it, null to fade it out.
+const slide = (key) =>
+  p.evaluate((k) => {
+    for (const img of document.querySelectorAll("#demo-slide img"))
+      img.style.opacity = img.dataset.slide === k ? "1" : "0";
+    document.getElementById("demo-slide").style.opacity = k ? "1" : "0";
+  }, key);
 const note = (text, show) =>
   p.evaluate(
     ([t, s]) => {
@@ -182,7 +234,7 @@ const hold = async (i) => {
 };
 
 const offerQuestion = async (pause = 0) => {
-  await p.getByLabel("What happens when we die?").check();
+  await p.getByLabel(QUESTION).check();
   await wait(pause);
   await p.getByRole("button", { name: "Offer it to the altar" }).click();
 };
@@ -193,23 +245,26 @@ const acceptConsentIfAsked = async () => {
   if (await consent.isVisible()) await consent.click();
 };
 
-if (LIVE) {
+if (LIVE || REAL) {
   console.log("Warm-up: one ritual online to cache the models (the first run downloads them).");
   await p.goto(URL);
   await p.waitForSelector("#places > li");
   await offerQuestion();
   await acceptConsentIfAsked();
   await p.waitForSelector("#ritual-end:not(:empty)", { timeout: MODEL_TIMEOUT });
-  // The page registers its service worker after a WebGPU ritual; without it the offline reload fails.
-  const cached = await p.evaluate(() =>
-    Promise.race([
-      navigator.serviceWorker.ready.then(() => true),
-      new Promise((resolve) => setTimeout(() => resolve(false), 15_000)),
-    ]),
-  );
-  if (!cached) throw new Error("No service worker after the warm-up: is WebGPU on in this Chrome?");
-  await ctx.setOffline(true);
-  console.log("Offline. Recording.");
+  if (LIVE) {
+    // The page registers its service worker after a WebGPU ritual; without it the offline reload fails.
+    const cached = await p.evaluate(() =>
+      Promise.race([
+        navigator.serviceWorker.ready.then(() => true),
+        new Promise((resolve) => setTimeout(() => resolve(false), 15_000)),
+      ]),
+    );
+    if (!cached)
+      throw new Error("No service worker after the warm-up: is WebGPU on in this Chrome?");
+    await ctx.setOffline(true);
+    console.log("Offline. Recording.");
+  } else console.log("Warm-up done. Recording.");
 }
 await p.goto(URL);
 await p.waitForSelector("#places > li");
@@ -242,8 +297,8 @@ await wait(2500);
 await p.evaluate(() => (document.getElementById("dark-frames-section").hidden = false));
 await hold(0);
 await say(1);
-await glide("#dark-frames-section", 2600);
-await wait(4200);
+await glide("#dark-frames-section", REAL ? 2200 : 2600);
+await wait(REAL ? 1800 : 4200);
 await hold(1);
 
 // 3. The offering.
@@ -253,33 +308,79 @@ await glide("#offering", 2400);
 await wait(1800);
 await offerQuestion(1600);
 await wait(400);
+if (REAL) {
+  // The ritual card is already open while GPT-2 loads from the cache: show it.
+  await p.waitForSelector("#ritual:not([hidden])");
+  await glide("#ritual", 1400);
+}
 
 // 4. GPT-2 and the ghost words.
 await p.waitForSelector(".token", { timeout: MODEL_TIMEOUT });
-await glide("#ritual", 1400);
+if (!REAL) await glide("#ritual", 1400);
 await hold(2);
 await say(3);
-await wait(3600);
-await p
-  .locator(".token")
-  .nth(2)
-  .focus()
-  .catch(() => {});
-await wait(3200);
+if (REAL) {
+  // Live on WebAssembly: once a few words are out, focus the ones whose ghost words are most
+  // likely (the page's own keyboard UI shows their probabilities), keeping the card in frame.
+  await p.waitForFunction(() => document.querySelectorAll(".token").length >= 8, null, {
+    timeout: MODEL_TIMEOUT,
+  });
+  await glide(".voice:has(.token)", 1200);
+  await wait(1200);
+  const ranked = await p.evaluate(() => {
+    const percent = (el) =>
+      el.textContent.startsWith("<") ? 0 : Number.parseFloat(el.textContent);
+    return [...document.querySelectorAll(".token")]
+      .slice(0, 12)
+      .map((el, index) => ({
+        index,
+        word: /^[A-Za-z]{3,}$/.test(el.querySelector(".token-text").textContent),
+        top: Math.max(...[...el.querySelectorAll(".ghost-p")].map(percent)),
+      }))
+      .filter((t) => t.word)
+      .sort((x, y) => y.top - x.top)
+      .map((t) => t.index);
+  });
+  for (const index of ranked.slice(0, 2)) {
+    await p.locator(".token").nth(index).focus({ timeout: 5000 });
+    await wait(3200);
+  }
+} else {
+  await wait(3600);
+  await p
+    .locator(".token")
+    .nth(2)
+    .focus()
+    .catch(() => {});
+  await wait(3200);
+}
 
 // 5. Gemma 1 to 3.
 await hold(3);
 await say(4);
+await p.waitForSelector('.voice[data-step-id="gemma-1"]', { timeout: MODEL_TIMEOUT });
 await glide('.voice[data-step-id="gemma-1"]', 1800);
 await wait(1200);
+await p.waitForSelector('.voice[data-step-id="gemma-3"]', { timeout: MODEL_TIMEOUT });
 await glide('.voice[data-step-id="gemma-3"]', 1800);
 
 // 6. Gemma 4 and the medium.
+if (REAL) {
+  // The roles diagram covers the first seconds while the recordings finish behind it.
+  await hold(4);
+  await say(5);
+  await slide("roles");
+  await wait(3800);
+  await slide(null);
+  await wait(900);
+}
 await p.waitForSelector('.consent, .voice[data-step-id="gemma-4-e2b"]', {
   timeout: MODEL_TIMEOUT,
 });
-await hold(4);
-await say(5);
+if (!REAL) {
+  await hold(4);
+  await say(5);
+}
 if (await p.locator(".consent").isVisible()) {
   await glide(".consent", 1500);
   await wait(1500);
@@ -291,29 +392,55 @@ await glide('.voice[data-step-id="medium"]', 2200);
 await wait(narrationSeconds ? 1800 : 3800);
 
 // 7. Offline: in the live take the whole ritual above ran with the network off.
+//    Real: the architecture diagram ("what never exists", "stored in this browser").
 await hold(5);
 await say(6);
-if (DRAFT) await note("[Final cut: the laptop with Wi-Fi off, the ritual still running]", true);
-await wait(narrationSeconds ? END_CARD_AFTER * 1000 : 3400);
+if (REAL) {
+  await slide("architecture");
+  await wait(narrationSeconds ? Math.max(narrationSeconds[6] * 1000, 3000) + 700 : 3400);
+} else {
+  if (DRAFT) await note("[Final cut: the laptop with Wi-Fi off, the ritual still running]", true);
+  await wait(narrationSeconds ? END_CARD_AFTER * 1000 : 3400);
+}
 
 // 8. End card.
 await note(null, false);
 await card(
-  [
-    ["h1", "Closed models fade."],
-    ["h1", "Open weights can always come back."],
-    ["small", "GPT-2 · Gemma 1–3 recorded · Gemma 4 E2B on your device"],
-    ["small", "github.com/adricasi/OfrendaDeLosModelos"],
-  ],
+  REAL
+    ? [
+        ["h1", "Closed models fade."],
+        ["h1", "Open weights can always come back."],
+        ["small", "adricasi.github.io/OfrendaDeLosModelos"],
+      ]
+    : [
+        ["h1", "Closed models fade."],
+        ["h1", "Open weights can always come back."],
+        ["small", "GPT-2 · Gemma 1–3 recorded · Gemma 4 E2B on your device"],
+        ["small", "github.com/adricasi/OfrendaDeLosModelos"],
+      ],
   true,
 );
-await hold(6);
-await wait(narrationSeconds ? 1500 : 4500);
+await slide(null);
+if (REAL) await wait(4200);
+else {
+  await hold(6);
+  await wait(narrationSeconds ? 1500 : 4500);
+}
+if (REAL) {
+  // What GPT-2 wrote in this take, as the page shows it (ghost words left out).
+  const answer = await p.evaluate(() => {
+    const el = document.querySelector(".voice:has(.token) .voice-text").cloneNode(true);
+    for (const ghosts of el.querySelectorAll(".ghosts")) ghosts.remove();
+    return el.textContent;
+  });
+  console.log(`GPT-2 answer: ${JSON.stringify(answer)}`);
+}
 await cdp.send("Page.stopScreencast");
 await ctx.close();
 await ctx.browser()?.close(); // the draft launches its own browser; the live context owns none
 
 // Variable-rate screencast frames → constant 30 fps H.264.
+console.log("Scene starts (s):", paragraphStart.map((t) => (t - frames[0].t).toFixed(1)).join(" "));
 const dir = `${OUT}/frames`;
 rmSync(dir, { recursive: true, force: true });
 mkdirSync(dir, { recursive: true });
