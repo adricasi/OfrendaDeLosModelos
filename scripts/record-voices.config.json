@@ -8,28 +8,28 @@
       "id": "gemma-1",
       "name": "Gemma 1",
       "tag": "gemma:2b",
-      "verified": false,
+      "verified": true,
       "licence": { "name": "Gemma Terms of Use", "url": "https://ai.google.dev/gemma/terms" }
     },
     {
       "id": "gemma-2",
       "name": "Gemma 2",
       "tag": "gemma2:2b",
-      "verified": false,
+      "verified": true,
       "licence": { "name": "Gemma Terms of Use", "url": "https://ai.google.dev/gemma/terms" }
     },
     {
       "id": "gemma-3",
       "name": "Gemma 3",
       "tag": "gemma3:1b",
-      "verified": false,
+      "verified": true,
       "licence": { "name": "Gemma Terms of Use", "url": "https://ai.google.dev/gemma/terms" }
     },
     {
       "id": "gemma-4-e2b",
       "name": "Gemma 4 E2B",
       "tag": "gemma4:e2b",
-      "verified": false,
+      "verified": true,
       "licence": { "name": "Apache-2.0", "url": "https://www.apache.org/licenses/LICENSE-2.0" }
     }
   ],
