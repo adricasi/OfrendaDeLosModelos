@@ -1,7 +1,7 @@
 # Ofrenda de los Modelos
 
 An artistic tribute to the memory of AI models, inspired by the Mexican tradition of Día de Muertos; Gemma 4 tends the altar on your device.
-*Closed models die. Open weights come home.*
+*Closed models fade. Open weights can always come back.*
 
 > Global engineering standards are loaded automatically from `~/ai-toolkit/AGENTS.md`
 > (Claude Code via `~/.claude/CLAUDE.md`, Gemini via `~/.gemini/AGENTS.md`).
