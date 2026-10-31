@@ -17,6 +17,25 @@ export function loadTestData(): Promise<AltarData> {
   return loadAltarData("/OfrendaDeLosModelos/", fileFetch);
 }
 
+/** The fields a pin sets; null is the unpinned state. */
+export type UnpinnedFields = "repositoryId" | "revision" | "downloadBytes";
+
+/**
+ * A copy of the data whose live ancestors lack the given pin fields, so the unpinned paths
+ * are exercised on a fixture and do not depend on what the shipped file currently pins.
+ */
+export function withUnpinned(
+  data: AltarData,
+  fields: readonly UnpinnedFields[] = ["repositoryId", "revision", "downloadBytes"],
+): AltarData {
+  return {
+    ...data,
+    ancestors: data.ancestors.map((a) =>
+      a.kind === "live" ? { ...a, ...Object.fromEntries(fields.map((field) => [field, null])) } : a,
+    ),
+  };
+}
+
 /** Puts the static markup of index.html into the jsdom document. */
 export function mountPage(): void {
   const body = /<body>([\s\S]*)<\/body>/.exec(read("index.html"))?.[1] ?? "";

@@ -10,6 +10,8 @@ import {
 } from "../src/dev/model-override.js";
 import { read } from "./helpers.js";
 
+const GPT2_REVISION = "bf2c7f02e0b826c60d03af341171bde20893da66";
+
 const SHA = "0123456789abcdef0123456789abcdef01234567";
 
 function ancestors(): Ancestor[] {
@@ -65,7 +67,9 @@ describe("the development model override (?model-gpt2=<id>@<rev>)", () => {
   });
 
   it("applies only to the ancestor it names and leaves the data untouched", () => {
-    const original = ancestors();
+    const original = ancestors().map((a) =>
+      a.kind === "live" ? { ...a, repositoryId: null, revision: null } : a,
+    );
     const result = applyModelOverrides(original, `?model-gpt2=Xenova/gpt2@${SHA}`);
     expect(result.find((a) => a.id === "gpt-2")).toMatchObject({
       repositoryId: "Xenova/gpt2",
@@ -75,9 +79,13 @@ describe("the development model override (?model-gpt2=<id>@<rev>)", () => {
     expect(original.every((a) => a.repositoryId === null)).toBe(true);
   });
 
-  it("ships with GPT-2 unpinned until T-001 supplies the repository and revision", () => {
+  it("ships with GPT-2 pinned to its repository and revision", () => {
     const gpt2 = ancestors().find((a) => a.id === "gpt-2");
-    expect(gpt2).toMatchObject({ repositoryId: null, revision: null, verify: "T-001" });
+    expect(gpt2).toMatchObject({
+      repositoryId: "Xenova/gpt2",
+      revision: GPT2_REVISION,
+      verify: "T-001",
+    });
   });
 });
 

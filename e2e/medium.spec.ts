@@ -89,7 +89,7 @@ test.describe("Gemma 4 asks before it downloads (REQ-006)", () => {
     await expect(consent).toBeVisible();
     await expect(consent).toContainText("Gemma 4 E2B is not stored on this device yet");
     await expect(consent).toBeFocused();
-    await expect(consent).toContainText("download of about 1.9 GB");
+    await expect(consent).toContainText("download of about 3.1 GB");
     await expectNoSeriousViolations(page);
     await page.getByRole("button", { name: "Download and continue" }).click();
     await expect(page.locator("#ritual-end")).toHaveText("The ritual is complete.");
