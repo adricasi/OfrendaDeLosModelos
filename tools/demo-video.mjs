@@ -26,15 +26,15 @@ const NARRATION_DIR = narrationArg > 0 ? process.argv[narrationArg + 1] : null;
 
 const NARRATION = [
   "In August 2025, about two hundred people held a funeral for an AI model. Its makers had switched it off, and there was nothing else anyone could do.",
-  "Closed models die like that. Their weights were never released. They cannot come home.",
+  "Closed models fade like that. Their weights were never released. They cannot return.",
   "But some models can. This is an ofrenda for open-weight models. You leave one question, and the ancestors answer, oldest first.",
   "GPT-2, from 2019, speaks live in your browser. Beneath its words float the ghost words: the ones it almost said.",
   "Then the Gemma family, generation by generation.",
   "And finally Gemma 4, the first Gemma under Apache 2.0. Running on your own device, it tends the altar, and writes each ancestor a calaverita.",
   "Nothing you write leaves your machine.",
 ];
-// The last audio file also says the end card's line ("Closed models die. Open weights come
-// home."); the card appears in the pause before it.
+// The last audio file also says the end card's line ("Closed models fade. Open weights can
+// always come back."); the card appears in the pause before it.
 const END_CARD_AFTER = 2.4;
 const PAUSE_AFTER_PARAGRAPH = 0.5;
 
@@ -217,7 +217,7 @@ await installLayer();
 await card(
   [
     ["h1", "Ofrenda de los Modelos"],
-    ["p", "An altar where open-weight models come home for Día de los Muertos"],
+    ["p", "An artistic tribute to the memory of AI models, inspired by Día de Muertos"],
   ],
   true,
 );
@@ -300,8 +300,8 @@ await wait(narrationSeconds ? END_CARD_AFTER * 1000 : 3400);
 await note(null, false);
 await card(
   [
-    ["h1", "Closed models die."],
-    ["h1", "Open weights come home."],
+    ["h1", "Closed models fade."],
+    ["h1", "Open weights can always come back."],
     ["small", "GPT-2 · Gemma 1–3 recorded · Gemma 4 E2B on your device"],
     ["small", "github.com/adricasi/OfrendaDeLosModelos"],
   ],
