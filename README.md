@@ -7,6 +7,7 @@
 [![licence: MIT](https://img.shields.io/badge/licence-MIT-blue.svg)](LICENSE)
 
 **[Live site](https://adricasi.github.io/OfrendaDeLosModelos/)** ·
+**[Video Demo](https://www.youtube.com/watch?v=42jm8VKl6aY)** ·
 **[Architecture](docs/architecture.md)** ·
 **[DEV challenge page](https://dev.to/challenges/hacktoberfest-week4-2026-10-26)** ·
 **[Source](https://github.com/adricasi/OfrendaDeLosModelos)**
